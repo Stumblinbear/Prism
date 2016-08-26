@@ -1,0 +1,74 @@
+{% extends 'panel.html' %}
+{% block content %}
+<style>
+	.inline-modal .modal {
+		display: block;
+		position: relative;
+		top: auto;
+		bottom: auto;
+		right: auto;
+		left: auto;
+		
+		z-index: 1;
+    }
+
+    .inline-modal .modal {
+		background: transparent !important;
+    }
+</style>
+<div class="text-center">
+	<div class="inline-modal">
+		<div class="modal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h3 class="modal-title">Fatal Error <small>{{ error.title }}</small></h3>
+										<p><code>{{ error.info }}</code></p>
+					</div>
+					<div class="modal-body">
+						<div class="box-body table-responsive">
+							<div class="box-body">
+								{% if error.fix != None %}
+									<div class="row">
+										<div class="col-xs-12">
+											<h4>A possible fix is known.</h4>
+											<br />
+											{% for fix in error.fix %}
+												{% if 'text' in fix %}
+													<p>
+														{{ fix['text'] }}
+													</p>
+												{% endif %}
+												{% if 'command' in fix %}
+													<p>
+														<a href="{{ url_command(fix['command'], error.url_from, 1) }}">
+															<button type="button" id="btn-fix" class="btn btn-info btn-sm">Attempt Fix #{{ loop.index }}</button>
+														</a>
+													</p>
+												{% endif %}
+												{% if error.fix | length != loop.index %}
+													<hr />
+												{% endif %}
+											{% endfor %}
+										</div>
+									</div>
+								{% else %}
+									<h4>No known fix.</h4>
+									<div class="row">
+										<div class="col-xs-12">
+											I'm terribly sorry, please click the "Send Error Report" button so we can attempt to fix the bug!
+										</div>
+									</div>
+								{% endif %}
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" id="btn-report" class="btn btn-xs"><i class="fa fa-asterisk"></i> Send Error Report</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

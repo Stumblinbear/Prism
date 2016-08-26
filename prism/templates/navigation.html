@@ -1,0 +1,27 @@
+<aside class="main-sidebar">
+	<section class="sidebar">
+		<form action="#" method="get" class="sidebar-form">
+			<div class="input-group">
+				<input type="text" name="q" class="form-control" placeholder="Search...">
+				<span class="input-group-btn">
+					<button type="submit" name="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i></button>
+				</span>
+			</div>
+		</form>
+		<ul class="sidebar-menu">
+			{%- for item in current_menu.children recursive -%}
+				{% if not item.hidden %}
+					{% if item.header %}<li class="header">{{ item.header }}</li>{% endif %}
+					<li{% if item.active %} class="active"{% endif %}>
+						<a href="{{ item.url }}"><i class="fa fa-{{ item.icon }}"></i> <span>{{ item.text }}</span></a>
+						{%- if item.children -%}
+						<ul class="treeview-menu">
+							{{ loop(item.children) }}
+						</ul>
+						{%- endif -%}
+					</li>
+				{% endif %}
+			{%- endfor -%}
+		</ul>
+	</section>
+</aside>

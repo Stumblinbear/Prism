@@ -1,0 +1,9 @@
+{% macro error_handle(field) %}
+	{% if field.errors %}
+		<div class="alert alert-danger" role="alert">
+		{% for error in field.errors %}
+			<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span><span class="sr-only">Error:</span> {{ error }}<br />
+		{% endfor %}
+		</div>
+	{% endif %}
+{% endmacro %}

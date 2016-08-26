@@ -1,0 +1,14 @@
+{
+    "enabled": [
+        "system"
+    ], 
+    "first_run": true, 
+    "host": "192.99.177.187", 
+    "password": "$5$rounds=535000$maZBBuCGA/o2Cwj7$k6esMikC6f9or1KBuBFBEfrDjgaFH4LzsvSVcSTcXj0", 
+    "secret_key": "5eq87b4b34wp1wr63h37n4lzy839stjz", 
+    "username": "admin", 
+    "widgets": {
+        "!system_info": 1, 
+        "usage": 0
+    }
+}

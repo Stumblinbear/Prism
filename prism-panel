@@ -1,0 +1,64 @@
+#!/bin/bash
+
+PYTHON_COMMAND="python"
+
+case "$(python --version 2>&1)" in
+	*" 3."*)
+		# Correct verison, continue.
+		;;
+	*)
+		if ! type "python3" > /dev/null; then
+			# Alternative command found, continue.
+			PYTHON_COMMAND="python3"
+		else
+			echo "You must be running Python 3."
+			exit 1
+		fi
+		;;
+esac
+
+PIDAPP="/var/run/prism.pid"
+PATHAPP="/home/prism/prism/start.py ${!PIDAPP} &"
+
+if [[ ! -f $PIDAPP ]]; then
+	touch $PIDAPP
+fi
+
+PID=$(cat $PIDAPP)
+if [[ -z "$PID" ]]; then
+	RUNNING=false
+else
+	RUNNING=$(ps -p $PID > /dev/null)
+fi
+
+case "$1" in 
+		start)
+				if [ "$RUNNING" = true ]; then
+					echo "Prism is already running!"
+					exit 1
+				fi
+				
+				echo "Prism is starting..."
+				$($PYTHON_COMMAND $PATHAPP)
+		;;
+		stop)
+				if [ "$RUNNING" = false ]; then
+					echo "Prism is not running!"
+					exit 1
+				fi
+				
+				echo "Prism is stopping..."
+				PID=$(cat $PIDAPP)
+				kill $PID
+		;;
+		restart|reload)
+				if [ "$RUNNING" = true ]; then
+					$0 stop
+				fi
+				
+				$0 start
+		;;
+		*)
+				echo $"Usage: $0 {start|stop|restart|reload}"
+				exit 2
+esac

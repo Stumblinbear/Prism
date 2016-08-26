@@ -1,0 +1,54 @@
+{% extends 'panel.html' %}
+{% block title %}Dashboard - Editor{% endblock %}
+{% block content %}
+{% if widgets|length == 0 %}
+	<div class="callout callout-info">
+	<h4>No widgets</h4>
+	<p>You do not have any plugins installed that add widgets.</p>
+  </div>
+{% else %}
+	<style>
+		#sortable { list-style-type: none; margin: 0; padding: 0; width: 100%; }
+	</style>
+	<ul id="sortable">
+		{% for widget_id, widget, order, shown in widgets %}
+			<li class="ui-state-default plugin" data-widget="{{ widget_id }}">
+				<div class="row">
+					<div class="box box-solid">
+						<div class="box-header with-border">
+							<h3 class="box-title">{{ widget_id }}</h3>
+							<div class="pull-right">
+								<input type="checkbox" class="shown" data-widget="{{ widget_id }}" {% if shown %}checked{% endif %} />
+							</div>
+						</div>
+						<div class="box-body no-padding">
+							{{ widget()|safe }}
+						</div>
+					</div>
+				</div>
+			</li>
+		{% endfor %}
+	</ul>
+	<script>
+		$(function() {
+			$('.shown').change(function() {
+				$.post(window.location.pathname, { action: (this.checked ? 'show' : 'hide'), id: $(this).data('widget') });
+			});
+			
+			$('#sortable').sortable({
+				stop: function(event, ui) {
+					var data = "";
+
+					$(".plugin").each(function(i, el) {
+						var ord = $(el).data('widget');
+						data += ord + "=" + $(el).index() + ",";
+					});
+
+					$.post(window.location.pathname, { action: 'order', data: data });
+				}
+			});
+			$('#sortable').disableSelection();
+		});
+	</script>
+{% endif %}
+{% endblock %}

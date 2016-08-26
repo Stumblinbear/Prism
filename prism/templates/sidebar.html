@@ -1,0 +1,50 @@
+<aside class="control-sidebar control-sidebar-dark">
+<ul class="nav nav-tabs nav-justified control-sidebar-tabs">
+	<li class="active"><a href="#control-sidebar-home-tab" data-toggle="tab"><i class="fa fa-first-order"></i></a></li>
+	<li><a href="#control-sidebar-settings-tab" data-toggle="tab"><i class="fa fa-gears"></i></a></li>
+</ul>
+<div class="tab-content">
+	<div class="tab-pane active" id="control-sidebar-home-tab">
+		<h3 class="control-sidebar-heading">Updates</h3>
+		<ul class="control-sidebar-menu">
+			<li>
+				<a href="javascript::;">
+					<i class="menu-icon fa fa-arrow-up bg-red"></i>
+					<div class="menu-info">
+						<h4 class="control-sidebar-subheading">Prism Update <small>Security</small></h4>
+						<p>ALPHA 0.3.7</p>
+					</div>
+				</a>
+			</li>
+		</ul>
+		<h3 class="control-sidebar-heading">Prism News</h3>
+		<ul class="control-sidebar-menu">
+			<li>
+				<a href="javascript::;">
+					<i class="menu-icon fa fa-unlock-alt bg-blue"></i>
+					<div class="menu-info">
+						<h4 class="control-sidebar-subheading">Major security bug</h4>
+						<p>2 days ago</p>
+					</div>
+				</a>
+			</li>
+		</ul>
+	</div>
+	<div class="tab-pane" id="control-sidebar-settings-tab">
+		<div class="form-group">
+			<a href="{{ url_for('dashboard.restart') }}"><button class="form-control btn btn-danger">Restart Prism</button></a>
+		</div>
+		<form method="post">
+			<h3 class="control-sidebar-heading">General Settings</h3>
+			<div class="form-group">
+				<label class="control-sidebar-subheading">
+					Rainbow Census
+					<input type="checkbox" class="pull-right" checked>
+				</label>
+				<p>Sends anonymous usage statistics to PrismCP.org.</p>
+			</div>
+		</form>
+	</div>
+</div>
+</aside>
+<div class="control-sidebar-bg"></div>

@@ -1,0 +1,10 @@
+{
+	"version": 1.0,
+	
+	"name": "Firewall",
+	"description": "Manages your system's firewall.",
+	
+	"dependencies": {
+		"package": [ "iptables", "firewalld" ]
+	}
+}

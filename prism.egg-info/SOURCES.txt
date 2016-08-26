@@ -1,0 +1,9 @@
+MANIFEST.in
+README.rst
+setup.py
+prism.egg-info/PKG-INFO
+prism.egg-info/SOURCES.txt
+prism.egg-info/dependency_links.txt
+prism.egg-info/entry_points.txt
+prism.egg-info/requires.txt
+prism.egg-info/top_level.txt

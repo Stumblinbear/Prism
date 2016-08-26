@@ -1,0 +1,8 @@
+pyOpenSSL
+passlib
+tinydb
+psutil
+flask
+flask_login
+flask_menu
+flask_wtf

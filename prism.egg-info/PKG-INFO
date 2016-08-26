@@ -1,0 +1,24 @@
+Metadata-Version: 1.1
+Name: prism
+Version: 1.0.0
+Summary: UNKNOWN
+Home-page: https://github.com/pypa/sampleproject
+Author: Stumblinbear
+Author-email: stumblinbear@gmail.com
+License: MIT License
+Description: Prism
+        =======================
+        
+        ----
+        
+        
+Keywords: prism linux control panel
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Server Administrators
+Classifier: Topic :: Linux :: Control Panel
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
