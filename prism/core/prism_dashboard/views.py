@@ -10,6 +10,7 @@ class Dashboard(BaseView):
     def home(self):
         return ('dashboard.html', { 'widgets': prism.get_plugin('prism_dashboard').get_widgets() })
 
+    @route('/home/edit')
     def edit(self):
         return ('dashboard_edit.html', { 'widgets': prism.get_plugin('prism_dashboard').get_widgets(all=True) })
 
