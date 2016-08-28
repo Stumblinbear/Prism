@@ -1,3 +1,5 @@
+from flask import render_template
+
 from api import BasePlugin
 
 class DashboardPlugin(BasePlugin):
@@ -12,55 +14,66 @@ class DashboardPlugin(BasePlugin):
 
 					icon = 'dashboard', order = 0)
 
-	def init(self, prism):
-		self.possible_widgets = { }
-		self.widgets = self.config('widgets', { })
+	def init(self, prism_state):
+		self._available_widgets = { }
+		self._widgets = self.config('widgets', { })
 
-		# Cleanup widgets
-		for widget, order in self.widgets.items():
-			if widget in self.widgets:
-				continue
-			if widget[:1] == '!':
-				if not widget[1:] in widgets:
-					self.widgets[widget] = order
-			elif not '!%s' % widget in widgets:
-				self.widgets[widget] = order
+		print(self._widgets)
 
-		
+		# Search the plugins for Widget classes
+		for plugin_id, plugin in prism_state.plugin_manager.plugins.items():
+			for name, obj in prism_state.plugin_manager.get_classes(plugin._module, Widget):
+				widget = obj()
+				widget.widget_id = plugin_id + '.' + widget.widget_id
+				self._available_widgets[widget.widget_id] = widget
+
+				if widget.widget_id not in self._widgets:
+					self._widgets[widget.widget_id] = { 'shown': True, 'order': len(self._available_widgets) }
+
+		prism.output('Registered %s widgets' % len(self._available_widgets))
+		prism.flask().jinja_env.globals["render_widget"] = self.render_widget
+
+	def get_widget(self, widget_id):
+		return self._available_widgets[widget_id]
+
+	def render_widget(self, widget_id):
+		return self._available_widgets[widget_id]._do_render()
+
+	def is_widget_shown(self, id):
+		return self._widgets[id].shown
+
+	def get_widgets(self, all=False):
+		ret_widgets = []
+
+		if all:
+			for widget_id, widget_config in self._widgets.items():
+				ret_widgets.insert(widget_config['order'], (widget_id, self._available_widgets[widget_id], widget_config))
+		else:
+			for widget_id, widget_config in self._widgets.items():
+				if widget_config['shown']:
+					ret_widgets.insert(widget_config['order'], (widget_id, self._available_widgets[widget_id]))
+
+		return ret_widgets
 
 	def save_widgets(self):
 		self.config.save()
 
-	def widget_shown(self, id):
-		return (not '!%s' % id in self.widgets.values() and id in self.widgets.values())
+class Widget(object):
+	def __init__(self, widget_id):
+		self.widget_id = widget_id
 
-	def add_widget(self, id, f, order=999, default=False):
-		self.possible_widgets[id] = { 'id': id, 'f': f, 'default': default}
+	def do_render(self):
+		obj = self.render()
 
-		if not '%s' % id in self.widgets.values() and not '!%s' % id in self.widgets.values():
-			if default:
-				self.widgets[id] = order
-			else:
-				self.widgets['!%s' % id] = order
+		if isinstance(obj, tuple):
+			page_args = { }
+			if len(obj) > 1:
+				page_args = obj[1]
 
-	def get_widgets(self, all=False):
-		widgets = []
+			if obj[0].endswith('.html'):
+				return render_template(obj[0], **page_args)
+		return obj
 
-		if all:
-			for widget, order in self.widgets.items():
-				shown = True
-				if widget[:1] == '!':
-					widget = widget[1:]
-					shown = False
-				widgets.insert(order, (widget, self.possible_widgets[widget]['f'], order, shown))
-		else:
-			for widget, order in self.widgets.items():
-				if widget[:1] != '!':
-					widgets.insert(order, (widget, self.possible_widgets[widget]['f']))
-
-		return widgets
-
-def Widget(object):
 	def render(self):
 		pass
 

@@ -13,3 +13,4 @@ class SystemPlugin(BasePlugin):
 					icon = 'television', order = 1)
 
 from .views import *
+from .widgets import *

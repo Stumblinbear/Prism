@@ -32,6 +32,7 @@ def flask():
 def plugin_manager():
 	if PRISM_STATE.plugin_manager == None:
 		PRISM_STATE.plugin_manager = PluginManager(PRISM_STATE.config)
+		PRISM_STATE.plugin_manager.init()
 	return PRISM_STATE.plugin_manager
 
 def get_plugin(id):
@@ -47,6 +48,10 @@ class Prism:
 	def flask(self):
 		""" Returns the flask application instance """
 		return self.flask_app
+
+	def plugin_manager(self):
+		""" Returns the plugin manager instance """
+		return self.plugin_manager
 
 	#User functions
 	def user(self):
@@ -90,6 +95,7 @@ class PluginManager:
 		# Holds the list of enabled plugins
 		self.enabled_plugins = config['enabled_plugins']
 
+	def init(self):
 		poof('Searching')
 		self._search_plugins(settings.CORE_PLUGINS_PATH, True)
 		self._search_plugins(settings.PLUGINS_PATH, False)
@@ -142,7 +148,7 @@ class PluginManager:
 
 				for name, obj in self.get_classes(module, api.BasePlugin):
 					plugin = obj()
-					plugin.module = module
+					plugin._module = module
 					plugin._is_core = False
 					plugin._is_satisfied = True
 					plugin._is_enabled = False

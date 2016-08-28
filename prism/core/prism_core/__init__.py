@@ -10,9 +10,4 @@ class CorePlugin(BasePlugin):
 					author = 'Stumblinbear',
 					homepage = 'http://prismcp.org/')
 
-	def init(self, prism):
-		def url_restart(return_url=None):
-			return ('core.restart', { return_url: return_url })
-		prism.flask().jinja_env.globals["url_restart"] = url_restart
-
 from .views import *

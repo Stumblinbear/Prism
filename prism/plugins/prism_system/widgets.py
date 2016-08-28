@@ -12,31 +12,36 @@ from prism_dashboard import Widget
 
 
 class UsageWidget(Widget):
+	def __init__(self):
+		Widget.__init__(self, 'usage')
+
 	def render(self):
-		netusage = helpers.convert_bytes(get_network())
-		return render_template('widget/usage.html',
-								cpu=get_cpu(),
-								ram=get_memory(),
-								disk=get_disk(),
-								network=netusage[0],
-								network_type=netusage[1])
+		netusage = helpers.convert_bytes(self.get_network())
+		return ('widget/usage.html',
+								{
+									'cpu': self.get_cpu(),
+									'ram': self.get_memory(),
+									'disk': self.get_disk(),
+									'network': netusage[0],
+									'network_type': netusage[1]
+								})
 
 	@memorize(10)
-	def get_cpu():
+	def get_cpu(self):
 		return int(psutil.cpu_percent())
 
 	@memorize(10)
-	def get_memory():
+	def get_memory(self):
 		return int(psutil.virtual_memory()[2])
 
 	@memorize(60)
-	def get_disk():
+	def get_disk(self):
 		return int(psutil.disk_usage('/')[3])
 
 	_last_check = 0
 	_previous_network = 0
 	@memorize(10)
-	def get_network():
+	def get_network(self):
 		usage = 0
 
 		current_network = psutil.net_io_counters()[0]
@@ -55,20 +60,25 @@ class UsageWidget(Widget):
 
 		return usage
 
-class UsageWidget(Widget):
+class InfoWidget(Widget):
+	def __init__(self):
+		Widget.__init__(self, 'info')
+
 	def render(self):
-		return render_template('widget/info.html',
-								os='%s %s (%s)' % (platform.system(), platform.release(), platform.architecture()[0]),
-								hostname=platform.node(),
-								address=settings.PRISM_CONFIG['host'],
-								uptime=get_uptime(),
-								disk=get_total_disk(),
-								processor=platform.processor(),
-								memory=get_total_memory(),
-								swap=get_total_swap())
+		return ('widget/info.html',
+								{
+									'os': '%s %s (%s)' % (platform.system(), platform.release(), platform.architecture()[0]),
+									'hostname': platform.node(),
+									'address': settings.PRISM_CONFIG['host'],
+									'uptime': self.get_uptime(),
+									'disk': self.get_total_disk(),
+									'processor': platform.processor(),
+									'memory': self.get_total_memory(),
+									'swap': self.get_total_swap()
+								})
 
 	@memorize(5)
-	def get_uptime():
+	def get_uptime(self):
 		from datetime import timedelta
 
 		with open('/proc/uptime', 'r') as f:
@@ -78,13 +88,13 @@ class UsageWidget(Widget):
 		return uptime_string
 
 	@memorize(60)
-	def get_total_disk():
+	def get_total_disk(self):
 		return psutil.disk_usage('/')[0]
 
 	@memorize(60)
-	def get_total_memory():
+	def get_total_memory(self):
 		return psutil.virtual_memory()[0]
 
 	@memorize(60)
-	def get_total_swap():
+	def get_total_swap(self):
 		return psutil.swap_memory()[0]

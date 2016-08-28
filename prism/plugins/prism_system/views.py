@@ -14,7 +14,7 @@ from api.view import BaseView, route, menu
 class SystemView(BaseView):
     @menu('General Information', icon='square', order=0)
     def info(self):
-        return ('general_info.html', { 'info_widget': None })
+        return ('general_info.html')
 
     @menu('Users', icon='users')
     def users(self):

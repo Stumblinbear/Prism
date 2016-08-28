@@ -11,28 +11,25 @@ class DashboardView(BaseView):
     def edit(self):
         return ('dashboard_edit.html', { 'widgets': prism.get_plugin('prism_dashboard').get_widgets(all=True) })
 
+    @route('/home/edit')
     def post(self, request):
         prism_dashboard = prism.get_plugin('prism_dashboard')
 
         action = request.form['action']
         if action == 'show' or action == 'hide':
-            id = form['id']
-
+            widget_id = request.form['id']
             if action == 'show':
-                prism_dashboard.widgets[id] = prism_dashboard.widgets['!%s' % id]
-                del prism_dashboard.widgets['!%s' % id]
+                prism_dashboard._widgets[widget_id]['shown'] = True
             else:
-                prism_dashboard.widgets['!%s' % id] = prism_dashboard.widgets[id]
-                del prism_dashboard.widgets[id]
+                prism_dashboard._widgets[widget_id]['shown'] = False
         elif action == 'order':
             data = request.form['data']
-            for pack in data.split(','):
-                pack = pack.split('=')
 
-                if pack[0] in prism_dashboard.widgets:
-                    prism_dashboard.widgets[pack[0]] = int(pack[1])
-                elif '!%s' % pack[0] in prism_dashboard.widgets:
-                    prism_dashboard.widgets['!%s' % pack[0]] = int(pack[1])
+            for pack in data.split(','):
+                if pack == '':
+                    continue
+                pack = pack.split('=')
+                prism_dashboard._widgets[pack[0]]['order'] = int(pack[1])
 
         prism_dashboard.save_widgets()
         return '1'

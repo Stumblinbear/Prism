@@ -1,3 +1,12 @@
 {
-    "widgets": {}
+    "widgets": {
+        "prism_system.info": {
+            "order": 1, 
+            "shown": true
+        }, 
+        "prism_system.usage": {
+            "order": 0, 
+            "shown": true
+        }
+    }
 }

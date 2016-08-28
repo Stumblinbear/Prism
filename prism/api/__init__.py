@@ -33,7 +33,7 @@ class BasePlugin(object):
 				self.version += '-' + i
 
 	# Called when the plugin is enabled.
-	def init(self, prism):
+	def init(self, prism_state):
 		pass
 
 class PluginConfig(object):

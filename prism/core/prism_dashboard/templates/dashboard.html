@@ -9,7 +9,7 @@
 {% else %}
 	{% for widget_id, widget in widgets %}
 		<div class="row" id="plugin-{{ widget_id }}">
-			{{ widget()|safe }}
+			{{ widget.do_render() | safe }}
 		</div>
 	{% endfor %}
 {% endif %}
