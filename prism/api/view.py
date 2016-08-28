@@ -1,5 +1,5 @@
 class BaseView(object):
-	def __init__(self, endpoint):
+	def __init__(self, endpoint='/'):
 		if endpoint == None:
 			exit('Fatal Error: Endpoint cannot be of type None! Offender: %s' % self)
 		if not endpoint.startswith('/'):

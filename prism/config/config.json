@@ -1,6 +1,7 @@
 {
     "enabled_plugins": [
-        "system"
+        "system", 
+        "prism_system"
     ], 
     "first_run": true, 
     "host": "192.99.177.187", 

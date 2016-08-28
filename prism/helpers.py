@@ -1,15 +1,29 @@
 import math
 import os
 import time
-
 from datetime import datetime
 
+import flask
 import jinja2
 
 import prism
+
+
 flask_app = prism.flask()
 
-def convert_bytes(size, format=False):
+def next_color(i):
+	colors = [ '#337AB7', '#00A65A', '#F39C12', '#DD4B39', '#4682B4', '#20B2AA', '#FFD700', '#00FA9A', '#7B68EE', '#FF00FF', '#20B2AA', '#BC8F8F', '#8B008B', '#008000', '#000080' ]
+	return colors[i % len(colors)]
+flask_app.jinja_env.globals["next_color"] = next_color
+
+def include_static(name):
+	directory = flask_app.static_folder
+	desired_file = os.path.join(directory, name)
+	with open(desired_file) as f:
+		return jinja2.Markup(f.read())
+flask_app.jinja_env.globals["include_static"] = include_static
+
+def _convert_bytes(size, format=False):
 	if(size == 0):
 		if format:
 			return '0b'
@@ -24,19 +38,7 @@ def convert_bytes(size, format=False):
 
 @flask_app.template_filter()
 def convert_bytes(size):
-	return convert_bytes(size, True)
-
-def next_color(i):
-	colors = [ '#337AB7', '#00A65A', '#F39C12', '#DD4B39', '#4682B4', '#20B2AA', '#FFD700', '#00FA9A', '#7B68EE', '#FF00FF', '#20B2AA', '#BC8F8F', '#8B008B', '#008000', '#000080' ]
-	return colors[i % len(colors)]
-flask_app.jinja_env.globals["next_color"] = next_color
-
-def include_static(name):
-	directory = flask_app.static_folder
-	desired_file = os.path.join(directory, name)
-	with open(desired_file) as f:
-		return jinja2.Markup(f.read())
-flask_app.jinja_env.globals["include_static"] = include_static
+	return _convert_bytes(size, True)
 
 @flask_app.template_filter()
 def ctime(s):

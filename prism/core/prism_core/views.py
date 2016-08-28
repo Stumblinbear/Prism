@@ -7,16 +7,15 @@ import settings
 from api.view import BaseView, route
 
 
-class Core(BaseView):
-    def __init__(self):
-        BaseView.__init__(self, '/')
-
+class CoreView(BaseView):
     @route('/restart')
+    @route('/restart/<return_url>')
     def restart(self, return_url='dashboard.home'):
         return ('restart.html', { 'return_url': return_url })
 
     @route('/restart')
     def post(self, request):
+        print(request)
         action = request.form['action']
         if action == '0':
             threading.Timer(1, prism.restart).start()

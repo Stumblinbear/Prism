@@ -1,11 +1,8 @@
 from api.view import BaseView, route, menu
 
-import prism
+import prism, settings
 
-class Dashboard(BaseView):
-    def __init__(self):
-        BaseView.__init__(self, '/')
-
+class DashboardView(BaseView):
     @menu('Home', icon='home', order=0)
     def home(self):
         return ('dashboard.html', { 'widgets': prism.get_plugin('prism_dashboard').get_widgets() })
@@ -41,7 +38,7 @@ class Dashboard(BaseView):
         return '1'
 
 @menu('Plugins', icon='cubes', order=1)
-class Plugins(BaseView):
+class PluginsView(BaseView):
     def __init__(self):
         BaseView.__init__(self, '/plugins')
 
@@ -56,13 +53,13 @@ class Plugins(BaseView):
         action = request.form['action']
         if id != None and action != None:
             if action == 'enable':
-                if not id in settings.PRISM_CONFIG['enabled']:
-                    settings.PRISM_CONFIG['enabled'].append(id)
+                if not id in settings.PRISM_CONFIG['enabled_plugins']:
+                    settings.PRISM_CONFIG['enabled_plugins'].append(id)
             elif action == 'disable':
-                if id in settings.PRISM_CONFIG['enabled']:
-                    settings.PRISM_CONFIG['enabled'].remove(id)
-            return dashboard.restart(return_url='dashboard.plugins_list')
-        return redirect(url_for('dashboard.plugins_list'))
+                if id in settings.PRISM_CONFIG['enabled_plugins']:
+                    settings.PRISM_CONFIG['enabled_plugins'].remove(id)
+            return ('core.restart', { 'return_url': 'dashboard.plugins.list' })
+        return ('dashboard.plugins.list')
 
     @menu('Install Plugins', icon='cube', order=2)
     def install(self):

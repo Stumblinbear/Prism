@@ -1,6 +1,7 @@
 # If you know of a better way to handle this, be my guest.
 import builtins
 import inspect
+import json
 import os
 import platform
 import re
@@ -106,12 +107,12 @@ class PluginManager:
 
 	def is_satisfied(self, id):
 		""" Returns true if the plugin's dependencies are satisfied """
-		return id not in unsatisfied_plugins
+		return id not in self.unsatisfied_plugins
 
 	def is_enabled(self, id):
 		""" Returns true if and only if all the plugin's dependencies are satisfied and
 		it's set it enabled """
-		return self.is_satisfied(id) and id in enabled_plugins
+		return self.is_satisfied(id) and id in self.enabled_plugins
 
 	def _search_plugins(self, path, is_core):
 		""" Searches for plugins in a specified folder """
@@ -178,6 +179,7 @@ class PluginManager:
 			else:
 				plugin._is_core = False
 				plugins_additional.append(plugin_id)
+		paaf()
 
 		if len(plugins_additional) == 0:
 			return
@@ -211,13 +213,14 @@ class PluginManager:
 
 			if not plugin._is_satisfied:
 				unsatisfied_plugins.append(plugin_id)
+				output('Dependency unsatisfied. Offender: %s' % plugin_id)
 
 			plugin.dependencies = new_dependencies
 		paaf()
 
 		# Start plugins if they're set to be enabled.
 		for plugin_id in plugins_additional:
-			if not self.enabled(plugin_id):
+			if not self.is_enabled(plugin_id):
 				continue
 			self._init_plugin(self.get_plugin(plugin_id))
 		paaf()
@@ -299,7 +302,19 @@ class PluginManager:
 					if 'http_methods' not in route:
 						route['http_methods'] = fallback_http_methods
 					if 'defaults' not in route:
-						route['defaults'] = fallback_defaults
+						route['defaults'] = fallback_defaults.copy()
+
+					# Defaults are odd. They cannot be attached to routes with the key in the url
+					# For example: if <id> in in the url rule, it cann't be in defaults.
+					pattern = re.compile(r'<(?:.+?(?=:):)?(.+?)>')
+					if '<' in route['endpoint'] and len(route['defaults']) > 0:
+						for id in re.findall(pattern, route['endpoint']):
+							try:
+								del route['defaults'][id]
+							except:
+								pass
+
+					output('%s %s%s: %s' % (route['http_methods'], blueprint_name.replace('.', '/'), route['endpoint'], route['defaults']))
 
 					view._blueprint.add_url_rule(route['endpoint'],
 												endpoint=endpoint_id,
@@ -326,11 +341,15 @@ class PluginManager:
 
 			# from flask import request, redirect, url_for, render_template
 			if isinstance(obj, tuple):
+				page_args = { }
+				if len(obj) > 1:
+					page_args = obj[1]
+
 				if obj[0].endswith('.html'):
-					page_args = { }
-					if len(obj) > 1:
-						page_args = obj[1]
 					return render_template(obj[0], **page_args)
+				elif get_url_for(obj[0]) != None:
+					print(get_url_for(obj[0], **page_args))
+					return redirect(get_url_for(obj[0], **page_args))
 				elif len(obj) > 1:
 					if obj[0] == 'redirect':
 						return redirect(url_for(obj[1]))
@@ -339,6 +358,10 @@ class PluginManager:
 			elif isinstance(obj, str):
 				if obj.endswith('.html'):
 					return render_template(obj)
+				elif get_url_for(obj) != None:
+					return redirect(get_url_for(obj))
+			elif isinstance(obj, dict):
+				return json.dumps(obj)
 			return obj
 		func_wrapper.__name__ = func.__name__
 		return func_wrapper
@@ -377,54 +400,22 @@ class PluginManager:
 		# If an endpoint has been specified in the @route decorator
 		elif hasattr(func, 'endpoint'):
 			endpoint_http = func.endpoint
+		elif func.__name__ in [ 'get', 'post', 'put', 'delete' ]:
+			endpoint_http = '/'
 		return endpoint_http
-
-"""class Plugin:
-	def route(self, rule, text=None,
-					nav_path=None,
-					icon=None,
-					order=99,
-					hidden=False,
-					ignore=False,
-					**kwargs):
-		if not self.active:
-			return None
-
-		if nav_path == None and text != None:
-			nav_path = '.%s' % text.lower().replace(' ', '')
-
-		def decorator(f):
-			# Register with Flask
-			self.bp().add_url_rule(rule, kwargs.pop("endpoint", f.__name__), f, **kwargs)
-
-			if ignore:
-				return f
-
-			# Register with Flask Menu
-			@self.flask_blueprint.before_app_first_request
-			def _register_menu_item():
-				from flask_menu import current_menu
-				item = current_menu.submenu(str(nav_path))
-				item.register(
-					self.bp().name + '.' + f.__name__,
-					text,
-					order,
-					endpoint_arguments_constructor=None,
-					dynamic_list_constructor=None,
-					active_when=None,
-					visible_when=None,
-					expected_args=inspect.getargspec(f).args,
-					icon=icon,
-					hidden=hidden)
-
-			return f
-		return decorator"""
 
 # Utility functions
 def public_endpoint(function):
 	""" Use as a decorator to allow a page to be accessed without being logged in """
 	function.is_public = True
 	return function
+
+def get_url_for(url, **args):
+	""" Checks if a url endpoint exists """
+	try:
+		return url_for(url, **args)
+	except:
+		return None
 
 def restart():
 	""" Safely restart prism """
