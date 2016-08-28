@@ -11,7 +11,7 @@ class CoreView(BaseView):
     @route('/restart')
     @route('/restart/<return_url>')
     def restart(self, return_url='dashboard.home'):
-        return ('restart.html', { 'return_url': return_url })
+        return ('restart.html', {'return_url': return_url})
 
     @route('/restart')
     def post(self, request):
@@ -27,7 +27,7 @@ class CoreView(BaseView):
     @route('/error/<path:error_json>')
     def error(self, error_json):
         error_json = json.loads(base64.b64decode(error_json).decode('utf-8'))
-        return ('error.html', { 'error': error_json })
+        return ('error.html', {'error': error_json})
 
     @route('/command/<command>')
     @route('/command/<command>/<return_url>')
@@ -35,9 +35,9 @@ class CoreView(BaseView):
     @route('/command/<command>/<int:restart>/<return_url>')
     def command(self, command, return_url, restart=False):
         error_json = json.loads(base64.b64decode(error_json).decode('utf-8'))
-        return ('error.html', { 'error': error_json })
+        return ('error.html', {'error': error_json})
 
     @route('/command/install/<type>/<install>')
     def install(self, type, install):
         error_json = json.loads(base64.b64decode(error_json).decode('utf-8'))
-        return ('error.html', { 'error': error_json })
+        return ('error.html', {'error': error_json})

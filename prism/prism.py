@@ -18,6 +18,7 @@ from flask_menu import current_menu
 import api
 import settings
 
+
 PRISM_STATE = None
 
 def init(flask_app, config):
@@ -31,7 +32,7 @@ def flask():
 	return PRISM_STATE.flask()
 
 def plugin_manager():
-	if PRISM_STATE.plugin_manager == None:
+	if PRISM_STATE.plugin_manager is None:
 		PRISM_STATE.plugin_manager = PluginManager(PRISM_STATE.config)
 		PRISM_STATE.plugin_manager.init()
 	return PRISM_STATE.plugin_manager
@@ -54,7 +55,7 @@ class Prism:
 		""" Returns the plugin manager instance """
 		return self.plugin_manager
 
-	#User functions
+	# User functions
 	def user(self):
 		""" Returns the user object if they're logged in, otherwise None """
 		from flask import g
@@ -72,7 +73,11 @@ class Prism:
 	# Returns true if login was successful
 	def login(self, username, password):
 		""" Attempt to log the user in if the username and password are correct """
-		return self.config['username'] == username and crypt_verify(password, self.config['password'])
+		if self.config['username'] != username:
+			return False
+		if crypt_verify(password, self.config['password']):
+			return False
+		return True
 
 	# Log the user out
 	def logout(self):
@@ -87,8 +92,8 @@ class Prism:
 
 class PluginManager:
 	def __init__(self, config):
-		self.available_plugins = { }
-		self.plugins = { }
+		self.available_plugins = {}
+		self.plugins = {}
 
 		# Holds the list of enabled plugins
 		self.enabled_plugins = config['enabled_plugins']
@@ -171,7 +176,7 @@ class PluginManager:
 				version = None
 				for i in plugin_info['version']:
 					if isinstance(i, int):
-						if version == None:
+						if version is None:
 							version = str(i)
 						else:
 							version += '.' + str(i)
@@ -189,7 +194,7 @@ class PluginManager:
 		poof('Sorting dependencies')
 		for plugin_id, plugin_info in self.available_plugins.items():
 			if not plugin_info['_is_core']:
-				if not 'dependencies' in plugin_info:
+				if 'dependencies' not in plugin_info:
 					continue
 
 				if 'binary' in plugin_info['dependencies']:
@@ -277,7 +282,7 @@ class PluginManager:
 		for name, obj in self.get_classes(module, api.view.BaseView):
 			module_views.append(obj)
 
-		if plugin == None:
+		if plugin is None:
 			output('Error: Invalid plugin in plugins folder. Offender: %s' % plugin_id)
 			return False
 
@@ -287,9 +292,9 @@ class PluginManager:
 	def _init_plugin(self, plugin):
 		"""
 		Initializes a plugin:
-		   1. Runs the plugin's init() function.
-		   2. Saves the config
-		   3. Loads the plugin's endpoints into flask
+			1. Runs the plugin's init() function.
+			2. Saves the config
+			3. Loads the plugin's endpoints into flask
 		"""
 		poof('Starting %s v%s' % (plugin.name, plugin.version))
 		plugin.init(PRISM_STATE)
@@ -307,13 +312,18 @@ class PluginManager:
 				blueprint_name += view.endpoint.replace('/', '.')
 
 			# Create the blueprint in flask
-			view._blueprint = Blueprint(blueprint_name, plugin.plugin_id, template_folder='templates')
+			view._blueprint = Blueprint(blueprint_name,
+										plugin.plugin_id,
+										template_folder='templates')
 
 			if hasattr(view, 'menu'):
 				has_menus = True
 				with flask().app_context():
 					item = current_menu.submenu(blueprint_name)
-					item.register(blueprint_name + '.index', view.menu['title'], view.menu['order'], icon=view.menu['icon'])
+					item.register(blueprint_name + '.index',
+									view.menu['title'],
+									view.menu['order'],
+									icon=view.menu['icon'])
 
 			for func_name in dir(view):
 				# Ignore any non-user-defined methods
@@ -352,7 +362,10 @@ class PluginManager:
 					has_menus = True
 					with flask().app_context():
 						item = current_menu.submenu(blueprint_name + '.' + endpoint_id)
-						item.register(blueprint_name + '.' + endpoint_id, func.menu['title'], func.menu['order'], icon=func.menu['icon'])
+						item.register(blueprint_name + '.' + endpoint_id,
+										func.menu['title'],
+										func.menu['order'],
+										icon=func.menu['icon'])
 
 				for route in func_routes:
 					if 'endpoint' not in route:
@@ -373,22 +386,27 @@ class PluginManager:
 								pass
 
 					view._blueprint.add_url_rule(route['endpoint'],
-												endpoint=endpoint_id,
-												methods=route['http_methods'],
-												view_func=view_func_wrapper,
-												defaults=route['defaults'])
+													endpoint=endpoint_id,
+													methods=route['http_methods'],
+													view_func=view_func_wrapper,
+													defaults=route['defaults'])
 
-			flask().register_blueprint(view._blueprint, url_prefix='/%s' % blueprint_name.replace('.', '/'))
+			flask().register_blueprint(view._blueprint, url_prefix='/' +
+																blueprint_name.replace('.', '/'))
 
 		if has_menus:
 			with flask().app_context():
 				item = current_menu.submenu(plugin._endpoint)
-				item.register(plugin._endpoint + '.index', plugin.name_display, plugin.order, icon=plugin.menu_icon)
+				item.register(plugin._endpoint + '.index',
+								plugin.name_display,
+								plugin.order,
+								icon=plugin.menu_icon)
 
 		paaf()
 
 	def func_wrapper(self, func):
-		""" Wraps the route return function. This allows us to do fun things with the return value :D """
+		""" Wraps the route return function. This allows us
+		to do fun things with the return value :D """
 		def func_wrapper(*args, **kwargs):
 			if request.method != 'GET':
 				obj = func(request, *args, **kwargs)
@@ -397,13 +415,13 @@ class PluginManager:
 
 			# from flask import request, redirect, url_for, render_template
 			if isinstance(obj, tuple):
-				page_args = { }
+				page_args = {}
 				if len(obj) > 1:
 					page_args = obj[1]
 
 				if obj[0].endswith('.html'):
 					return render_template(obj[0], **page_args)
-				elif get_url_for(obj[0]) != None:
+				elif get_url_for(obj[0]) is not None:
 					return redirect(get_url_for(obj[0], **page_args))
 				elif len(obj) > 1:
 					if obj[0] == 'redirect':
@@ -411,11 +429,12 @@ class PluginManager:
 					elif obj[0] == 'abort':
 						abort(obj[1])
 					elif obj[0] == 'error':
-						return redirect(url_for('core.error', error_json=base64.b64encode(json.dumps(page_args).encode('utf-8'))))
+						error_json = base64.b64encode(json.dumps(page_args).encode('utf-8'))
+						return redirect(url_for('core.error', error_json=error_json))
 			elif isinstance(obj, str):
 				if obj.endswith('.html'):
 					return render_template(obj)
-				elif get_url_for(obj) != None:
+				elif get_url_for(obj) is not None:
 					return redirect(get_url_for(obj))
 			elif isinstance(obj, dict):
 				return json.dumps(obj)
@@ -425,45 +444,47 @@ class PluginManager:
 
 	def get_defaults(self, func):
 		""" Returns the default values for the route """
-		defaults = { }
+		defaults = {}
 		if hasattr(func, 'defaults'):
 			defaults = func.defaults
-		elif func.__defaults__ != None:
+		elif func.__defaults__ is not None:
 			defaults = self.get_default_args(func)
 		return defaults
 
 	def get_default_args(self, func):
-		""" Returns a dictionary of arg_name: default_values for the input function """
+		""" Returns a dictionary of arg_name: default_values
+		for the input function """
 		args, varargs, keywords, defaults = inspect.getargspec(func)
 		return dict(zip(args[-len(defaults):], defaults))
 
 	def get_http_methods(self, func):
 		""" Returns the HTTP methods for the route """
-		http_methods = [ 'GET' ]
+		http_methods = ['GET']
 		# If the http methods have been specified in the @route decorator
 		if hasattr(func, 'http_methods'):
 			http_methods = func.http_methods
 		# If the function is called an http method
-		elif func.__name__ in [ 'get', 'post', 'put', 'delete' ]:
-			http_methods = [ func.__name__.upper() ];
+		elif func.__name__ in ['get', 'post', 'put', 'delete']:
+			http_methods = [func.__name__.upper()]
 		return http_methods
 
 	def get_http_endpoint(self, func):
 		""" Returns the URL endpoint that the route uses for access """
-		endpoint_http = '/%s' % func.__name__
+		endpoint_http = '/' + func.__name__
 		# If the function is named index
 		if endpoint_http == '/index':
 			endpoint_http = '/'
 		# If an endpoint has been specified in the @route decorator
 		elif hasattr(func, 'endpoint'):
 			endpoint_http = func.endpoint
-		elif func.__name__ in [ 'get', 'post', 'put', 'delete' ]:
+		elif func.__name__ in ['get', 'post', 'put', 'delete']:
 			endpoint_http = '/'
 		return endpoint_http
 
 # Utility functions
 def public_endpoint(function):
-	""" Use as a decorator to allow a page to be accessed without being logged in """
+	""" Use as a decorator to allow a page to
+	be accessed without being logged in """
 	function.is_public = True
 	return function
 
@@ -476,7 +497,8 @@ def get_url_for(url, **args):
 
 def restart():
 	""" Safely restart prism """
-	import psutil, logging
+	import psutil
+	import logging
 
 	try:
 		p = psutil.Process(os.getpid())
@@ -523,12 +545,16 @@ def get_input(string, default=None, allow_empty=True):
 
 def generate_random_string(length):
 	""" Returns a string of random characters of size "length" """
-	import random, string
+	import random
+	import string
 	return ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(length))
 
 def is_package_installed(id):
-	""" Returns true of the linux system has a binary installed under the name "id" """
-	output = os_command('rpm -qa | grep %s' % id, 'dpkg -list | grep %s' % id, 'pkg_info | grep %s' % id)
+	""" Returns true of the linux system has a
+	binary installed under the name "id" """
+	output = os_command('rpm -qa | grep %s' % id,
+						'dpkg -list | grep %s' % id,
+						'pkg_info | grep %s' % id)
 	return (len(output) > 0)
 
 def os_command(redhat, debian, bsd):

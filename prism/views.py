@@ -30,7 +30,7 @@ def inject_things():
 	title = None
 
 	checked_menu = current_menu.active_item
-	if checked_menu != None:
+	if checked_menu is not None:
 		while(checked_menu.has_active_child()):
 			for child in checked_menu.children:
 				if child.active:

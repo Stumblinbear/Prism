@@ -30,7 +30,7 @@ PRISM_CONFIG = {
 def load_config(path):
 	# Load config
 	if not os.path.exists(path):
-		return { }
+		return {}
 	return json.loads(open(path).read())
 
 def save_config(path, config):
@@ -57,7 +57,8 @@ def import_folder(path):
 		sys.path.append(path)
 
 def init(pid):
-	global PANEL_PID, PRISM_PATH, CORE_PLUGINS_PATH, PLUGINS_PATH, TMP_PATH, CONFIG_FOLDER, CONFIG_FILE, CONFIG_FOLDER_PLUGINS, PRISM_CONFIG
+	global PANEL_PID, PRISM_PATH, CORE_PLUGINS_PATH, PLUGINS_PATH, TMP_PATH,
+			CONFIG_FOLDER, CONFIG_FILE, CONFIG_FOLDER_PLUGINS, PRISM_CONFIG
 
 	PANEL_PID = pid
 	PRISM_PATH = os.path.dirname(os.path.realpath(__file__))

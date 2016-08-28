@@ -1,15 +1,17 @@
 from api.view import BaseView, route, menu
 
-import prism, settings
+import prism
+import settings
+
 
 class DashboardView(BaseView):
     @menu('Home', icon='home', order=0)
     def home(self):
-        return ('dashboard.html', { 'widgets': prism.get_plugin('prism_dashboard').get_widgets() })
+        return ('dashboard.html', {'widgets': prism.get_plugin('prism_dashboard').get_widgets()})
 
     @route('/home/edit')
     def edit(self):
-        return ('dashboard_edit.html', { 'widgets': prism.get_plugin('prism_dashboard').get_widgets(all=True) })
+        return ('dashboard_edit.html', {'widgets': prism.get_plugin('prism_dashboard').get_widgets(all=True)})
 
     @route('/home/edit')
     def post(self, request):
@@ -41,20 +43,20 @@ class PluginsView(BaseView):
 
     @menu('Installed Plugins', icon='square', order=1)
     def list(self):
-        return ('plugins/list.html', { 'plugins': prism.plugin_manager().get_sorted_plugins() })
+        return ('plugins/list.html', {'plugins': prism.plugin_manager().get_sorted_plugins()})
 
     @route('/list', methods=['POST'])
     def post(self, request):
         id = request.form['id']
         action = request.form['action']
-        if id != None and action != None:
+        if id is not None and action is not None:
             if action == 'enable':
-                if not id in settings.PRISM_CONFIG['enabled_plugins']:
+                if id not in settings.PRISM_CONFIG['enabled_plugins']:
                     settings.PRISM_CONFIG['enabled_plugins'].append(id)
             elif action == 'disable':
                 if id in settings.PRISM_CONFIG['enabled_plugins']:
                     settings.PRISM_CONFIG['enabled_plugins'].remove(id)
-            return ('core.restart', { 'return_url': 'dashboard.plugins.list' })
+            return ('core.restart', {'return_url': 'dashboard.plugins.list'})
         return ('dashboard.plugins.list')
 
     @menu('Install Plugins', icon='cube', order=2)

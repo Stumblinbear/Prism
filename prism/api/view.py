@@ -1,6 +1,6 @@
 class BaseView(object):
 	def __init__(self, endpoint='/'):
-		if endpoint == None:
+		if endpoint is None:
 			exit('Fatal Error: Endpoint cannot be of type None! Offender: %s' % self)
 		if not endpoint.startswith('/'):
 			exit('Fatal Error: Endpoints must begin with a leading slash! Offender: %s' % self)
@@ -12,7 +12,7 @@ class BaseView(object):
 
 def route(endpoint=None, methods=None, defaults=None):
 	def func_wrapper(func):
-		route = { }
+		route = {}
 
 		if endpoint is not None:
 			route['endpoint'] = endpoint
@@ -36,6 +36,6 @@ def ignore():
 
 def menu(title, icon=None, order=999):
 	def obj_wrapper(obj):
-		obj.menu = { 'title': title, 'icon': icon, 'order': order }
+		obj.menu = {'title': title, 'icon': icon, 'order': order}
 		return obj
 	return obj_wrapper

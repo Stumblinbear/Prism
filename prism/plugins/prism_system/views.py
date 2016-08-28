@@ -18,7 +18,7 @@ class SystemView(BaseView):
 
     @menu('Users', icon='users')
     def users(self):
-        return ('users.html', { 'user_info': get_user_info() })
+        return ('users.html', {'user_info': get_user_info()})
 
     @menu('Processes', icon='cog')
     @route('/processes')
@@ -33,7 +33,8 @@ class SystemView(BaseView):
                                     'cpu_count': cpu_count[0],
                                     'cpu_count_logical': cpu_count[1],
                                     'ram': psutil.virtual_memory()[0],
-                                    'processes': get_processes(show, lambda x: x['memory_percent'] + x['cpu_percent'])
+                                    'processes': get_processes(show,
+                                                lambda x: x['memory_percent'] + x['cpu_percent'])
                                 })
 
     @route('/processes')
@@ -55,11 +56,11 @@ class SystemView(BaseView):
         except:
             return ('system.processes')
 
-        process = p.as_dict(attrs=[ 'pid', 'name', 'cwd', 'exe', 'username', 'nice',
+        process = p.as_dict(attrs=['pid', 'name', 'cwd', 'exe', 'username', 'nice',
                                    'cpu_percent', 'cpu_affinity', 'memory_full_info',
                                    'memory_percent', 'status', 'cpu_times', 'threads',
                                    'io_counters', 'open_files', 'create_time', 'cmdline',
-                                   'connections' ])
+                                   'connections'])
         process['connections'] = p.connections(kind='all')
 
         cpu_count = get_cpu_count()
@@ -78,25 +79,25 @@ class SystemView(BaseView):
         try:
             p = psutil.Process(process_id)
         except:
-            return { }
-        process = p.as_dict(attrs=[ 'cpu_percent', 'memory_percent' ])
-        return { 'cpu': process['cpu_percent'], 'memory': process['memory_percent'] }
+            return {}
+        process = p.as_dict(attrs=['cpu_percent', 'memory_percent'])
+        return {'cpu': process['cpu_percent'], 'memory': process['memory_percent']}
 
     @menu('Disk Manager', icon='circle-o')
     def disk(self):
-    	return ('disk.html', { 'file_systems': get_file_systems() })
+        return ('disk.html', {'file_systems': get_file_systems()})
 
     @menu('Network Monitor', icon='exchange')
     def network(self):
-    	return ('network.html', { 'networks': get_networks() })
+        return ('network.html', {'networks': get_networks()})
 
     @menu('Hosts', icon='cubes')
     def hosts(self):
-    	return ('hosts.html', { 'hosts': get_hosts() })
+        return ('hosts.html', {'hosts': get_hosts()})
 
     @menu('Cron Jobs', icon='cogs', order=3)
     def cron_jobs(self):
-        return ('cron_jobs.html', { 'crontabs': CronTabs(), 'crontab_locations': get_cron_locations() })
+        return ('cron_jobs.html', {'crontabs': CronTabs(), 'locations': get_cron_locations()})
 
     @route('/cron_jobs')
     def post(self, request):
@@ -113,66 +114,75 @@ class SystemView(BaseView):
         else:
             tabfile = request.form['tabfile']
             obj = parse_cron_widget(CronTab(tabfile=tabfile))
-            if obj != None:
+            if obj is not None:
                 return obj
 
     @route('/cron_jobs/edit/<int:crontab_id>/<int:cron_id>')
     def cron_job_edit(self, crontab_id, cron_id):
-    	try:
-    		return ('cron_job_edit.html', { 'cron': CronTabs()[crontab_id - 1].crons[cron_id - 1] })
-    	except:
-    		return ('system.cron_jobs')
+        try:
+            return ('cron_job_edit.html', {'cron': CronTabs()[crontab_id - 1].crons[cron_id - 1]})
+        except:
+            return ('system.cron_jobs')
 
     @route('/cron_jobs/edit/<int:crontab_id>/<int:cron_id>')
     def post(self, request, crontab_id, cron_id):
         obj = parse_cron_widget(CronTabs()[crontab_id - 1], cron_id)
-        if obj != None:
+        if obj is not None:
             return obj
         return ('system.cron_jobs')
 
 @memorize(320)
 def get_cron_locations():
-	locs = []
-	for thing,loc in crontabs.KNOWN_LOCATIONS:
-		if os.path.isfile(loc):
-			locs.append(loc)
-	return locs
+    locs = []
+    for thing, loc in crontabs.KNOWN_LOCATIONS:
+        if os.path.isfile(loc):
+            locs.append(loc)
+    return locs
 
 @memorize(60)
 def get_user_info():
-	user_info = { 'groups': {}, 'users': {} }
-	with open("/etc/group", "r") as f:
-		for line in f.readlines():
-			info = line.replace('\n', ' ').replace('\r', '').split(':')
-			user_info['groups'][info[2]] = { 'name': info[0], 'passwd': info[1], 'users': info[3] }
-	with open("/etc/passwd", "r") as f:
-		for line in f.readlines():
-			info = line.replace('\n', ' ').replace('\r', '').split(':')
-			user_info['users'][info[2]] = { 'name': info[0], 'passwd': info[1], 'group_id': info[3], 'info': info[4], 'home': info[5], 'shell': info[6] }
-	return user_info
+    user_info = {'groups': {}, 'users': {}}
+    with open("/etc/group", "r") as f:
+        for line in f.readlines():
+            info = line.replace('\n', ' ').replace('\r', '').split(':')
+            user_info['groups'][info[2]] = {'name': info[0], 'passwd': info[1], 'users': info[3]}
+    with open("/etc/passwd", "r") as f:
+        for line in f.readlines():
+            info = line.replace('\n', ' ').replace('\r', '').split(':')
+            user_info['users'][info[2]] = {'name': info[0], 'passwd': info[1],
+                                            'group_id': info[3], 'info': info[4],
+                                            'home': info[5], 'shell': info[6]}
+    return user_info
 
 @memorize(120)
 def get_cpu_count():
-	cpu_count = psutil.cpu_count(logical=False)
-	return (cpu_count, psutil.cpu_count(logical=True) - cpu_count)
+    cpu_count = psutil.cpu_count(logical=False)
+    return (cpu_count, psutil.cpu_count(logical=True) - cpu_count)
 
 @memorize(30)
 def get_processes(show=False, sort=None):
-	process_list = []
-	for proc in psutil.process_iter():
-		if not show and ('rcuob/' in proc.name() or 'rcuos/' in proc.name() or 'scsi_' in proc.name() or 'xfs-' in proc.name() or 'xfs_' in proc.name() or 'kworker/' in proc.name()):
-			continue
-		try:
-			process = proc.as_dict(attrs=[ 'pid', 'name', 'cwd', 'exe', 'username', 'nice', 'num_threads', 'cpu_percent', 'cpu_affinity', 'memory_full_info', 'memory_percent' ])
-			#process['net_connections'] = proc.connections(kind='all')
-			process_list.append(process)
-		except:
-			continue
+    process_list = []
+    for proc in psutil.process_iter():
+        if not show and ('rcuob/' in proc.name() or
+                        'rcuos/' in proc.name() or
+                        'scsi_' in proc.name() or
+                        'xfs-' in proc.name() or
+                        'xfs_' in proc.name() or
+                        'kworker/' in proc.name()):
+            continue
+        try:
+            process = proc.as_dict(attrs=['pid', 'name', 'cwd', 'exe', 'username', 'nice',
+                                            'num_threads', 'cpu_percent', 'cpu_affinity',
+                                            'memory_full_info', 'memory_percent'])
+            # process['net_connections'] = proc.connections(kind='all')
+            process_list.append(process)
+        except:
+            continue
 
-	if sort != None:
-		process_list = sorted(process_list, key=sort, reverse=True)
+    if sort is not None:
+        process_list = sorted(process_list, key=sort, reverse=True)
 
-	return process_list
+    return process_list
 
 _mount_options = {}
 _mount_options['async'] = 'Allows the asynchronous input/output operations on the file system.'
@@ -223,77 +233,79 @@ _mount_options['wsync'] = 'When specified, all filesystem namespace operations a
 
 @memorize(30)
 def get_file_systems():
-	systems = psutil.disk_partitions()
+    systems = psutil.disk_partitions()
 
-	for i in range(0, len(systems)):
-		system = systems[i]
+    for i in range(0, len(systems)):
+        system = systems[i]
 
-		system_options = {}
-		for option in system.opts.split(','):
-			if option in _mount_options:
-				system_options[option] = _mount_options[option]
-			else:
-				system_options[option] = 'No known information on this option.'
+        system_options = {}
+        for option in system.opts.split(','):
+            if option in _mount_options:
+                system_options[option] = _mount_options[option]
+            else:
+                system_options[option] = 'No known information on this option.'
 
-		systems[i] = { 'device': system.device, 'mount_point': system.mountpoint, 'fs_type': system.fstype, 'options': system_options, 'usage': psutil.disk_usage(system.mountpoint) }
+        systems[i] = {'device': system.device, 'mount_point': system.mountpoint,
+                        'fs_type': system.fstype, 'options': system_options,
+                        'usage': psutil.disk_usage(system.mountpoint)}
 
-	return systems
+    return systems
 
 @memorize(30)
 def get_networks():
-	return psutil.net_io_counters(pernic=True)
+    return psutil.net_io_counters(pernic=True)
 
 @memorize(5)
 def get_hosts():
-	hosts = {}
-	with open('/etc/hosts') as f:
-		for line in f.readlines():
-			line = line.replace('\n', ' ').replace('\r', '')
-			info = ' '.join(line.split()).split(' ')
-			hosts[info[0]] = { 'hostname': info[1], 'aliases': info[2:] }
-	return hosts
+    hosts = {}
+    with open('/etc/hosts') as f:
+        for line in f.readlines():
+            line = line.replace('\n', ' ').replace('\r', '')
+            info = ' '.join(line.split()).split(' ')
+            hosts[info[0]] = {'hostname': info[1], 'aliases': info[2:]}
+    return hosts
 
 def parse_cron_widget(request, crontab_obj, cron_id=-1):
-	editing = cron_id != -1
+    editing = cron_id != -1
 
-	minute = request.form['minute']
-	if minute == None:
-		minute = '*'
+    minute = request.form['minute']
+    if minute is None:
+        minute = '*'
 
-	hour = request.form['hour']
-	if hour == None:
-		hour = '*'
+    hour = request.form['hour']
+    if hour is None:
+        hour = '*'
 
-	day = request.form['day']
-	if day == None:
-		day = '*'
+    day = request.form['day']
+    if day is None:
+        day = '*'
 
-	month = request.form['month']
-	if month == None:
-		month = '*'
+    month = request.form['month']
+    if month is None:
+        month = '*'
 
-	weekday = request.form['weekday']
-	if weekday == None:
-		weekday = '*'
+    weekday = request.form['weekday']
+    if weekday is None:
+        weekday = '*'
 
-	year = request.form['year']
-	if year == None:
-		year = '*'
+    year = request.form['year']
+    if year is None:
+        year = '*'
 
-	user = request.form['user']
-	if user == None:
-		user = 'root'
+    user = request.form['user']
+    if user is None:
+        user = 'root'
 
-	command = request.form['command']
-	if command != None:
-		if not editing:
-			job = crontab_obj.new(user=user, command=command)
-		else:
-			job = crontab_obj.crons[cron_id - 1]
-			job.set_command(command)
-		job.setall(minute, hour, day, month, weekday, year)
-		print(job.render())
-		crontab_obj.write()
+    command = request.form['command']
+    if command is not None:
+        if not editing:
+            job = crontab_obj.new(user=user, command=command)
+        else:
+            job = crontab_obj.crons[cron_id - 1]
+            job.set_command(command)
+        job.setall(minute, hour, day, month, weekday, year)
+        print(job.render())
+        crontab_obj.write()
 
-		if not editing:
-			return ('core.restart', { 'return_url': 'system.cron_jobs' })
+        if not editing:
+            return ('core.restart', {'return_url': 'system.cron_jobs'})

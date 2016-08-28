@@ -1,14 +1,16 @@
 from flask import render_template
-
 from api import BasePlugin
+
+from .views import *
+
 
 class DashboardPlugin(BasePlugin):
 	def __init__(self):
-		BasePlugin.__init__(self, display_name = 'Dashboard', order = 0)
+		BasePlugin.__init__(self, display_name='Dashboard', order=0)
 
 	def init(self, prism_state):
-		self._available_widgets = { }
-		self._widgets = self.config('widgets', { })
+		self._available_widgets = {}
+		self._widgets = self.config('widgets', {})
 
 		# Search the plugins for Widget classes
 		for plugin_id, plugin in prism_state.plugin_manager.plugins.items():
@@ -18,7 +20,7 @@ class DashboardPlugin(BasePlugin):
 				self._available_widgets[widget.widget_id] = widget
 
 				if widget.widget_id not in self._widgets:
-					self._widgets[widget.widget_id] = { 'shown': True, 'order': len(self._available_widgets) }
+					self._widgets[widget.widget_id] = {'shown': True, 'order': len(self._available_widgets)}
 
 		prism.output('Registered %s widgets' % len(self._available_widgets))
 		prism.flask().jinja_env.globals["render_widget"] = self.render_widget
@@ -37,11 +39,13 @@ class DashboardPlugin(BasePlugin):
 
 		if all:
 			for widget_id, widget_config in self._widgets.items():
-				ret_widgets.insert(widget_config['order'], (widget_id, self._available_widgets[widget_id], widget_config))
+				ret_widgets.insert(widget_config['order'],
+									(widget_id, self._available_widgets[widget_id], widget_config))
 		else:
 			for widget_id, widget_config in self._widgets.items():
 				if widget_config['shown']:
-					ret_widgets.insert(widget_config['order'], (widget_id, self._available_widgets[widget_id]))
+					ret_widgets.insert(widget_config['order'],
+										(widget_id, self._available_widgets[widget_id]))
 
 		return ret_widgets
 
@@ -56,7 +60,7 @@ class Widget(object):
 		obj = self.render()
 
 		if isinstance(obj, tuple):
-			page_args = { }
+			page_args = {}
 			if len(obj) > 1:
 				page_args = obj[1]
 
@@ -66,5 +70,3 @@ class Widget(object):
 
 	def render(self):
 		pass
-
-from .views import *

@@ -39,7 +39,7 @@ def login():
 	form = LoginForm(request.form)
 	if request.method == 'POST' and form.validate():
 		if prism.get().login(form.username.data, form.password.data):
-			user = User({ 'id': form.username.data })
+			user = User({'id': form.username.data})
 
 			flask_login.login_user(user)
 
@@ -54,7 +54,7 @@ def logout():
 # Loads the user's data from the database into our user object
 @login_manager.user_loader
 def load_user(username):
-	user = User({ 'id': username })
+	user = User({'id': username})
 	return user
 
 # When an unauthorized user attempts to go to a user-only page, send them back to the login page

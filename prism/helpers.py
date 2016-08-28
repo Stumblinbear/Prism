@@ -12,7 +12,11 @@ import prism
 flask_app = prism.flask()
 
 def next_color(i):
-	colors = [ '#337AB7', '#00A65A', '#F39C12', '#DD4B39', '#4682B4', '#20B2AA', '#FFD700', '#00FA9A', '#7B68EE', '#FF00FF', '#20B2AA', '#BC8F8F', '#8B008B', '#008000', '#000080' ]
+	colors = ['#337AB7', '#00A65A', '#F39C12',
+				'#DD4B39', '#4682B4', '#20B2AA',
+				'#FFD700', '#00FA9A', '#7B68EE',
+				'#FF00FF', '#20B2AA', '#BC8F8F',
+				'#8B008B', '#008000', '#000080']
 	return colors[i % len(colors)]
 flask_app.jinja_env.globals["next_color"] = next_color
 

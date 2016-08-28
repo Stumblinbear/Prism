@@ -40,6 +40,7 @@ class UsageWidget(Widget):
 
 	_last_check = 0
 	_previous_network = 0
+
 	@memorize(10)
 	def get_network(self):
 		usage = 0
@@ -83,7 +84,7 @@ class InfoWidget(Widget):
 
 		with open('/proc/uptime', 'r') as f:
 			uptime_seconds = float(f.readline().split()[0])
-			uptime_string = str(timedelta(seconds = uptime_seconds))
+			uptime_string = str(timedelta(seconds=uptime_seconds))
 
 		return uptime_string
 

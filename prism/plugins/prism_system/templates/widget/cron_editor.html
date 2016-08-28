@@ -12,7 +12,7 @@
 						{% if not cron is defined %}
 						<div class="col-sm-2 text-center">
 							<select class="form-control" name="tabfile">
-								{%- for file in crontab_locations -%}
+								{%- for file in locations -%}
 									<option value="{{ file }}">{{ file }}</option>
 								{%- endfor -%}
 							</select>
@@ -112,10 +112,10 @@
 			else
 				parse += $(this).val() + ' ';
 		});
-		
+
 		var cron = later.parse.cron(parse, false);
 		var results = later.schedule(cron).next(8);
-		
+
 		var table = $(this).find('table.times tbody');
 		table.html('');
 		for(var i = 0; i < results.length; i++)

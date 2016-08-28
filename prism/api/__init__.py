@@ -3,6 +3,7 @@ import os
 import prism
 import settings
 
+
 # Dependency: (binary/library, name)
 # 	After load: (binary/library, name, is satisfied)
 class BasePlugin(object):
@@ -19,18 +20,21 @@ class BasePlugin(object):
 
 	@property
 	def config(self):
-		if self._config == None:
+		if self._config is None:
 			self._config = PluginConfig(settings.CONFIG_FOLDER_PLUGINS, '%s.json' % self.plugin_id)
 		return self._config
 
 	@property
-	def plugin_id(self): return self._info['_id']
+	def plugin_id(self):
+		return self._info['_id']
 
 	@property
-	def version(self): return self._info['version']
+	def version(self):
+		return self._info['version']
 
 	@property
-	def name(self): return self._info['name']
+	def name(self):
+		return self._info['name']
 
 	@property
 	def name_display(self):
@@ -39,19 +43,24 @@ class BasePlugin(object):
 		return self._info['name']
 
 	@property
-	def description(self): return self._info['description']
+	def description(self):
+		return self._info['description']
 
 	@property
-	def dependencies(self): return self._info['_dependencies']
+	def dependencies(self):
+		return self._info['_dependencies']
 
 	@property
-	def is_core(self): return self._info['_is_core']
+	def is_core(self):
+		return self._info['_is_core']
 
 	@property
-	def is_satisfied(self): return self._info['_is_satisfied']
+	def is_satisfied(self):
+		return self._info['_is_satisfied']
 
 	@property
-	def is_enabled(self): return self._info['_is_enabled']
+	def is_enabled(self):
+		return self._info['_is_enabled']
 
 	@property
 	def plugin_icon(self):
@@ -81,7 +90,7 @@ class PluginConfig(object):
 		self.__dict__.update(settings.load_config(self._path))
 
 	def save(self):
-		config = dict([ (k, v) for k, v in self.__dict__.items() if not k.startswith('_') ])
+		config = dict([(k, v) for k, v in self.__dict__.items() if not k.startswith('_')])
 		settings.save_config(self._path, config)
 
 	def __getitem__(self, key):
