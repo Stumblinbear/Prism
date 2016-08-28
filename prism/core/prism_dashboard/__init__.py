@@ -35,7 +35,7 @@ class DashboardPlugin(BasePlugin):
 		return self._available_widgets[widget_id]
 
 	def render_widget(self, widget_id):
-		return self._available_widgets[widget_id]._do_render()
+		return self._available_widgets[widget_id].do_render()
 
 	def is_widget_shown(self, id):
 		return self._widgets[id].shown
