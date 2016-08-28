@@ -4,15 +4,7 @@ from api import BasePlugin
 
 class DashboardPlugin(BasePlugin):
 	def __init__(self):
-		BasePlugin.__init__(self,
-					plugin_id = 'prism_dashboard',
-					name = 'Dashboard',
-					version = [ 1, 0, 0, 'indev' ],
-					description = 'Handles Prism\'s main dashboard view as well as plugin management.',
-					author = 'Stumblinbear',
-					homepage = 'http://prismcp.org/',
-
-					icon = 'dashboard', order = 0)
+		BasePlugin.__init__(self, display_name = 'Dashboard', order = 0)
 
 	def init(self, prism_state):
 		self._available_widgets = { }

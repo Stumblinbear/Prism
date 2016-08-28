@@ -87,12 +87,9 @@ class Prism:
 
 class PluginManager:
 	def __init__(self, config):
+		self.available_plugins = { }
 		self.plugins = { }
 
-		# Holds the list of core plugin ids
-		self.core_plugins = list()
-		# Holds the list of plugins with unsatisfied dependencies
-		self.unsatisfied_plugins = list()
 		# Holds the list of enabled plugins
 		self.enabled_plugins = config['enabled_plugins']
 
@@ -102,9 +99,22 @@ class PluginManager:
 		self._search_plugins(settings.PLUGINS_PATH, False)
 		paaf()
 
+		self._sort_dependencies()
+
 		poof('Loading')
 		self._load_plugins()
 		paaf()
+
+	def get_sorted_plugins(self):
+		plugins = list()
+
+		for plugin_id, plugin in self.plugins.items():
+			if plugin.is_core:
+				plugins.insert(0, plugin)
+			else:
+				plugins.append(plugin)
+
+		return plugins
 
 	def get_plugin(self, id):
 		""" Get a plugin, loaded or not """
@@ -112,14 +122,14 @@ class PluginManager:
 			return self.plugins[id]
 		return None
 
-	def is_satisfied(self, id):
-		""" Returns true if the plugin's dependencies are satisfied """
-		return id not in self.unsatisfied_plugins
-
 	def is_enabled(self, id):
 		""" Returns true if and only if all the plugin's dependencies are satisfied and
 		it's set it enabled """
-		return self.is_satisfied(id) and id in self.enabled_plugins
+		return id in self.enabled_plugins
+
+	def is_satisfied(self, id):
+		""" Returns true if the plugin's dependencies are satisfied """
+		return self.plugins[id].is_satisfied
 
 	def get_classes(self, module, search_class):
 		classes = list()
@@ -129,6 +139,11 @@ class PluginManager:
 				if obj != search_class and issubclass(obj, search_class):
 					classes.append((name, obj))
 		return classes
+
+	def _insert_dummy_plugin(self, plugin_info):
+		dummy = api.BasePlugin()
+		dummy._info = plugin_info
+		self.plugins[dummy.plugin_id] = dummy
 
 	def _search_plugins(self, path, is_core):
 		""" Searches for plugins in a specified folder """
@@ -142,100 +157,132 @@ class PluginManager:
 		for plugin_id in os.listdir(path):
 			base_folder = os.path.join(path, plugin_id)
 			if not os.path.isfile(base_folder):
-				module = __import__(plugin_id, globals(), locals())
-
-				plugin = None
-				module_views = list()
-
-				for name, obj in self.get_classes(module, api.BasePlugin):
-					plugin = obj()
-					plugin._module = module
-					plugin._is_core = False
-					plugin._is_satisfied = True
-					plugin._is_enabled = False
-
-					if plugin_id != plugin.plugin_id:
-						output('Error: Plugin ID <-> module ID mismatch. Offender: %s != %s' % (plugin.plugin_id, plugin_id))
-						continue
-
-					plugin._endpoint = plugin_id
-					if plugin._endpoint.startswith('prism_'):
-						plugin._endpoint = plugin._endpoint.split('_', 2)[1]
-
-					self.plugins[plugin.plugin_id] = plugin
-
-					if is_core:
-						self.core_plugins.append(plugin.plugin_id)
-
-				for name, obj in self.get_classes(module, api.view.BaseView):
-					module_views.append(obj)
-
-				if plugin == None:
-					output('Error: Invalid plugin in plugins folder. Offender: %s' % plugin_id)
+				if not os.path.exists(os.path.join(base_folder, 'plugin.json')):
+					output('Plugin does not have a plugin.json file. Offender: %s' % plugin_id)
 					continue
 
-				plugin._module_views = module_views
+				plugin_info = settings.load_config(os.path.join(base_folder, 'plugin.json'))
+				plugin_info['_id'] = plugin_id
+				plugin_info['_is_core'] = is_core
+				plugin_info['_is_satisfied'] = True
+				plugin_info['_is_enabled'] = False
 
+				# Make the version readable
+				version = None
+				for i in plugin_info['version']:
+					if isinstance(i, int):
+						if version == None:
+							version = str(i)
+						else:
+							version += '.' + str(i)
+					else:
+						version += '-' + i
+				plugin_info['_version'] = plugin_info['version']
+				plugin_info['version'] = version
+
+				plugin_info['_dependencies'] = list()
+
+				self.available_plugins[plugin_id] = plugin_info
+
+	def _sort_dependencies(self):
+		# These will always be initialized.
+		poof('Sorting dependencies')
+		for plugin_id, plugin_info in self.available_plugins.items():
+			if not plugin_info['_is_core']:
+				if not 'dependencies' in plugin_info:
+					continue
+
+				if 'binary' in plugin_info['dependencies']:
+					for depend_name in plugin_info['dependencies']['binary']:
+						installed = is_package_installed(depend_name)
+						if not installed:
+							plugin_info['_is_satisfied'] = False
+						plugin_info['_dependencies'].append(('binary', depend_name, installed))
+
+				if 'library' in plugin_info['dependencies']:
+					for depend_name in plugin_info['dependencies']['library']:
+						installed = True
+						if not installed:
+							plugin_info['_is_satisfied'] = False
+						plugin_info['_dependencies'].append(('library', depend_name, installed))
+
+				if not plugin_info['_is_satisfied']:
+					# Create a dummy plugin container
+					self._insert_dummy_plugin(plugin_info)
+					output('Dependency unsatisfied. Offender: %s' % plugin_id)
+		paaf()
 
 	def _load_plugins(self):
-		""" Attempts to load every available plugin """
+		""" Attempts to load every enabled plugin """
+		plugins_loaded = list()
+
+		core_plugins = list()
 		plugins_additional = list()
 
+		for plugin_id, plugin_info in self.available_plugins.items():
+			if plugin_info['_is_core']:
+				core_plugins.append(plugin_info)
+			elif plugin_info['_is_satisfied']:
+				plugins_additional.append(plugin_info)
+
 		# These will always be initialized.
-		output('Initializing %s core plugin(s)' % len(self.core_plugins))
-		for plugin_id, plugin in self.plugins.items():
-			if plugin_id in self.core_plugins:
-				plugin._is_core = True
-				plugin._is_enabled = True
-				self._init_plugin(plugin)
-			else:
-				plugin._is_core = False
-				plugins_additional.append(plugin_id)
-		paaf()
-
-		if len(plugins_additional) == 0:
-			return
-
-		poof('Initializing %s additional plugin(s)' % len(plugins_additional))
-		poof('Settling dependencies')
-		# Make sure application binaries and other dependencies are loaded
-		for plugin_id in plugins_additional:
-			plugin = self.get_plugin(plugin_id)
-
-			new_dependencies = list()
-
-			plugin._is_satisfied = True
-
-			for depend_type, depend_name in plugin.dependencies:
-				# Check if packages in the linux system are installed
-				if depend_type== 'binary':
-					installed = is_package_installed(depend_name)
-					if not installed:
-						plugin._is_satisfied = False
-					new_dependencies.append((depend_type, depend_name, installed))
-
-				# Check if a python library is installed
-				elif depend_type == 'library':
-					installed = True
-					if not installed:
-						plugin._is_satisfied = False
-					new_dependencies.append((depend_type, depend_name, installed))
-				else:
-					output('Unknown dependency type: %s' % depend_type)
-
-			if not plugin._is_satisfied:
-				unsatisfied_plugins.append(plugin_id)
-				output('Dependency unsatisfied. Offender: %s' % plugin_id)
-
-			plugin.dependencies = new_dependencies
-		paaf()
-
-		# Start plugins if they're set to be enabled.
-		for plugin_id in plugins_additional:
-			if not self.is_enabled(plugin_id):
+		output('Loading %s core plugin(s)' % len(core_plugins))
+		for plugin_info in core_plugins:
+			plugin = self._import_plugin(plugin_info)
+			if not plugin:
+				output('Error: Failed to load core plugin. Offender: %s' % plugin_id)
 				continue
-			self._init_plugin(self.get_plugin(plugin_id))
+
+			plugins_loaded.append(plugin)
 		paaf()
+
+		poof('Loading %s additional plugin(s)' % len(plugins_additional))
+		# Start plugins if they're set to be enabled.
+		for plugin_info in plugins_additional:
+			if not self.is_enabled(plugin_info['_id']):
+				self._insert_dummy_plugin(plugin_info)
+				continue
+
+			plugin = self._import_plugin(plugin_info)
+			if not plugin:
+				output('Error: Failed to load additional plugin. Offender: %s' % plugin_id)
+				continue
+
+			plugins_loaded.append(plugin)
+		paaf()
+
+		poof('Initializing %s plugin(s)' % len(plugins_loaded))
+		for plugin in plugins_loaded:
+			plugin._info['_is_enabled'] = True
+			self._init_plugin(plugin)
+		paaf()
+
+	def _import_plugin(self, plugin_info):
+		module = __import__(plugin_info['_id'], globals(), locals())
+
+		plugin = None
+		module_views = list()
+
+		for name, obj in self.get_classes(module, api.BasePlugin):
+			plugin = obj()
+			plugin._module = module
+			plugin._info = plugin_info
+
+			plugin._endpoint = plugin.plugin_id
+			if plugin._endpoint.startswith('prism_'):
+				plugin._endpoint = plugin._endpoint.split('_', 2)[1]
+
+			self.plugins[plugin.plugin_id] = plugin
+
+		for name, obj in self.get_classes(module, api.view.BaseView):
+			module_views.append(obj)
+
+		if plugin == None:
+			output('Error: Invalid plugin in plugins folder. Offender: %s' % plugin_id)
+			return False
+
+		plugin._module_views = module_views
+		return plugin
 
 	def _init_plugin(self, plugin):
 		"""
@@ -244,7 +291,6 @@ class PluginManager:
 		   2. Saves the config
 		   3. Loads the plugin's endpoints into flask
 		"""
-		plugin._is_enabled = True
 		poof('Starting %s v%s' % (plugin.name, plugin.version))
 		plugin.init(PRISM_STATE)
 		plugin.config.save()
@@ -337,7 +383,7 @@ class PluginManager:
 		if has_menus:
 			with flask().app_context():
 				item = current_menu.submenu(plugin._endpoint)
-				item.register(plugin._endpoint + '.index', plugin.name, plugin.order, icon=plugin.icon)
+				item.register(plugin._endpoint + '.index', plugin.name_display, plugin.order, icon=plugin.menu_icon)
 
 		paaf()
 

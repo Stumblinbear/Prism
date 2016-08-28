@@ -1,0 +1,7 @@
+{
+	"version": [ 1, 0, 0, "indev" ],
+
+	"icon": "dashboard",
+	"name": "Prism Dashboard",
+	"description": "Handles Prism's main dashboard view as well as plugin management."
+}

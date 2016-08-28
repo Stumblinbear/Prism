@@ -6,38 +6,66 @@ import settings
 # Dependency: (binary/library, name)
 # 	After load: (binary/library, name, is satisfied)
 class BasePlugin(object):
-	def __init__(self, plugin_id, name, version, **kwargs):
-		self.plugin_id = plugin_id
-		self.name = name
-		self._version = version
-		self.description = ''
-		self.author = ''
-		self.homepage = ''
-		self.dependencies = [ ]
-
-		self.icon = 'circle-o'
+	def __init__(self, **kwargs):
+		self.display_name = None
+		self.icon = None
 		self.order = 999
 
-		self.config = PluginConfig(settings.CONFIG_FOLDER_PLUGINS, '%s.json' % plugin_id)
+		self._config = None
+		self._module = None
 
 		for k in kwargs:
 			setattr(self, k, kwargs[k])
 
-		self.version = None
-		for i in version:
-			if isinstance(i, int):
-				if self.version == None:
-					self.version = str(i)
-				else:
-					self.version += '.' + str(i)
-			else:
-				self.version += '-' + i
+	@property
+	def config(self):
+		if self._config == None:
+			self._config = PluginConfig(settings.CONFIG_FOLDER_PLUGINS, '%s.json' % self.plugin_id)
+		return self._config
 
-		if not isinstance(self.dependencies, list):
-			prism.output('Error: Dependencies must be in list format. Offender: %s' % self.plugin_id)
-		elif len(self.dependencies) > 0:
-			if not isinstance(self.dependencies[0], tuple):
-				prism.output('Error: Plugin dependencies must be in tuple format. Offender: %s' % self.plugin_id)
+	@property
+	def plugin_id(self): return self._info['_id']
+
+	@property
+	def version(self): return self._info['version']
+
+	@property
+	def name(self): return self._info['name']
+
+	@property
+	def name_display(self):
+		if self.display_name:
+			return self.display_name
+		return self._info['name']
+
+	@property
+	def description(self): return self._info['description']
+
+	@property
+	def dependencies(self): return self._info['_dependencies']
+
+	@property
+	def is_core(self): return self._info['_is_core']
+
+	@property
+	def is_satisfied(self): return self._info['_is_satisfied']
+
+	@property
+	def is_enabled(self): return self._info['_is_enabled']
+
+	@property
+	def plugin_icon(self):
+		if 'icon' not in self._info:
+			return 'circle-o'
+		return self._info['icon']
+
+	@property
+	def menu_icon(self):
+		if self.icon:
+			return icon
+		if 'icon' not in self._info:
+			return 'circle-o'
+		return self._info['icon']
 
 	# Called when the plugin is enabled.
 	def init(self, prism_state):

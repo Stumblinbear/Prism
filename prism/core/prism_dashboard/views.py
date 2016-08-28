@@ -41,8 +41,7 @@ class PluginsView(BaseView):
 
     @menu('Installed Plugins', icon='square', order=1)
     def list(self):
-        plugin_manager = prism.plugin_manager()
-        return ('plugins/list.html', { 'plugins': plugin_manager.plugins })
+        return ('plugins/list.html', { 'plugins': prism.plugin_manager().get_sorted_plugins() })
 
     @route('/list', methods=['POST'])
     def post(self, request):

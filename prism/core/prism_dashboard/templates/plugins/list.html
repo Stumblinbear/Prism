@@ -2,34 +2,35 @@
 {% block title %}Installed Plugins{% endblock %}
 {% block content %}
 <div class="panel-group" id="plugins" role="tablist" aria-multiselectable="true">
-	{% for plugin_id, plugin in plugins.items() %}
-		<div class="panel panel-{% if not plugin._is_satisfied %}danger{% elif not plugin._is_enabled %}warning{% else %}default{% endif %}">
-			<div class="panel-heading" role="tab" id="header-{{ plugin_id }}">
+	{% for plugin in plugins %}
+		<div class="panel panel-{% if not plugin.is_satisfied %}danger{% elif not plugin.is_enabled %}warning{% else %}default{% endif %}">
+			<div class="panel-heading" role="tab" id="header-{{ plugin.plugin_id }}">
 				<h4 class="panel-title">
-					<a role="button" data-toggle="collapse" data-parent="#plugins" href="#plugin-{{ plugin_id }}">
+					<i class="fa fa-{{ plugin.plugin_icon }}"></i>
+					<a role="button" data-toggle="collapse" data-parent="#plugins" href="#plugin-{{ plugin.plugin_id }}">
 						{{ plugin.name }} <small>v{{ plugin.version }}</small>
 					</a>
 					<span class="pull-right">
-						{% if plugin._is_core %}<i class="fa fa-certificate" data-toggle="tooltip" data-placement="top" title="Required"></i>{% endif %}
-						{% if not plugin._is_enabled %}<i class="fa fa-times" data-toggle="tooltip" data-placement="top" title="Disabled"></i>{% endif %}
-						{% if not plugin._is_satisfied %}<i class="fa fa-circle" data-toggle="tooltip" data-placement="top" title="Dependencies"></i>{% endif %}
+						{% if plugin.is_core %}<i class="fa fa-certificate" data-toggle="tooltip" data-placement="top" title="Required"></i>{% endif %}
+						{% if not plugin.is_enabled %}<i class="fa fa-times" data-toggle="tooltip" data-placement="top" title="Disabled"></i>{% endif %}
+						{% if not plugin.is_satisfied %}<i class="fa fa-circle" data-toggle="tooltip" data-placement="top" title="Dependencies"></i>{% endif %}
 					</span>
 				</h4>
 			</div>
-			<div id="plugin-{{ plugin_id }}" class="panel-collapse collapse" role="tabpanel">
+			<div id="plugin-{{ plugin.plugin_id }}" class="panel-collapse collapse" role="tabpanel">
 				<div class="panel-body">
-					{% if not plugin._is_enabled %}
+					{% if not plugin.is_enabled %}
 						<div class="alert alert-warning">This plugin is disabled.</div>
 					{% endif %}
-					{% if not plugin._is_satisfied %}
-						{% if plugin._is_enabled %}
+					{% if not plugin.is_satisfied %}
+						{% if plugin.is_enabled %}
 							<div class="alert alert-danger">The plugin is enabled, but it's dependencies are unsatisfied! It has been disabled!</div>
 						{% else %}
 							<div class="alert alert-warning">This plugin's dependencies are unsatisfied.</div>
 						{% endif %}
 					{% else %}
-						{% if plugin._is_core %}
-							{% if plugin._is_enabled %}
+						{% if plugin.is_core %}
+							{% if plugin.is_enabled %}
 								<div class="alert alert-info">This is a required plugin.</div>
 							{% else %}
 								<div class="alert alert-info">This is a required plugin, but it's disabled!</div>
@@ -37,7 +38,7 @@
 						{% endif %}
 					{% endif %}
 
-					<span class="pull-right"><i>{{ plugin_id }}</i></span>
+					<span class="pull-right"><i>{{ plugin.plugin_id }}</i></span>
 					<h4>Description</h4>
 					{{ plugin.description }}
 
@@ -65,13 +66,13 @@
 						</table>
 					{% endif %}
 
-					{% if not plugin._is_core %}
+					{% if not plugin.is_core %}
 						<hr />
 
 						<form class="pull-right" method="POST">
-							<input type="hidden" name="id" value="{{ plugin_id }}" />
-							{% if not plugin._is_enabled %}
-								<button class="btn btn-primary" name="action" value="enable" {% if not plugin._is_satisfied %} data-toggle="tooltip" data-placement="top" title="Dependencies Unsatisfied" disabled{% endif %}>Enable</button>
+							<input type="hidden" name="id" value="{{ plugin.plugin_id }}" />
+							{% if not plugin.is_enabled %}
+								<button class="btn btn-primary" name="action" value="enable" {% if not plugin.is_satisfied %} data-toggle="tooltip" data-placement="top" title="Dependencies Unsatisfied" disabled{% endif %}>Enable</button>
 							{% else %}
 								<button class="btn btn-danger" name="action" value="disable">Disable</button>
 							{% endif %}

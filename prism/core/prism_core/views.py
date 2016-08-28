@@ -36,3 +36,8 @@ class CoreView(BaseView):
     def command(self, command, return_url, restart=False):
         error_json = json.loads(base64.b64decode(error_json).decode('utf-8'))
         return ('error.html', { 'error': error_json })
+
+    @route('/command/install/<type>/<install>')
+    def install(self, type, install):
+        error_json = json.loads(base64.b64decode(error_json).decode('utf-8'))
+        return ('error.html', { 'error': error_json })
