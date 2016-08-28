@@ -301,8 +301,6 @@ class PluginManager:
 					if 'defaults' not in route:
 						route['defaults'] = fallback_defaults
 
-					output('(%s) %s: %s %s' % (route['http_methods'], blueprint_name + '.' + endpoint_id, '/%s%s' % (blueprint_name.replace('.', '/'), route['endpoint']), route['defaults']))
-
 					view._blueprint.add_url_rule(route['endpoint'],
 												endpoint=endpoint_id,
 												methods=route['http_methods'],
