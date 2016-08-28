@@ -12,7 +12,7 @@ class Core(BaseView):
         BaseView.__init__(self, '/')
 
     @route('/restart')
-    def restart(self, return_url='dashboard.index'):
+    def restart(self, return_url='dashboard.home'):
         return ('restart.html', { 'return_url': return_url })
 
     @route('/restart')

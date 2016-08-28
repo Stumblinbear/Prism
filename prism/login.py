@@ -34,7 +34,7 @@ login_manager.init_app(prism.flask())
 @prism.public_endpoint
 def login():
 	if prism.get().logged_in():
-		return redirect(url_for('dashboard.index'))
+		return redirect(url_for('dashboard.home'))
 
 	form = LoginForm(request.form)
 	if request.method == 'POST' and form.validate():
@@ -43,7 +43,7 @@ def login():
 
 			flask_login.login_user(user)
 
-			return redirect(url_for('dashboard.index'))
+			return redirect(url_for('dashboard.home'))
 		flask.flash('Sorry, that username/password combination was incorrect.')
 	return render_template('other/login.html', title='Login', form=form)
 
