@@ -114,6 +114,15 @@ class PluginManager:
 		it's set it enabled """
 		return self.is_satisfied(id) and id in self.enabled_plugins
 
+	def get_classes(self, module, search_class):
+		classes = list()
+		for name, obj in inspect.getmembers(module):
+			if inspect.isclass(obj):
+				# Search for the plugin's base class
+				if obj != search_class and issubclass(obj, search_class):
+					classes.append((name, obj))
+		return classes
+
 	def _search_plugins(self, path, is_core):
 		""" Searches for plugins in a specified folder """
 		if is_core:
@@ -131,32 +140,28 @@ class PluginManager:
 				plugin = None
 				module_views = list()
 
-				for name, obj in inspect.getmembers(module):
-					if inspect.isclass(obj):
-						# Search for the plugin's base class
-						if obj != api.BasePlugin and issubclass(obj, api.BasePlugin):
-							plugin = obj()
-							plugin.module = module
-							plugin._is_core = False
-							plugin._is_satisfied = True
-							plugin._is_enabled = False
+				for name, obj in self.get_classes(module, api.BasePlugin):
+					plugin = obj()
+					plugin.module = module
+					plugin._is_core = False
+					plugin._is_satisfied = True
+					plugin._is_enabled = False
 
-							if plugin_id != plugin.plugin_id:
-								output('Error: Plugin ID <-> module ID mismatch. Offender: %s != %s' % (plugin.plugin_id, plugin_id))
-								continue
+					if plugin_id != plugin.plugin_id:
+						output('Error: Plugin ID <-> module ID mismatch. Offender: %s != %s' % (plugin.plugin_id, plugin_id))
+						continue
 
-							plugin._endpoint = plugin_id
-							if plugin._endpoint.startswith('prism_'):
-								plugin._endpoint = plugin._endpoint.split('_', 2)[1]
+					plugin._endpoint = plugin_id
+					if plugin._endpoint.startswith('prism_'):
+						plugin._endpoint = plugin._endpoint.split('_', 2)[1]
 
-							self.plugins[plugin.plugin_id] = plugin
+					self.plugins[plugin.plugin_id] = plugin
 
-							if is_core:
-								self.core_plugins.append(plugin.plugin_id)
+					if is_core:
+						self.core_plugins.append(plugin.plugin_id)
 
-						# Add any views to the view list for immediate parsing
-						elif obj != api.view.BaseView and issubclass(obj, api.view.BaseView):
-							module_views.append(obj)
+				for name, obj in self.get_classes(module, api.view.BaseView):
+					module_views.append(obj)
 
 				if plugin == None:
 					output('Error: Invalid plugin in plugins folder. Offender: %s' % plugin_id)
@@ -313,8 +318,6 @@ class PluginManager:
 								del route['defaults'][id]
 							except:
 								pass
-
-					output('%s %s%s: %s' % (route['http_methods'], blueprint_name.replace('.', '/'), route['endpoint'], route['defaults']))
 
 					view._blueprint.add_url_rule(route['endpoint'],
 												endpoint=endpoint_id,

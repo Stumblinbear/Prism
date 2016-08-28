@@ -26,6 +26,8 @@ class DashboardPlugin(BasePlugin):
 			elif not '!%s' % widget in widgets:
 				self.widgets[widget] = order
 
+		
+
 	def save_widgets(self):
 		self.config.save()
 
@@ -57,5 +59,9 @@ class DashboardPlugin(BasePlugin):
 					widgets.insert(order, (widget, self.possible_widgets[widget]['f']))
 
 		return widgets
+
+def Widget(object):
+	def render(self):
+		pass
 
 from .views import *

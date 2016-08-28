@@ -86,7 +86,7 @@
 									</div>
 									<div class="clearfix"></div>
 									<hr />
-									<a href="{{ url_for('system.view_process', process_id=proc.pid) }}"><button class="btn btn-info">Advanced</button></a>
+									<a href="{{ url_for('system.process', process_id=proc.pid) }}"><button class="btn btn-info">Advanced</button></a>
 									{% if proc.pid != panel_pid %}
 										<form class="pull-right" method="POST">
 											<input type="hidden" name="id" value="{{ proc.pid }}" />

@@ -10,8 +10,8 @@ class memorize(object):
 
    Only the first num_args are considered when creating the key.
    '''
-   def __init__(self, cache, expiry_time=0, num_args=None):
-	   self.cache = cache
+   def __init__(self, expiry_time=0, num_args=None):
+	   self.cache = { }
 	   self.expiry_time = expiry_time
 	   self.num_args = num_args
 

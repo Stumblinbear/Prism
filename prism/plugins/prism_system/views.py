@@ -1,9 +1,14 @@
-import psutil
-from memorize import memorize
+import os
 
-from api.view import BaseView, route, menu
+import crontab
+import crontabs
+from crontab import CronTab
+from crontabs import CronTabs
+import psutil
 
 import settings
+from memorize import memorize
+from api.view import BaseView, route, menu
 
 
 class SystemView(BaseView):
@@ -73,7 +78,7 @@ class SystemView(BaseView):
         try:
             p = psutil.Process(process_id)
         except:
-            return '0'
+            return { }
         process = p.as_dict(attrs=[ 'cpu_percent', 'memory_percent' ])
         return { 'cpu': process['cpu_percent'], 'memory': process['memory_percent'] }
 
@@ -89,17 +94,51 @@ class SystemView(BaseView):
     def hosts(self):
     	return ('hosts.html', { 'hosts': get_hosts() })
 
-_cron_locations = {}
-@memorize(_cron_locations, 320)
+    @menu('Cron Jobs', icon='cogs', order=3)
+    def cron_jobs(self):
+        return ('cron_jobs.html', { 'crontabs': CronTabs(), 'crontab_locations': get_cron_locations() })
+
+    @route('/cron_jobs')
+    def post(self, request):
+        action = request.form['action']
+        if action == 'delete':
+            crontab_id = int(request.form['crontab_id'])
+            cron_id = int(request.form['cron_id'])
+
+            crontab = CronTabs()[crontab_id - 1]
+            job = crontab.crons[cron_id - 1]
+            crontab.remove(job)
+            crontab.write()
+            return ('system.cron_jobs')
+        else:
+            tabfile = request.form['tabfile']
+            obj = parse_cron_widget(CronTab(tabfile=tabfile))
+            if obj != None:
+                return obj
+
+    @route('/cron_jobs/edit/<int:crontab_id>/<int:cron_id>')
+    def cron_job_edit(self, crontab_id, cron_id):
+    	try:
+    		return ('cron_job_edit.html', { 'cron': CronTabs()[crontab_id - 1].crons[cron_id - 1] })
+    	except:
+    		return ('system.cron_jobs')
+
+    @route('/cron_jobs/edit/<int:crontab_id>/<int:cron_id>')
+    def post(self, request, crontab_id, cron_id):
+        obj = parse_cron_widget(CronTabs()[crontab_id - 1], cron_id)
+        if obj != None:
+            return obj
+        return ('system.cron_jobs')
+
+@memorize(320)
 def get_cron_locations():
 	locs = []
-	for thing,loc in crontab.crontabs.KNOWN_LOCATIONS:
+	for thing,loc in crontabs.KNOWN_LOCATIONS:
 		if os.path.isfile(loc):
 			locs.append(loc)
 	return locs
 
-_user_info = {}
-@memorize(_user_info, 60)
+@memorize(60)
 def get_user_info():
 	user_info = { 'groups': {}, 'users': {} }
 	with open("/etc/group", "r") as f:
@@ -112,14 +151,12 @@ def get_user_info():
 			user_info['users'][info[2]] = { 'name': info[0], 'passwd': info[1], 'group_id': info[3], 'info': info[4], 'home': info[5], 'shell': info[6] }
 	return user_info
 
-_cpu_count = {}
-@memorize(_cpu_count, 120)
+@memorize(120)
 def get_cpu_count():
 	cpu_count = psutil.cpu_count(logical=False)
 	return (cpu_count, psutil.cpu_count(logical=True) - cpu_count)
 
-_processes = {}
-@memorize(_processes, 30)
+@memorize(30)
 def get_processes(show=False, sort=None):
 	process_list = []
 	for proc in psutil.process_iter():
@@ -184,8 +221,7 @@ _mount_options['pqnoenforce'] = 'Project disk quota accounting enabled and limit
 _mount_options['swalloc'] = 'Data allocations will be rounded up to stripe width boundaries when the current end of file is being extended and the file size is larger than the stripe width size.'
 _mount_options['wsync'] = 'When specified, all filesystem namespace operations are executed synchronously.'
 
-_file_systems = {}
-@memorize(_file_systems, 30)
+@memorize(30)
 def get_file_systems():
 	systems = psutil.disk_partitions()
 
@@ -203,13 +239,11 @@ def get_file_systems():
 
 	return systems
 
-_networks = {}
-@memorize(_networks, 30)
+@memorize(30)
 def get_networks():
 	return psutil.net_io_counters(pernic=True)
 
-_hosts = {}
-@memorize(_hosts, 5)
+@memorize(5)
 def get_hosts():
 	hosts = {}
 	with open('/etc/hosts') as f:
@@ -218,3 +252,48 @@ def get_hosts():
 			info = ' '.join(line.split()).split(' ')
 			hosts[info[0]] = { 'hostname': info[1], 'aliases': info[2:] }
 	return hosts
+
+def parse_cron_widget(request, crontab_obj, cron_id=-1):
+	editing = cron_id != -1
+
+	minute = request.form['minute']
+	if minute == None:
+		minute = '*'
+
+	hour = request.form['hour']
+	if hour == None:
+		hour = '*'
+
+	day = request.form['day']
+	if day == None:
+		day = '*'
+
+	month = request.form['month']
+	if month == None:
+		month = '*'
+
+	weekday = request.form['weekday']
+	if weekday == None:
+		weekday = '*'
+
+	year = request.form['year']
+	if year == None:
+		year = '*'
+
+	user = request.form['user']
+	if user == None:
+		user = 'root'
+
+	command = request.form['command']
+	if command != None:
+		if not editing:
+			job = crontab_obj.new(user=user, command=command)
+		else:
+			job = crontab_obj.crons[cron_id - 1]
+			job.set_command(command)
+		job.setall(minute, hour, day, month, weekday, year)
+		print(job.render())
+		crontab_obj.write()
+
+		if not editing:
+			return ('core.restart', { 'return_url': 'system.cron_jobs' })
