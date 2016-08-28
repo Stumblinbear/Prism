@@ -1,8 +1,0 @@
-{
-	"version": 1.0,
-	
-	"name": "Dashboard",
-	"description": "Handles Prism's main dashboard view as well as plugin management.",
-	
-	"required": true
-}

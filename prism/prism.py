@@ -1,97 +1,387 @@
 # If you know of a better way to handle this, be my guest.
-import builtins, subprocess, inspect, os, sys, re, platform
+import builtins
+import inspect
+import os
+import platform
+import re
+import sys
+import subprocess
 
 import subprocess
 from subprocess import PIPE
 
-def restart():
-	import psutil, logging
-	
-	try:
-		p = psutil.Process(os.getpid())
-		for handler in p.get_open_files() + p.connections():
-			os.close(handler.fd)
-	except Exception as e:
-		logging.error(e)
+from flask import Blueprint, request, render_template, url_for, redirect, abort
+from flask_menu import current_menu
 
-	python = sys.executable
-	os.execl(python, python, *sys.argv)
+import api
+import settings
 
-def command(cmd):
-	return subprocess.call(cmd, shell=True)
+PRISM_STATE = None
 
 def init(flask_app, config):
-	builtins.prism_state = Prism(flask_app, config)
+	global PRISM_STATE
+	PRISM_STATE = Prism(flask_app, config)
 
 def get():
-	return builtins.prism_state
+	return PRISM_STATE
 
-def get_plugin_manager():
-	return builtins.prism_state.plugin_manager
+def flask():
+	return PRISM_STATE.flask()
+
+def plugin_manager():
+	if PRISM_STATE.plugin_manager == None:
+		PRISM_STATE.plugin_manager = PluginManager(PRISM_STATE.config)
+	return PRISM_STATE.plugin_manager
 
 def get_plugin(id):
-	return builtins.prism_state.plugin_manager.get_plugin(id)
+	return PRISM_STATE.plugin_manager.get_plugin(id)
 
 class Prism:
 	def __init__(self, flask_app, config):
 		self.flask_app = flask_app
 		self.config = config
-		
-		self.plugin_manager = PrismPluginManager(config)
-	
-	# Returns the Flask application instance
-	def app(self):
+
+		self.plugin_manager = None
+
+	def flask(self):
+		""" Returns the flask application instance """
 		return self.flask_app
-	
-	# Returns the Prism plugin manager
-	def get_plugin_manager(self):
-		return self.plugin_manager
-	
+
 	#User functions
-	def get_user(self):
+	def user(self):
+		""" Returns the user object if they're logged in, otherwise None """
 		from flask import g
 		if hasattr(g, 'user'):
 			return g.user
 		return None
-	
+
 	def logged_in(self):
+		""" Returns true if the user is logged in """
 		from flask import g
 		if hasattr(g, 'user'):
 			return g.user is not None and g.user.is_authenticated
 		return False
-	
+
 	# Returns true if login was successful
 	def login(self, username, password):
+		""" Attempt to log the user in if the username and password are correct """
 		return self.config['username'] == username and crypt_verify(password, self.config['password'])
-	
+
 	# Log the user out
 	def logout(self):
+		""" Log the current user out """
 		import flask_login
 		flask_login.logout_user()
-		
-		from flask import g, redirect, url_for
+
+		from flask import g
 		g.user = None
-		
+
 		return redirect(url_for('login'))
 
-class PrismPlugin:
-	def __init__(self, id, active=True, info=None):
-		self.id = id
-		self.active = active
-		self.info = info
-		
-	def init(self):
-		if self.active:
-			from flask import Blueprint
-			self.blueprint = Blueprint(self.id, inspect.getmodule(inspect.stack()[1][0]).__name__, template_folder='templates')
-	
-	def bp(self):
-		if not self.active or not self.blueprint:
-			return None
-		if not hasattr(self, 'blueprint'):
-			raise Exception('%s has not been initialized.' % self.id)
-		return self.blueprint
-	
+class PluginManager:
+	def __init__(self, config):
+		self.plugins = { }
+
+		# Holds the list of core plugin ids
+		self.core_plugins = list()
+		# Holds the list of plugins with unsatisfied dependencies
+		self.unsatisfied_plugins = list()
+		# Holds the list of enabled plugins
+		self.enabled_plugins = config['enabled_plugins']
+
+		poof('Searching')
+		self._search_plugins(settings.CORE_PLUGINS_PATH, True)
+		self._search_plugins(settings.PLUGINS_PATH, False)
+		paaf()
+
+		poof('Loading')
+		self._load_plugins()
+		paaf()
+
+	def get_plugin(self, id):
+		""" Get a plugin, loaded or not """
+		if id in self.plugins:
+			return self.plugins[id]
+		return None
+
+	def is_satisfied(self, id):
+		""" Returns true if the plugin's dependencies are satisfied """
+		return id not in unsatisfied_plugins
+
+	def is_enabled(self, id):
+		""" Returns true if and only if all the plugin's dependencies are satisfied and
+		it's set it enabled """
+		return self.is_satisfied(id) and id in enabled_plugins
+
+	def _search_plugins(self, path, is_core):
+		""" Searches for plugins in a specified folder """
+		if is_core:
+			output('Finding core plugins')
+		else:
+			output('Finding additional plugins')
+
+		sys.path.append(path)
+
+		for plugin_id in os.listdir(path):
+			base_folder = os.path.join(path, plugin_id)
+			if not os.path.isfile(base_folder):
+				module = __import__(plugin_id, globals(), locals())
+
+				plugin = None
+				module_views = list()
+
+				for name, obj in inspect.getmembers(module):
+					if inspect.isclass(obj):
+						# Search for the plugin's base class
+						if obj != api.BasePlugin and issubclass(obj, api.BasePlugin):
+							plugin = obj()
+							plugin.module = module
+							plugin._is_core = False
+							plugin._is_satisfied = True
+							plugin._is_enabled = False
+
+							if plugin_id != plugin.plugin_id:
+								output('Error: Plugin ID <-> module ID mismatch. Offender: %s != %s' % (plugin.plugin_id, plugin_id))
+								continue
+
+							plugin._endpoint = plugin_id
+							if plugin._endpoint.startswith('prism_'):
+								plugin._endpoint = plugin._endpoint.split('_', 2)[1]
+
+							self.plugins[plugin.plugin_id] = plugin
+
+							if is_core:
+								self.core_plugins.append(plugin.plugin_id)
+
+						# Add any views to the view list for immediate parsing
+						elif obj != api.view.BaseView and issubclass(obj, api.view.BaseView):
+							module_views.append(obj)
+
+				if plugin == None:
+					output('Error: Invalid plugin in plugins folder. Offender: %s' % plugin_id)
+					continue
+
+				plugin._module_views = module_views
+
+
+	def _load_plugins(self):
+		""" Attempts to load every available plugin """
+		plugins_additional = list()
+
+		# These will always be initialized.
+		output('Initializing %s core plugin(s)' % len(self.core_plugins))
+		for plugin_id, plugin in self.plugins.items():
+			if plugin_id in self.core_plugins:
+				plugin._is_core = True
+				plugin._is_enabled = True
+				self._init_plugin(plugin)
+			else:
+				plugin._is_core = False
+				plugins_additional.append(plugin_id)
+
+		if len(plugins_additional) == 0:
+			return
+
+		poof('Initializing %s additional plugin(s)' % len(plugins_additional))
+		poof('Settling dependencies')
+		# Make sure application binaries and other dependencies are loaded
+		for plugin_id in plugins_additional:
+			plugin = self.get_plugin(plugin_id)
+
+			new_dependencies = list()
+
+			plugin._is_satisfied = True
+
+			for depends in plugin.dependencies:
+				# Check if packages in the linux system are installed
+				if depends[0] == 'binary':
+					installed = is_package_installed(package)
+					if not installed:
+						plugin._is_satisfied = False
+					new_dependencies.append((depends[0], depends[1], installed))
+
+				# Check if a python library is installed
+				elif depends[0] == 'library':
+					installed = True
+					if not installed:
+						plugin._is_satisfied = False
+					new_dependencies.append((depends[0], depends[1], installed))
+				else:
+					output('Unknown dependency type: %s' % depends[0])
+
+			if not plugin._is_satisfied:
+				unsatisfied_plugins.append(plugin_id)
+
+			plugin.dependencies = new_dependencies
+		paaf()
+
+		# Start plugins if they're set to be enabled.
+		for plugin_id in plugins_additional:
+			if not self.enabled(plugin_id):
+				continue
+			self._init_plugin(self.get_plugin(plugin_id))
+		paaf()
+
+	def _init_plugin(self, plugin):
+		"""
+		Initializes a plugin:
+		   1. Runs the plugin's init() function.
+		   2. Saves the config
+		   3. Loads the plugin's endpoints into flask
+		"""
+		plugin._is_enabled = True
+		poof('Starting %s v%s' % (plugin.name, plugin.version))
+		plugin.init(PRISM_STATE)
+		plugin.config.save()
+
+		has_menus = False
+
+		# Go through each of the module's views and add them to flask
+		for view_class in plugin._module_views:
+			view = view_class()
+
+			blueprint_name = plugin._endpoint
+
+			if view.endpoint != '/':
+				blueprint_name += view.endpoint.replace('/', '.')
+
+			# Create the blueprint in flask
+			view._blueprint = Blueprint(blueprint_name, plugin.plugin_id, template_folder='templates')
+
+			if hasattr(view, 'menu'):
+				has_menus = True
+				with flask().app_context():
+					item = current_menu.submenu(blueprint_name)
+					item.register(blueprint_name + '.index', view.menu['title'], view.menu['order'], icon=view.menu['icon'])
+
+			for func_name in dir(view):
+				# Ignore any non-user-defined methods
+				if func_name.startswith('_'):
+					continue
+
+				# Get the method's attributes
+				func = getattr(view, func_name)
+
+				# We don't want variables. Only methods.
+				if not hasattr(func, '__call__'):
+					continue
+
+				# If they have their own functions that shouldn't be endpoints
+				if hasattr(func, 'ignore') and func.ignore:
+					continue
+
+				endpoint_id = func_name
+				view_func_wrapper = self.func_wrapper(func)
+
+				fallback_endpoint = self.get_http_endpoint(func)
+				fallback_http_methods = self.get_http_methods(func)
+				fallback_defaults = self.get_defaults(func)
+
+				func_routes = list()
+				if not hasattr(func, 'routes'):
+					func_routes.append({
+											'endpoint': fallback_endpoint,
+											'http_methods': fallback_http_methods,
+											'defaults': fallback_defaults
+										})
+				else:
+					func_routes = func.routes
+
+				if hasattr(func, 'menu'):
+					has_menus = True
+					with flask().app_context():
+						item = current_menu.submenu(blueprint_name + '.' + endpoint_id)
+						item.register(blueprint_name + '.' + endpoint_id, func.menu['title'], func.menu['order'], icon=func.menu['icon'])
+
+				for route in func_routes:
+					if 'endpoint' not in route:
+						route['endpoint'] = fallback_endpoint
+					if 'http_methods' not in route:
+						route['http_methods'] = fallback_http_methods
+					if 'defaults' not in route:
+						route['defaults'] = fallback_defaults
+
+					output('(%s) %s: %s %s' % (route['http_methods'], blueprint_name + '.' + endpoint_id, '/%s%s' % (blueprint_name.replace('.', '/'), route['endpoint']), route['defaults']))
+
+					view._blueprint.add_url_rule(route['endpoint'],
+												endpoint=endpoint_id,
+												methods=route['http_methods'],
+												view_func=view_func_wrapper,
+												defaults=route['defaults'])
+
+			flask().register_blueprint(view._blueprint, url_prefix='/%s' % blueprint_name.replace('.', '/'))
+
+		if has_menus:
+			with flask().app_context():
+				item = current_menu.submenu(plugin._endpoint)
+				item.register(plugin._endpoint + '.index', plugin.name, plugin.order, icon=plugin.icon)
+
+		paaf()
+
+	def func_wrapper(self, func):
+		""" Wraps the route return function. This allows us to do fun things with the return value :D """
+		def func_wrapper(*args, **kwargs):
+			if request.method != 'GET':
+				obj = func(request, *args, **kwargs)
+			else:
+				obj = func(*args, **kwargs)
+
+			# from flask import request, redirect, url_for, render_template
+			if isinstance(obj, tuple):
+				if obj[0].endswith('.html'):
+					page_args = { }
+					if len(obj) > 1:
+						page_args = obj[1]
+					return render_template(obj[0], **page_args)
+				elif len(obj) > 1:
+					if obj[0] == 'redirect':
+						return redirect(url_for(obj[1]))
+					elif obj[0] == 'abort':
+						abort(obj[1])
+			elif isinstance(obj, str):
+				if obj.endswith('.html'):
+					return render_template(obj)
+			return obj
+		func_wrapper.__name__ = func.__name__
+		return func_wrapper
+
+	def get_defaults(self, func):
+		""" Returns the default values for the route """
+		defaults = { }
+		if hasattr(func, 'defaults'):
+			defaults = func.defaults
+		elif func.__defaults__ != None:
+			defaults = self.get_default_args(func)
+		return defaults
+
+	def get_default_args(self, func):
+		""" Returns a dictionary of arg_name: default_values for the input function """
+		args, varargs, keywords, defaults = inspect.getargspec(func)
+		return dict(zip(args[-len(defaults):], defaults))
+
+	def get_http_methods(self, func):
+		""" Returns the HTTP methods for the route """
+		http_methods = [ 'GET' ]
+		# If the http methods have been specified in the @route decorator
+		if hasattr(func, 'http_methods'):
+			http_methods = func.http_methods
+		# If the function is called an http method
+		elif func.__name__ in [ 'get', 'post', 'put', 'delete' ]:
+			http_methods = [ func.__name__.upper() ];
+		return http_methods
+
+	def get_http_endpoint(self, func):
+		""" Returns the URL endpoint that the route uses for access """
+		endpoint_http = '/%s' % func.__name__
+		# If the function is named index
+		if endpoint_http == '/index':
+			endpoint_http = '/'
+		# If an endpoint has been specified in the @route decorator
+		elif hasattr(func, 'endpoint'):
+			endpoint_http = func.endpoint
+		return endpoint_http
+
+"""class Plugin:
 	def route(self, rule, text=None,
 					nav_path=None,
 					icon=None,
@@ -101,19 +391,19 @@ class PrismPlugin:
 					**kwargs):
 		if not self.active:
 			return None
-		
+
 		if nav_path == None and text != None:
 			nav_path = '.%s' % text.lower().replace(' ', '')
-		
+
 		def decorator(f):
 			# Register with Flask
 			self.bp().add_url_rule(rule, kwargs.pop("endpoint", f.__name__), f, **kwargs)
-			
+
 			if ignore:
 				return f
-			
+
 			# Register with Flask Menu
-			@self.blueprint.before_app_first_request
+			@self.flask_blueprint.before_app_first_request
 			def _register_menu_item():
 				from flask_menu import current_menu
 				item = current_menu.submenu(str(nav_path))
@@ -128,209 +418,38 @@ class PrismPlugin:
 					expected_args=inspect.getargspec(f).args,
 					icon=icon,
 					hidden=hidden)
-			
-			return f
-		return decorator
 
-class PrismPluginManager:
-	def __init__(self, config):
-		self.plugins = []
-		self.enabled = config['enabled']
-	
-	def get_plugin(self, id):
-		for plugin in self.plugins:
-			if plugin.id == id:
-				return plugin
-		return None
-	
-	def set_plugin(self, id, plugin):
-		for i in range(0, len(self.plugins)):
-			if self.plugins[i]['id'] == id:
-				self.plugins[i] = plugin
-		return None
-	
-	# Returns a list of all plugins
-	def get_plugins(self):
-		return self.plugins
-	
-	# Plugins can be structured in one of two ways.
-	# 1:
-	# plugin_<id>
-	#    |----- __init__.py
-	# 2:
-	# plugin_<id>
-	#    |----- plugin_<id>: Imported. Allows packaging libraries.
-	#          |----- __init__.py
-	def load_plugins(self, path):
-		import json
-		
-		# Append the plugins directory
-		sys.path.append(path)
-		
-		self.plugins = list()
-		
-		output('Searching')
-		for plugin_id in os.listdir(path):
-			base_folder = os.path.join(path, plugin_id)
-			if not os.path.isfile(base_folder):
-				# If folder is a prism plugin
-				regexp_result = re.search("^prism_(.+?)$", plugin_id)
-				if regexp_result:
-					plugin_path = os.path.join(base_folder, plugin_id)
-					plugin_add = None
-					
-					# Check if the .py file is in the base folder
-					if os.path.exists(os.path.join(base_folder, '__init__.py')):
-						plugin_add = { 'plugin_name': plugin_id, 'id': regexp_result.group(1), 'info': os.path.join(base_folder, 'plugin.json') }
-						
-					# If not, check if the base folder has a folder named
-					# the same as the base folder
-					elif os.path.exists(plugin_path) and os.path.exists(os.path.join(plugin_path, '__init__.py')):
-						
-						sys.path.append(base_folder)
-						plugin_add = { 'plugin_name': plugin_id, 'id': regexp_result.group(1), 'info': os.path.join(plugin_path, 'plugin.json') }
-						
-					else:
-						output('Invalid plugin. Offender: %s' % plugin_id)
-					
-					if plugin_add != None:
-						plugin_add['info'] = json.loads(open(plugin_add['info']).read())
-						plugin_add['info']['enabled'] = (plugin_add['id'] in self.enabled)
-						self.plugins.append(plugin_add)
-					
-				else:
-					output('Unknown folder in plugins directory. Offender: %s' % plugin_id)
-		
-		poof()
-		output('Found %s' % len(self.plugins))
-		paaf()
-		
-		output('Sorting')
-		poof()
-		plugins_sorted = []
-		
-		# Here's where I should sort plugins so required plugins show first and plugins with dependencies are in the correct order
-		while self.plugins:
-			remaining_plugins = []
-			emitted = False
-			
-			for plugin in self.plugins:
-				# Add required plugins. This should only be "dashboard" but whatever.
-				if 'required' in plugin['info'] and plugin['info']['required']:
-					plugin['info']['enabled'] = True
-					plugins_sorted.insert(0, plugin)
-					emitted = True
-				elif not 'dependencies' in plugin['info']:
-					plugins_sorted.append(plugin)
-				else:
-					settled = False
-					
-					depends = plugin['info']['dependencies']
-					if 'plugin' in depends:
-						depends_sorted = 0
-						for depend in depends['plugin']:
-							for p in plugins_sorted:
-								if p['id'] == depend:
-									depends_sorted += 1
-						
-						# If all dependencies have been sorted
-						if len(depends['plugin']) == depends_sorted:
-							settled = True
-						else:
-							settled = False
-					else:
-						settled = True
-					
-					# If dependencies are sorted, append it to the sorted list. If not, add it for further sorting.
-					if settled:
-						plugins_sorted.append(plugin)
-						emitted = True
-					else:
-						remaining_plugins.append(plugin)
-			
-			if not emitted:
-				for plugin in remaining_plugins:
-					plugins_sorted.append(plugin)
-				break
-			
-			self.plugins = remaining_plugins
-		
-		self.plugins = plugins_sorted
-		paaf()
-		
-		
-		loadable = 0
-		
-		output('Settling dependencies')
-		poof()
-		# Make sure application binaries and other dependencies are loaded
-		for i in range(0, len(self.plugins)):
-			satisfied = True
-			
-			# If any dependencies are set
-			if 'dependencies' in self.plugins[i]['info']:
-				depends = self.plugins[i]['info']['dependencies']
-				
-				self.plugins[i]['info']['dependencies'] = []
-				
-				# Check if packages in the linux system are installed
-				if 'package' in depends:
-					for package in depends['package']:
-						settled = is_package_installed(package)
-						if not settled:
-							satisfied = False
-						self.plugins[i]['info']['dependencies'].append(('package', package, settled))
-				
-				# Check if prism plugins are activated
-				if 'plugin' in depends:
-					for depend in depends['plugin']:
-						settled = False
-						for plugin in self.plugins:
-							if plugin['id'] == depend:
-								if plugin['info']['enabled'] and plugin['info']['dependencies_satisfied']:
-									settled = True
-								break
-						
-						if not settled:
-							satisfied = False
-						
-						self.plugins[i]['info']['dependencies'].append(('plugin', depend, settled))
-			
-			self.plugins[i]['info']['dependencies_satisfied'] = satisfied
-			loadable = loadable + 1
-		paaf()
-		
-		poof()
-		output('%s plugins ready for load' % loadable)
-		paaf()
-		
-		output('Importing')
-		
-		poof()
-		for i in range(0, len(self.plugins)):
-			plugin = self.plugins[i]
-			if not self.plugins[i]['info']['enabled'] or not plugin['info']['dependencies_satisfied']:
-				self.plugins[i] = PrismPlugin(plugin['id'], info=plugin['info'], active=False)
-				continue
-			
-			self.plugins[i] = PrismPlugin(plugin['id'], info=plugin['info'])
-			
-			output(plugin['id'])
-			__import__(plugin['plugin_name'], globals(), locals())
-		paaf()
-	
-	def register_blueprints(self, flask_app):
-		poof()
-		for plugin in self.plugins:
-			if not plugin.active:
-				continue
-			output(plugin.id)
-			flask_app.register_blueprint(plugin.bp())
-		paaf()
+			return f
+		return decorator"""
 
 # Utility functions
+def public_endpoint(function):
+	""" Use as a decorator to allow a page to be accessed without being logged in """
+	function.is_public = True
+	return function
+
+def restart():
+	""" Safely restart prism """
+	import psutil, logging
+
+	try:
+		p = psutil.Process(os.getpid())
+		for handler in p.get_open_files() + p.connections():
+			os.close(handler.fd)
+	except Exception as e:
+		logging.error(e)
+
+	python = sys.executable
+	os.execl(python, python, *sys.argv)
+
+def command(cmd):
+	""" Runs a shell command and returns the output """
+	return subprocess.call(cmd, shell=True)
+
 poofs = 0
-def poof():
+def poof(str=None):
+	if str is not None:
+		output('>%s' % str)
 	global poofs
 	poofs += 1
 def paaf():
@@ -344,9 +463,10 @@ def output(string):
 	print('%s%s' % (prefix, string))
 
 def get_input(string, default=None, allow_empty=True):
+	""" Gets input from the user in the shell """
 	if default:
 		string = string + '[' + default + ']'
-	
+
 	while True:
 		user_input = input('::| %s: ' % string)
 		if user_input or allow_empty:
@@ -356,14 +476,17 @@ def get_input(string, default=None, allow_empty=True):
 	return (user_input, False)
 
 def generate_random_string(length):
+	""" Returns a string of random characters of size "length" """
 	import random, string
 	return ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(length))
 
 def is_package_installed(id):
+	""" Returns true of the linux system has a binary installed under the name "id" """
 	output = os_command('rpm -qa | grep %s' % id, 'dpkg -list | grep %s' % id, 'pkg_info | grep %s' % id)
 	return (len(output) > 0)
 
 def os_command(redhat, debian, bsd):
+	""" Runs a command based on the OS currently in use """
 	os = get_general_os()
 	if os == 'redhat':
 		return subprocess.Popen(redhat, shell=True, stdout=PIPE).stdout.read()
@@ -374,6 +497,7 @@ def os_command(redhat, debian, bsd):
 
 # Returns if the OS is a Debian, Red Hat, or BSD derivative
 def get_general_os():
+	""" Gets a simple name of the current linux operating system """
 	if any(word in platform.platform() for word in ("redhat", "centos", "fedora")):
 		return 'redhat'
 	elif any(word in platform.platform() for word in ("freebsd", "openbsd")):
@@ -385,12 +509,12 @@ def get_general_os():
 def is_crypted(string):
 	return len(string) == 77
 
-# Used for password encrypting and the like
 def crypt_string(string):
+	""" Encrypt a string using SHA256 """
 	from passlib.hash import sha256_crypt
 	return sha256_crypt.encrypt(string)
 
-# Verify a string and hash
 def crypt_verify(string, hash):
+	""" Verify that a string and an encryped hash are the same """
 	from passlib.hash import sha256_crypt
 	return sha256_crypt.verify(string, hash)
