@@ -52,30 +52,11 @@
 										<td>{{ depend_type }}</td>
 										<td>{{ depend_id }}</td>
 										<td>
-											{% if depend_type == 'package' %}
-												{% if satisfied %}
-													Installed
-												{% else %}
-													Not Installed
-													<a href="{{ url_install_application(depend_id, 'dashboard.plugins.list') }}" class="btn btn-sm btn-default pull-right"><i class="fa fa-download"></i> Download</a>
-												{% endif %}
+											{% if satisfied %}
+												Installed
 											{% else %}
-												{% if satisfied %}
-													Installed and Enabled
-												{% else %}
-													{% set found = [False] %}
-													{% for plugin in plugins %}
-														{% if plugin_id == depend_id %}
-															{% if found.append(True) %}{% endif %}
-															{% break %}
-														{% endif %}
-													{% endfor %}
-													{% if found[1] %}
-														Not Enabled
-													{% else %}
-														Not Installed
-													{% endif %}
-												{% endif %}
+												Not Installed
+												<a href="{{ url_for('core.install', type=depend_type, install=depend_id) }}" class="btn btn-sm btn-default pull-right"><i class="fa fa-download"></i> Download</a>
 											{% endif %}
 										</td>
 									</tr>
