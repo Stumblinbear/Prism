@@ -8,7 +8,7 @@
 		bottom: auto;
 		right: auto;
 		left: auto;
-		
+
 		z-index: 1;
     }
 
@@ -23,17 +23,18 @@
 				<div class="modal-content">
 					<div class="modal-header">
 						<h3 class="modal-title">Fatal Error <small>{{ error.title }}</small></h3>
-										<p><code>{{ error.info }}</code></p>
+						<br />
+						<p><code>{{ error.error }}</code></p>
 					</div>
 					<div class="modal-body">
 						<div class="box-body table-responsive">
 							<div class="box-body">
-								{% if error.fix != None %}
+								{% if error.fixes != None %}
 									<div class="row">
 										<div class="col-xs-12">
 											<h4>A possible fix is known.</h4>
 											<br />
-											{% for fix in error.fix %}
+											{% for fix in error.fixes %}
 												{% if 'text' in fix %}
 													<p>
 														{{ fix['text'] }}
@@ -41,12 +42,16 @@
 												{% endif %}
 												{% if 'command' in fix %}
 													<p>
-														<a href="{{ url_command(fix['command'], error.url_from, 1) }}">
+														{% if not error.url_return %}
+														<a href="{{ url_for('core.command', command=fix['command'], restart=True) }}">
+														{% else %}
+														<a href="{{ url_for('core.command', command=fix['command'], restart=True, return_url=error.url_return) }}">
+														{% endif %}
 															<button type="button" id="btn-fix" class="btn btn-info btn-sm">Attempt Fix #{{ loop.index }}</button>
 														</a>
 													</p>
 												{% endif %}
-												{% if error.fix | length != loop.index %}
+												{% if error.fixes | length != loop.index %}
 													<hr />
 												{% endif %}
 											{% endfor %}

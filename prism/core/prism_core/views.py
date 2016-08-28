@@ -27,4 +27,12 @@ class CoreView(BaseView):
     @route('/error/<path:error_json>')
     def error(self, error_json):
         error_json = json.loads(base64.b64decode(error_json).decode('utf-8'))
-        return ('error.html', { error: error_json })
+        return ('error.html', { 'error': error_json })
+
+    @route('/command/<command>')
+    @route('/command/<command>/<return_url>')
+    @route('/command/<command>/<int:restart>')
+    @route('/command/<command>/<int:restart>/<return_url>')
+    def command(self, command, return_url, restart=False):
+        error_json = json.loads(base64.b64decode(error_json).decode('utf-8'))
+        return ('error.html', { 'error': error_json })

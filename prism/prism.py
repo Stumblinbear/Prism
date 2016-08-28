@@ -1,5 +1,6 @@
 # If you know of a better way to handle this, be my guest.
 import builtins
+import base64
 import inspect
 import json
 import os
@@ -357,13 +358,14 @@ class PluginManager:
 				if obj[0].endswith('.html'):
 					return render_template(obj[0], **page_args)
 				elif get_url_for(obj[0]) != None:
-					print(get_url_for(obj[0], **page_args))
 					return redirect(get_url_for(obj[0], **page_args))
 				elif len(obj) > 1:
 					if obj[0] == 'redirect':
 						return redirect(url_for(obj[1]))
 					elif obj[0] == 'abort':
 						abort(obj[1])
+					elif obj[0] == 'error':
+						return redirect(url_for('core.error', error_json=base64.b64encode(json.dumps(page_args).encode('utf-8'))))
 			elif isinstance(obj, str):
 				if obj.endswith('.html'):
 					return render_template(obj)
