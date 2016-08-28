@@ -31,11 +31,11 @@ class Dashboard(BaseView):
             data = request.form['data']
             for pack in data.split(','):
                 pack = pack.split('=')
-
-            if pack[0] in prism_dashboard.widgets:
-                prism_dashboard.widgets[pack[0]] = int(pack[1])
-            elif '!%s' % pack[0] in prism_dashboard.widgets:
-                prism_dashboard.widgets['!%s' % pack[0]] = int(pack[1])
+                
+                if pack[0] in prism_dashboard.widgets:
+                    prism_dashboard.widgets[pack[0]] = int(pack[1])
+                elif '!%s' % pack[0] in prism_dashboard.widgets:
+                    prism_dashboard.widgets['!%s' % pack[0]] = int(pack[1])
 
         prism_dashboard.save_widgets()
         return '1'
