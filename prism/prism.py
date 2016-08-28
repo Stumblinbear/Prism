@@ -205,22 +205,22 @@ class PluginManager:
 
 			plugin._is_satisfied = True
 
-			for depends in plugin.dependencies:
+			for depend_type, depend_name in plugin.dependencies:
 				# Check if packages in the linux system are installed
-				if depends[0] == 'binary':
-					installed = is_package_installed(package)
+				if depend_type== 'binary':
+					installed = is_package_installed(depend_name)
 					if not installed:
 						plugin._is_satisfied = False
-					new_dependencies.append((depends[0], depends[1], installed))
+					new_dependencies.append((depend_type, depend_name, installed))
 
 				# Check if a python library is installed
-				elif depends[0] == 'library':
+				elif depend_type == 'library':
 					installed = True
 					if not installed:
 						plugin._is_satisfied = False
-					new_dependencies.append((depends[0], depends[1], installed))
+					new_dependencies.append((depend_type, depend_name, installed))
 				else:
-					output('Unknown dependency type: %s' % depends[0])
+					output('Unknown dependency type: %s' % depend_type)
 
 			if not plugin._is_satisfied:
 				unsatisfied_plugins.append(plugin_id)

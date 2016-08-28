@@ -18,8 +18,6 @@ class DashboardPlugin(BasePlugin):
 		self._available_widgets = { }
 		self._widgets = self.config('widgets', { })
 
-		print(self._widgets)
-
 		# Search the plugins for Widget classes
 		for plugin_id, plugin in prism_state.plugin_manager.plugins.items():
 			for name, obj in prism_state.plugin_manager.get_classes(plugin._module, Widget):

@@ -10,6 +10,8 @@ class SystemPlugin(BasePlugin):
 					author = 'Stumblinbear',
 					homepage = 'http://prismcp.org/',
 
+					dependencies = [ ('library', 'python-crontab') ],
+
 					icon = 'television', order = 1)
 
 from .views import *

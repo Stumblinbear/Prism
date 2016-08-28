@@ -1,5 +1,6 @@
 import os
 
+import prism
 import settings
 
 # Dependency: (binary/library, name)
@@ -31,6 +32,12 @@ class BasePlugin(object):
 					self.version += '.' + str(i)
 			else:
 				self.version += '-' + i
+
+		if not isinstance(self.dependencies, list):
+			prism.output('Error: Dependencies must be in list format. Offender: %s' % self.plugin_id)
+		elif len(self.dependencies) > 0:
+			if not isinstance(self.dependencies[0], tuple):
+				prism.output('Error: Plugin dependencies must be in tuple format. Offender: %s' % self.plugin_id)
 
 	# Called when the plugin is enabled.
 	def init(self, prism_state):
