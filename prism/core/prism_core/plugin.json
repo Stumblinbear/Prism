@@ -1,11 +1,6 @@
 {
 	"version": [ 1, 0, 0, "indev" ],
-	
+
 	"name": "Prism Core",
-	"description": "Contains a few essential Prism views and functions.",
-	
-	"dependencies": {
-		"binary": [ "iptables", "firewalld" ],
-		"library": [ "netfilter" ]
-	}
+	"description": "Contains a few essential Prism views and functions."
 }
