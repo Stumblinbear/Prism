@@ -13,7 +13,6 @@ class Dashboard(BaseView):
     def edit(self):
         return ('dashboard_edit.html', { 'widgets': prism.get_plugin('prism_dashboard').get_widgets(all=True) })
 
-    @route(methods=['POST'])
     def post(self, request):
         prism_dashboard = prism.get_plugin('prism_dashboard')
 
@@ -31,7 +30,7 @@ class Dashboard(BaseView):
             data = request.form['data']
             for pack in data.split(','):
                 pack = pack.split('=')
-                
+
                 if pack[0] in prism_dashboard.widgets:
                     prism_dashboard.widgets[pack[0]] = int(pack[1])
                 elif '!%s' % pack[0] in prism_dashboard.widgets:
