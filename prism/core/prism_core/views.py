@@ -16,11 +16,10 @@ class CoreView(BaseView):
 
     @route('/restart')
     def post(self, request):
-        print(request)
         action = request.form['action']
         if action == '0':
             threading.Timer(1, prism.restart).start()
-            settings.save_config(settings.CONFIG_FILE, settings.PRISM_CONFIG)
+            prism.settings.PRISM_CONFIG.save()
             return '0'
         else:
             return '1'

@@ -30,3 +30,24 @@ class FirewallView(BaseView):
                             }
                     )
         return ('overview.html')
+
+    @menu('Test Error', icon='fire-extinguisher', order=0)
+    def test(self):
+        return ('error', {
+                            'title': 'IPTables',
+                            'error': 'Unable to initialize IPTables. Do you need to insmod?',
+                            'fixes':
+                            [
+                                {
+                                    'text': 'IPTables must be inserted as a module into the linux kernel.',
+                                    'command': 'modprobe ip_tables'
+                                }, {
+                                    'text': 'Update your installed packages.',
+                                    'command': 'yum -y update'
+                                }, {
+                                    'text': 'Update your kernel. Then, restart your system.',
+                                    'command': 'yum -y update kernel'
+                                }
+                            ]
+                        }
+                )

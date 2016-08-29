@@ -21,7 +21,8 @@ import prism.api.plugin
 
 from prism.version import get_version
 
-__version__ = get_version()
+# __version__ = get_version()
+__version__ = 'v0.0.1'
 
 
 PRISM_STATE = None

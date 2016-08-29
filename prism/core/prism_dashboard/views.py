@@ -51,11 +51,11 @@ class PluginsView(BaseView):
         action = request.form['action']
         if id is not None and action is not None:
             if action == 'enable':
-                if id not in settings.PRISM_CONFIG['enabled_plugins']:
-                    settings.PRISM_CONFIG['enabled_plugins'].append(id)
+                if id not in prism.settings.PRISM_CONFIG['enabled_plugins']:
+                    prism.settings.PRISM_CONFIG['enabled_plugins'].append(id)
             elif action == 'disable':
-                if id in settings.PRISM_CONFIG['enabled_plugins']:
-                    settings.PRISM_CONFIG['enabled_plugins'].remove(id)
+                if id in prism.settings.PRISM_CONFIG['enabled_plugins']:
+                    prism.settings.PRISM_CONFIG['enabled_plugins'].remove(id)
             return ('core.restart', {'return_url': 'dashboard.plugins.list'})
         return ('dashboard.plugins.list')
 
