@@ -1,4 +1,4 @@
-from flask import request, redirect, url_for, render_template, g
+import flask
 import flask_login
 from flask_menu import current_menu
 
@@ -7,7 +7,7 @@ import settings
 import helpers
 
 
-flask_app = prism.flask()
+flask_app = prism.flask_app()
 
 def has_no_empty_params(rule):
 	defaults = rule.defaults if rule.defaults is not None else ()
@@ -21,7 +21,7 @@ def site_map():
 		# Filter out rules we can't navigate to in a browser
 		# and rules that require parameters
 		if "GET" in rule.methods and has_no_empty_params(rule):
-			url = url_for(rule.endpoint, **(rule.defaults or {}))
+			url = flask.url_for(rule.endpoint, **(rule.defaults or {}))
 			links.append((url, rule.endpoint))
 	return str(links)
 
@@ -45,22 +45,21 @@ def inject_things():
 
 @flask_app.before_request
 def before_request():
-	g.user = flask_login.current_user
+	flask.g.current_plugin = None
+	flask.g.user = flask_login.current_user
 
-@flask_app.before_request
-def check_valid_login():
-	login_valid = prism.get().logged_in()
+	login_valid = prism.get().is_logged_in
 
-	if (request.endpoint and
-		not request.endpoint.startswith('static') and
+	if (flask.request.endpoint and
+		not flask.request.endpoint.startswith('static') and
 		not login_valid and
-		not getattr(flask_app.view_functions[request.endpoint], 'is_public', False)):
-		return redirect(url_for('login'))
+		not getattr(flask_app.view_functions[flask.request.endpoint], 'is_public', False)):
+		return flask.redirect(flask.url_for('login'))
 
 @flask_app.errorhandler(404)
 def page_not_found(e):
-	return render_template('other/404.html'), 404
+	return flask.render_template('other/404.html'), 404
 
 @flask_app.errorhandler(500)
 def internal_server_error(e):
-	return render_template('other/500.html'), 500
+	return flask.render_template('other/500.html'), 500

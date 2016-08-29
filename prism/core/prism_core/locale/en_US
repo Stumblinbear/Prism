@@ -1,0 +1,7 @@
+error.title.fatal=Fatal Error
+
+error.fix.known=A possible fix is known.
+error.fix.unknown=No known fix.
+error.fix.unknown.sorry=I'm terribly sorry, please click the "Send Error Report" button so we can attempt to fix the bug!
+
+error.button.send=Send Error Report

@@ -12,7 +12,8 @@ import subprocess
 import subprocess
 from subprocess import PIPE
 
-from flask import Blueprint, request, render_template, url_for, redirect, abort
+import flask
+from flask import Blueprint
 from flask_menu import current_menu
 
 import api
@@ -29,12 +30,12 @@ def init(flask_app, config):
 def get():
 	return PRISM_STATE
 
-def flask():
-	return PRISM_STATE.flask()
+def flask_app():
+	return PRISM_STATE.flask_app()
 
 def plugin_manager():
-	if PRISM_STATE.plugin_manager is None:
-		PRISM_STATE.plugin_manager = PluginManager(PRISM_STATE.config)
+	if PRISM_STATE._plugin_manager is None:
+		PRISM_STATE._plugin_manager = PluginManager(PRISM_STATE.config)
 		PRISM_STATE.plugin_manager.init()
 	return PRISM_STATE.plugin_manager
 
@@ -43,19 +44,21 @@ def get_plugin(id):
 
 class Prism:
 	def __init__(self, flask_app, config):
-		self.flask_app = flask_app
+		self._flask_app = flask_app
 		self.config = config
 
-		self.plugin_manager = None
+		self._plugin_manager = None
 
-	def flask(self):
+	def flask_app(self):
 		""" Returns the flask application instance """
-		return self.flask_app
+		return self._flask_app
 
+	@property
 	def plugin_manager(self):
 		""" Returns the plugin manager instance """
-		return self.plugin_manager
+		return self._plugin_manager
 
+	@property
 	# User functions
 	def user(self):
 		""" Returns the user object if they're logged in, otherwise None """
@@ -64,7 +67,8 @@ class Prism:
 			return g.user
 		return None
 
-	def logged_in(self):
+	@property
+	def is_logged_in(self):
 		""" Returns true if the user is logged in """
 		from flask import g
 		if hasattr(g, 'user'):
@@ -72,7 +76,7 @@ class Prism:
 		return False
 
 	# Returns true if login was successful
-	def login(self, username, password):
+	def attempt_login(self, username, password):
 		""" Attempt to log the user in if the username and password are correct """
 		if self.config['username'] != username:
 			return False
@@ -81,7 +85,7 @@ class Prism:
 		return True
 
 	# Log the user out
-	def logout(self):
+	def do_logout(self):
 		""" Log the current user out """
 		import flask_login
 		flask_login.logout_user()
@@ -89,7 +93,7 @@ class Prism:
 		from flask import g
 		g.user = None
 
-		return redirect(url_for('login'))
+		return flask.redirect(flask.url_for('login'))
 
 class PluginManager:
 	def __init__(self, config):
@@ -276,7 +280,7 @@ class PluginManager:
 
 			plugin._endpoint = plugin.plugin_id
 			if plugin._endpoint.startswith('prism_'):
-				plugin._endpoint = plugin._endpoint.split('_', 2)[1]
+				plugin._endpoint = plugin._endpoint.split('_', 1)[1]
 
 			self.plugins[plugin.plugin_id] = plugin
 
@@ -319,7 +323,7 @@ class PluginManager:
 
 			if hasattr(view, 'menu'):
 				has_menus = True
-				with flask().app_context():
+				with flask_app().app_context():
 					item = current_menu.submenu(blueprint_name)
 					item.register(blueprint_name + '.index',
 									view.menu['title'],
@@ -343,7 +347,7 @@ class PluginManager:
 					continue
 
 				endpoint_id = func_name
-				view_func_wrapper = self.func_wrapper(func)
+				view_func_wrapper = self.func_wrapper(plugin.plugin_id, func)
 
 				fallback_endpoint = self.get_http_endpoint(func)
 				fallback_http_methods = self.get_http_methods(func)
@@ -361,7 +365,7 @@ class PluginManager:
 
 				if hasattr(func, 'menu'):
 					has_menus = True
-					with flask().app_context():
+					with flask_app().app_context():
 						item = current_menu.submenu(blueprint_name + '.' + endpoint_id)
 						item.register(blueprint_name + '.' + endpoint_id,
 										func.menu['title'],
@@ -392,11 +396,11 @@ class PluginManager:
 													view_func=view_func_wrapper,
 													defaults=route['defaults'])
 
-			flask().register_blueprint(view._blueprint, url_prefix='/' +
+			flask_app().register_blueprint(view._blueprint, url_prefix='/' +
 																blueprint_name.replace('.', '/'))
 
 		if has_menus:
-			with flask().app_context():
+			with flask_app().app_context():
 				item = current_menu.submenu(plugin._endpoint)
 				item.register(plugin._endpoint + '.index',
 								plugin.name_display,
@@ -405,12 +409,14 @@ class PluginManager:
 
 		paaf()
 
-	def func_wrapper(self, func):
+	def func_wrapper(self, plugin_id, func):
 		""" Wraps the route return function. This allows us
 		to do fun things with the return value :D """
 		def func_wrapper(*args, **kwargs):
-			if request.method != 'GET':
-				obj = func(request, *args, **kwargs)
+			flask.g.current_plugin = plugin_id
+
+			if flask.request.method != 'GET':
+				obj = func(flask.request, *args, **kwargs)
 			else:
 				obj = func(*args, **kwargs)
 
@@ -421,22 +427,22 @@ class PluginManager:
 					page_args = obj[1]
 
 				if obj[0].endswith('.html'):
-					return render_template(obj[0], **page_args)
+					return flask.render_template(obj[0], **page_args)
 				elif get_url_for(obj[0]) is not None:
-					return redirect(get_url_for(obj[0], **page_args))
+					return flask.redirect(get_url_for(obj[0], **page_args))
 				elif len(obj) > 1:
 					if obj[0] == 'redirect':
-						return redirect(url_for(obj[1]))
+						return flask.redirect(flask.url_for(obj[1]))
 					elif obj[0] == 'abort':
-						abort(obj[1])
+						flask.abort(obj[1])
 					elif obj[0] == 'error':
 						error_json = base64.b64encode(json.dumps(page_args).encode('utf-8'))
-						return redirect(url_for('core.error', error_json=error_json))
+						return flask.redirect(flask.url_for('core.error', error_json=error_json))
 			elif isinstance(obj, str):
 				if obj.endswith('.html'):
-					return render_template(obj)
+					return flask.render_template(obj)
 				elif get_url_for(obj) is not None:
-					return redirect(get_url_for(obj))
+					return flask.redirect(get_url_for(obj))
 			elif isinstance(obj, dict):
 				return json.dumps(obj)
 			return obj
@@ -492,7 +498,7 @@ def public_endpoint(function):
 def get_url_for(url, **args):
 	""" Checks if a url endpoint exists """
 	try:
-		return url_for(url, **args)
+		return flask.url_for(url, **args)
 	except:
 		return None
 

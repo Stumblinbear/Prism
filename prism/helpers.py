@@ -3,13 +3,17 @@ import os
 import time
 from datetime import datetime
 
+from docutils.core import publish_string
+from docutils.writers.html4css1 import Writer, HTMLTranslator
 import flask
 import jinja2
+from markupsafe import Markup
 
 import prism
+import settings
 
 
-flask_app = prism.flask()
+flask_app = prism.flask_app()
 
 def next_color(i):
 	colors = ['#337AB7', '#00A65A', '#F39C12',
@@ -39,6 +43,41 @@ def _convert_bytes(size, format=False):
 	if format:
 		return '%s%s' % (int(s), size_name[i])
 	return (int(s), size_name[i])
+
+class HTMLFragmentTranslator(HTMLTranslator):
+	def __init__(self, document):
+		HTMLTranslator.__init__(self, document)
+		self.head_prefix = ['', '', '', '', '']
+		self.body_prefix = []
+		self.body_suffix = []
+		self.stylesheet = []
+
+	def astext(self):
+		return ''.join(self.body)
+
+html_fragment_writer = Writer()
+html_fragment_writer.translator_class = HTMLFragmentTranslator
+
+@flask_app.template_filter()
+def locale(s):
+	plugin_id = flask.g.current_plugin
+	if plugin_id is None:
+		plugin_id = 'prism'
+
+	# Allow setting their own plugin id (Iunno why, but it might be useful)
+	if ':' in s:
+		plugin_id, s = s.split(':', 1)
+
+	# Search the plugin that's rendering the template for the requested locale
+	if plugin_id == 'prism':
+		s = settings.PRISM_LOCALE[s]
+	else:
+		s = prism.get_plugin(flask.g.current_plugin).locale[s]
+
+	s = publish_string(s, writer=html_fragment_writer).decode('utf-8').rstrip('\r\n')
+	s = s.split('<p>', 1)[1]
+	s = s[:s.rfind('</p>')]
+	return Markup(s)
 
 @flask_app.template_filter()
 def convert_bytes(size):

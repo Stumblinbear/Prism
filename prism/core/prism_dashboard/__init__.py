@@ -23,7 +23,7 @@ class DashboardPlugin(BasePlugin):
 					self._widgets[widget.widget_id] = {'shown': True, 'order': len(self._available_widgets)}
 
 		prism.output('Registered %s widgets' % len(self._available_widgets))
-		prism.flask().jinja_env.globals["render_widget"] = self.render_widget
+		prism.flask_app().jinja_env.globals["render_widget"] = self.render_widget
 
 	def get_widget(self, widget_id):
 		return self._available_widgets[widget_id]
