@@ -10,7 +10,7 @@ import jinja2
 from markupsafe import Markup
 
 import prism
-import settings
+import prism.settings
 
 
 flask_app = prism.flask_app()

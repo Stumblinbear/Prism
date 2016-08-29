@@ -1,6 +1,6 @@
-from api.view import BaseView, route, menu
-
 import netfilter
+
+from prism.api.view import BaseView, route, menu
 
 
 class FirewallView(BaseView):

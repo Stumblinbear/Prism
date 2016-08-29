@@ -3,8 +3,8 @@ import flask_login
 from flask_menu import current_menu
 
 import prism
-import settings
-import helpers
+import prism.settings
+import prism.helpers
 
 
 flask_app = prism.flask_app()

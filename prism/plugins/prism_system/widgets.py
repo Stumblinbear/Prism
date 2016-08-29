@@ -4,9 +4,9 @@ import time
 
 import psutil
 
-import settings
-import helpers
-from memorize import memorize
+import prism.settings
+import prism.helpers
+from prism.memorize import memorize
 
 from prism_dashboard import Widget
 

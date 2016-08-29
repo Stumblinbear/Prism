@@ -3,8 +3,9 @@ import json
 import threading
 
 import prism
-import settings
-from api.view import BaseView, route
+import prism.settings
+
+from prism.api.view import BaseView, route
 
 
 class CoreView(BaseView):

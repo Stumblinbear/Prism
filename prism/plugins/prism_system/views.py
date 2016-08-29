@@ -6,9 +6,9 @@ from crontab import CronTab
 from crontabs import CronTabs
 import psutil
 
-import settings
-from memorize import memorize
-from api.view import BaseView, route, menu
+import prism.settings
+from prism.memorize import memorize
+from prism.api.view import BaseView, route, menu
 
 
 class SystemView(BaseView):

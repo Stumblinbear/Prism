@@ -4,7 +4,6 @@ from flask import Blueprint, request, redirect, url_for, render_template
 import flask_login
 from wtforms import Form, StringField, PasswordField, validators
 
-# Flask Login Management
 import prism
 
 

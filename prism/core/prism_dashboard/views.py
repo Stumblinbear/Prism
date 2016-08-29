@@ -1,7 +1,7 @@
-from api.view import BaseView, route, menu
-
 import prism
-import settings
+import prism.settings
+
+from prism.api.view import BaseView, route, menu
 
 
 class DashboardView(BaseView):

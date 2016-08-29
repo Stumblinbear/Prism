@@ -4,7 +4,7 @@ import socket
 import time
 
 import prism
-from api.config import JSONConfig, LocaleConfig
+from .config import JSONConfig, LocaleConfig
 
 
 PANEL_PID = None

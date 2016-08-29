@@ -1,5 +1,5 @@
 from flask import render_template
-from api import BasePlugin
+from prism.api.plugin import BasePlugin
 
 from .views import *
 
