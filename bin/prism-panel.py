@@ -18,8 +18,13 @@
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # ****************************************************************************
 
-import os
 import sys
+
+if sys.version_info < (3, 0):
+    sys.stdout.write("Unable to start Prism. Python 3.x is required!\n")
+    sys.exit(1)
+
+import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
