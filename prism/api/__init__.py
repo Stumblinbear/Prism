@@ -3,6 +3,7 @@ import os
 import prism
 import settings
 
+from api.config import JSONConfig, LocaleConfig
 
 # Dependency: (binary/library, name)
 # 	After load: (binary/library, name, is satisfied)
@@ -21,8 +22,14 @@ class BasePlugin(object):
 	@property
 	def config(self):
 		if self._config is None:
-			self._config = PluginConfig(settings.CONFIG_FOLDER_PLUGINS, '%s.json' % self.plugin_id)
+			self._config = JSONConfig(self, 'config.json')
 		return self._config
+
+	@property
+	def locale(self):
+		if self._locale is None:
+			self._locale = LocaleConfig(self)
+		return self._locale
 
 	@property
 	def plugin_id(self):
@@ -76,44 +83,15 @@ class BasePlugin(object):
 			return 'circle-o'
 		return self._info['icon']
 
+	@property
+	def data_folder(self):
+		return os.path.join(settings.CONFIG_FOLDER_PLUGINS, self.plugin_id)
+
+	@property
+	def plugin_folder(self):
+		return os.path.join(settings.PLUGINS_PATH if self.is_core else settings.CORE_PLUGINS_PATH,
+								self.plugin_id)
+
 	# Called when the plugin is enabled.
 	def init(self, prism_state):
 		pass
-
-class PluginConfig(object):
-	def __init__(self, folder, file):
-		self._path = os.path.join(folder, file)
-
-		self.reload()
-
-	def reload(self):
-		self.__dict__.update(settings.load_config(self._path))
-
-	def save(self):
-		config = dict([(k, v) for k, v in self.__dict__.items() if not k.startswith('_')])
-		settings.save_config(self._path, config)
-
-	def __getitem__(self, key):
-		return self.__dict__[key]
-
-	def __setitem__(self, key, value):
-		self.__dict__[key] = value
-		self.save()
-
-	def __delitem__(self, key):
-		del self.__dict__[key]
-
-	def __contains__(self, key):
-		return key in self.__dict__
-
-	def __len__(self):
-		return len(self.__dict__)
-
-	def __repr__(self):
-		return repr(self.__dict__)
-
-	def __call__(self, key, default=None):
-		if key in self:
-			return self[key]
-		self[key] = default
-		return default

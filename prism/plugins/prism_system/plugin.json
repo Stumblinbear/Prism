@@ -1,11 +1,13 @@
 {
-	"version": [ 1, 0, 0, "indev" ],
-
-	"icon": "television",
-	"name": "System",
-	"description": "Basic system management.",
-
-	"dependencies": {
-		"library": [ "python-crontab" ]
-	}
+    "version": [ 1, 0, 0, "indev" ],
+	
+    "icon": "television", 
+    "name": "System", 
+    "description": "Basic system management.", 
+	
+    "dependencies": {
+        "library": [
+            "python-crontab"
+        ]
+    }
 }

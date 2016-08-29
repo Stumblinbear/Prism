@@ -1,4 +1,6 @@
 {
+    "auto_save": true, 
+    "path": "/home/prism/Dropbox/prism/prism/config/plugins/prism_dashboard/config.json", 
     "widgets": {
         "prism_system.info": {
             "order": 1, 

@@ -16,6 +16,7 @@ from flask import Blueprint, request, render_template, url_for, redirect, abort
 from flask_menu import current_menu
 
 import api
+from api.config import JSONConfig
 import settings
 
 
@@ -166,7 +167,7 @@ class PluginManager:
 					output('Plugin does not have a plugin.json file. Offender: %s' % plugin_id)
 					continue
 
-				plugin_info = settings.load_config(os.path.join(base_folder, 'plugin.json'))
+				plugin_info = JSONConfig(base_folder, 'plugin.json', auto_save=False)
 				plugin_info['_id'] = plugin_id
 				plugin_info['_is_core'] = is_core
 				plugin_info['_is_satisfied'] = True

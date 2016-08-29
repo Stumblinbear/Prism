@@ -82,9 +82,6 @@ def main(args=None):
     prism.plugin_manager()
     prism.paaf()
 
-    # Save the config in case anything changed
-    settings.save_config(settings.CONFIG_FILE, settings.PRISM_CONFIG)
-
     prism.output('Verifying SSL')
     has_ssl = False
 
