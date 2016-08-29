@@ -41,7 +41,7 @@ def inject_things():
 	if title == 'Menu item not initialised':
 		title = None
 
-	return dict(title=title)
+	return dict(title=title, version=prism.__version__)
 
 @flask_app.before_request
 def before_request():

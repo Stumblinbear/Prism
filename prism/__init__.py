@@ -1,5 +1,3 @@
-# If you know of a better way to handle this, be my guest.
-import builtins
 import base64
 import inspect
 import json
@@ -19,6 +17,11 @@ from flask_menu import current_menu
 from prism.config import JSONConfig
 import prism.settings
 import prism.api.plugin
+
+
+from prism.version import get_version
+
+__version__ = get_version()
 
 
 PRISM_STATE = None
