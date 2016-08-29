@@ -1,2 +1,9 @@
 prism/libs/
-*__pycache__
+__pycache__
+
+RELEASE-VERSION
+
+config/
+config.json
+
+tmp/
