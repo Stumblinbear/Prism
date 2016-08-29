@@ -6,7 +6,7 @@
     ], 
     "first_run": true, 
     "host": "192.99.177.187", 
-    "password": "$5$rounds=535000$7mNNUdKYRplZQlPb$4D3OdpIQOrqqiekP7FfxS2CwtuWDp6pjlYiI7tdMqM4", 
+    "password": "$5$rounds=535000$a4AM3DkQy0gqSHUm$VtkxOuUQDlq08JDmw3cPfNdRghwWAFUcfCgvNFUPY8C", 
     "path": "/home/prism/Dropbox/prism/prism/config/config.json", 
     "secret_key": "883chwn5k260zlglipl32ikw3ucxgj8o", 
     "username": "admin"

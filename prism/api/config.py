@@ -100,4 +100,6 @@ class LocaleConfig(object):
                     self.__dict__[name] = value.rstrip('\r\n')
 
     def __getitem__(self, key):
+        if key not in self.__dict__:
+            return key
         return self.__dict__[key]
