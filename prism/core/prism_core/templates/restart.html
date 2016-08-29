@@ -1,13 +1,13 @@
 {% extends 'panel.html' %}
 {% block content %}
 <div class="text-center">
-	<h3><i class="fa fa-asterisk text-yellow"></i> Prism <span id="process">is shutting down</span>...</h3>
+	<h3><i class="fa fa-asterisk text-yellow"></i> Prism <span id="process">{{ "restart.stage.shutting_down" | locale }}</span>...</h3>
 		{{ include_static('images/loading.svg') }}
 		<p>
-			I will redirect you in a few moments.
+			{{ "restart.redirect" | locale }}
 		</p>
 		<p>
-			If not, click <a href="{{ url_for(return_url) }}">here</a> once you are sure I have completely started up.
+			{{ "restart.return.1" | locale }} <a href="{{ url_for(return_url) }}">{{ "restart.return.2" | locale }}</a> {{ "restart.return.3" | locale }}
 		</p>
 </div>
 <script type="text/javascript">
@@ -23,10 +23,10 @@
 								return;
 						$.post(ping_location, { action: action }, function(data) {
 								if(data == '0') {
-										$('#process').html('is restarting');
+										$('#process').html('{{ "restart.stage.restarting" | locale }}');
 										action = 1;
 								}else if(data == '1') {
-										$('#process').html('has started');
+										$('#process').html('{{ "restart.stage.started" | locale }}');
 										action = -1;
 										setTimeout(function() {
 												window.location = '{{ url_for(return_url) }}';

@@ -1,4 +1,4 @@
-from flask import render_template
+import flask
 from prism.api.plugin import BasePlugin
 
 from .views import *
@@ -16,6 +16,7 @@ class DashboardPlugin(BasePlugin):
 		for plugin_id, plugin in prism_state.plugin_manager.plugins.items():
 			for name, obj in prism_state.plugin_manager.get_classes(plugin._module, Widget):
 				widget = obj()
+				widget.plugin_id = plugin_id
 				widget.widget_id = plugin_id + '.' + widget.widget_id
 				self._available_widgets[widget.widget_id] = widget
 
@@ -65,7 +66,15 @@ class Widget(object):
 				page_args = obj[1]
 
 			if obj[0].endswith('.html'):
-				return render_template(obj[0], **page_args)
+				# Let widgets respect locale rules
+				hold_current = flask.g.current_plugin
+				flask.g.current_plugin = self.plugin_id
+
+				ret = flask.render_template(obj[0], **page_args)
+
+				flask.g.current_plugin = hold_current
+
+				return ret
 		return obj
 
 	def render(self):

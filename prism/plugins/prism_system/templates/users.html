@@ -5,11 +5,11 @@
 	<div class="col-md-6">
 		<div class="box box-default color-palette-box">
 			<div class="box-header with-border">
-				<h3 class="box-title"><i class="fa fa-user"></i> Users</h3>
+				<h3 class="box-title"><i class="fa fa-user"></i> {{ "users.list.header" | locale }}</h3>
 			</div>
 			<div class="box-body no-padding">
 				<table class="table table-hover">
-					<thead><tr><th>ID</th><th>Group</th><th>Username</th></tr></thead>
+					<thead><tr><th>{{ "users.list.id" | locale }}</th><th>{{ "users.list.group" | locale }}</th><th>{{ "users.list.username" | locale }}</th></tr></thead>
 					<tbody>
 						{%- for id, user in user_info.users.items() -%}
 						<tr>
@@ -24,10 +24,10 @@
 								<div class="collapse" id="user-{{ id }}">
 									<br />
 									{% if user.info != user.name and user.info != '' %}
-										<div class="row"><div class="col-xs-offset-1 col-xs-2"><b>Info:</b></div><div class="col-xs-9"><i>{{ user.info }}</i></div></div>
+										<div class="row"><div class="col-xs-offset-1 col-xs-2"><b>{{ "user.info" | locale }}:</b></div><div class="col-xs-9"><i>{{ user.info }}</i></div></div>
 									{% endif %}
-									<div class="row"><div class="col-xs-offset-1 col-xs-2"><b>Home:</b></div><div class="col-xs-8">{{ user.home }}</div></div>
-									<div class="row"><div class="col-xs-offset-1 col-xs-2"><b>Shell:</b></div><div class="col-xs-8">{{ user.shell }}</div></div>
+									<div class="row"><div class="col-xs-offset-1 col-xs-2"><b>{{ "user.home" | locale }}:</b></div><div class="col-xs-8">{{ user.home }}</div></div>
+									<div class="row"><div class="col-xs-offset-1 col-xs-2"><b>{{ "user.shell" | locale }}:</b></div><div class="col-xs-8">{{ user.shell }}</div></div>
 								</div>
 							</div>
 							</td>
@@ -41,11 +41,11 @@
 	<div class="col-md-6">
 		<div class="box box-default color-palette-box">
 			<div class="box-header with-border">
-				<h3 class="box-title"><i class="fa fa-users"></i> Groups</h3>
+				<h3 class="box-title"><i class="fa fa-users"></i> {{ "groups.list.header" | locale }}</h3>
 			</div>
 			<div class="box-body no-padding">
 				<table class="table">
-					<thead><tr><th>ID</th><th>Name</th><th>Users</th></tr></thead>
+					<thead><tr><th>{{ "groups.list.id" | locale }}</th><th>{{ "groups.list.name" | locale }}</th><th>{{ "groups.list.users" | locale }}</th></tr></thead>
 					<tbody>
 						{%- for id, group in user_info.groups.items() -%}
 							<tr><td>{{ id }}</td><td>{{ group.name }}</td><td>{{ group.users }}</td></tr>

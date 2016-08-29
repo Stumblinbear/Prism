@@ -28,10 +28,13 @@ class JSONConfig(object):
 
     def save(self):
         config = dict([(k, v) for k, v in self.__dict__.items() if not k.startswith('_')])
+        del config['auto_save']
+        del config['path']
+
         if len(config) == 0:
             # If there are no config values, just delete it
             if os.path.exists(self.path):
-                os.remove(path)
+                os.remove(self.path)
         else:
             # Write to config
             os.makedirs(os.path.dirname(self.path), exist_ok=True)
@@ -39,6 +42,8 @@ class JSONConfig(object):
                 json.dump(config, file, indent=4, sort_keys=True)
 
     def __getitem__(self, key):
+        if key not in self.__dict__:
+            return None
         return self.__dict__[key]
 
     def __setitem__(self, key, value):
@@ -70,8 +75,10 @@ class LocaleConfig(object):
         locale = prism.settings.PRISM_CONFIG['locale']
 
         if isinstance(obj, BasePlugin):
+            self.plugin_id = obj.plugin_id
             self.path = os.path.join(obj.plugin_folder, 'locale', locale)
         else:
+            self.plugin_id = 'prism'
             self.path = os.path.join(obj, 'locale', locale)
 
         if not os.path.exists(self.path) and locale != 'en_US':
@@ -82,13 +89,10 @@ class LocaleConfig(object):
             else:
                 self.path = os.path.join(obj, 'locale', 'en_US')
 
-            if isinstance(obj, BasePlugin):
-                prism.output('Locale Warning: Plugin does not have a locale for %s. Offender: %s falling back to en_US.' % (locale, obj.name))
-            else:
-                prism.output('Locale Warning: Prism does not have a locale for %s. Falling back to en_US.' % locale)
+            prism.output('Locale Warning: No locale for %s. Offender: %s falling back to en_US.' % (locale, self.plugin_id))
 
         if not os.path.exists(self.path):
-            prism.output('Locale Error: Failed to load locale. %s does not exist. Offender: %s' % (locale, obj.name if isinstance(obj, BasePlugin) else 'Prism'))
+            prism.output('Locale Error: Failed to load locale. %s does not exist in %s. Offender: %s' % (locale, self.path, self.plugin_id))
             return
 
         with open(self.path) as f:

@@ -6,13 +6,13 @@
 		{% if proc.pid != panel_pid %}
 			<form class="pull-right" method="POST">
 				<input type="hidden" name="id" value="{{ proc.pid }}" />
-				<button class="btn btn-danger" name="action" value="terminate" data-toggle="tooltip" data-placement="bottom" title="Safely stop the process.">Terminate</button>
-				<button class="btn btn-danger" name="action" value="kill" data-toggle="tooltip" data-placement="bottom" title="Forceably kill the process.">Kill</button>
+				<button class="btn btn-danger" name="action" value="terminate" data-toggle="tooltip" data-placement="bottom" title="{{ "process.button.terminate.info" | locale }}">{{ "process.button.terminate" | locale }}</button>
+				<button class="btn btn-danger" name="action" value="kill" data-toggle="tooltip" data-placement="bottom" title="{{ "process.button.kill.info" | locale }}">{{ "process.button.kill" | locale }}</button>
 			</form>
 		{% else %}
 			<div class="pull-right">
-				<button class="btn btn-danger" disabled data-toggle="tooltip" data-placement="bottom" title="Terminate is disabled for this process.">Terminate</button>
-				<button class="btn btn-danger" disabled data-toggle="tooltip" data-placement="bottom" title="Kill is disabled for this process.">Kill</button>
+				<button class="btn btn-danger" disabled data-toggle="tooltip" data-placement="bottom" title="{{ "process.button.terminate.disabled.info" | locale }}">{{ "process.button.terminate" | locale }}</button>
+				<button class="btn btn-danger" disabled data-toggle="tooltip" data-placement="bottom" title="{{ "process.button.kill.disabled.info" | locale }}">{{ "process.button.kill" | locale }}</button>
 			</div>
 		{% endif %}
 	</div>
@@ -26,7 +26,7 @@
 <div class="row">
 	<div class="col-sm-6">
 		<div class="text-center">
-			<h4>Physical Cores</h4>
+			<h4>{{ "cpu.cores.physical" | locale }}</h4>
 			{%- for i in range(cpu_count) -%}
 				<div class="bg-{% if i in proc.cpu_affinity %}primary{% else %}danger{% endif %} core">{{ i + 1 }}</div>
 			{%- endfor -%}
@@ -34,7 +34,7 @@
 	</div>
 	<div class="col-sm-6">
 		<div class="text-center">
-			<h4>Logical Cores</h4>
+			<h4>{{ "cpu.cores.logical" | locale }}</h4>
 			{%- for i in range(cpu_count_logical) -%}
 				<div class="bg-{% if i in proc.cpu_affinity %}primary{% else %}danger{% endif %} core">{{ cpu_count + i + 1 }}</div>
 			{%- endfor -%}
@@ -44,13 +44,13 @@
 <br />
 <div class="row">
 	<div class="col-sm-6 text-center">
-		<h4>CPU Usage <small>(<span id="cpu_percent">{{ proc.cpu_percent|round(1) }}</span>%) over {{ proc.threads|count }} thread{% if proc.threads|count != 1 %}s{% endif %} [priority: {{ proc.nice }}]</small></h4>
+		<h4>{{ "process.info.usage.cpu" | locale }} <small>(<span id="cpu_percent">{{ proc.cpu_percent|round(1) }}</span>%) over {{ proc.threads|count }} thread{% if proc.threads|count != 1 %}s{% endif %} [priority: {{ proc.nice }}]</small></h4>
 		<div class="progress">
 			<div id="cpu_percent_bar" class="progress-bar {% if proc.cpu_percent >= 30 %}progress-bar-{% if proc.cpu_percent >= 70 %}danger{% else %}warning{% endif %} {% endif %}progress-bar-striped active" style="width:{{ proc.cpu_percent }}%"></div>
 		</div>
 	</div>
 	<div class="col-sm-6 text-center">
-		<h4>Memory Usage <small>(<span id="memory_percent">{{ proc.memory_percent|round(1) }}</span>%)</small></h4>
+		<h4>{{ "process.info.usage.memory" | locale }} <small>(<span id="memory_percent">{{ proc.memory_percent|round(1) }}</span>%)</small></h4>
 		<div class="progress">
 			<div id="memory_percent_bar" class="progress-bar {% if proc.memory_percent >= 30 %}progress-bar-{% if proc.memory_percent >= 70 %}danger{% else %}warning{% endif %} {% endif %}progress-bar-striped" style="width:{{ proc.memory_percent }}%"></div>
 		</div>
@@ -93,13 +93,13 @@
 					</div>
 					<div class="col-xs-11">
 						<div class="row"><center><i>Started about {{ proc.create_time | timesince }}</i></center></div>
-						<div class="row" data-toggle="tooltip" data-placement="left" title="The total amount of information read from disk."><div class="col-xs-3"><b>Total Read:</b></div><div class="col-xs-9">{{ proc.io_counters.read_bytes | convert_bytes }}</div></div>
-						<div class="row" data-toggle="tooltip" data-placement="left" title="The total amount of information wrote to disk."><div class="col-xs-3"><b><small>Total Wrote:</small></b></div><div class="col-xs-9">{{ proc.io_counters.write_bytes | convert_bytes}}</div></div>
+						<div class="row" data-toggle="tooltip" data-placement="left" title="The total amount of information read from disk."><div class="col-xs-3"><b>{{ "process.info.total.read" | locale }}:</b></div><div class="col-xs-9">{{ proc.io_counters.read_bytes | convert_bytes }}</div></div>
+						<div class="row" data-toggle="tooltip" data-placement="left" title="The total amount of information wrote to disk."><div class="col-xs-3"><b>{{ "process.info.total.wrote" | locale }}</b></div><div class="col-xs-9">{{ proc.io_counters.write_bytes | convert_bytes}}</div></div>
 						<br />
-						<div class="row" data-toggle="tooltip" data-placement="left" title="The user that started the process."><div class="col-xs-3"><b>User:</b></div><div class="col-xs-9">{{ proc.username }}</div></div>
-						<div class="row" data-toggle="tooltip" data-placement="left" title="The process's current directory."><div class="col-xs-3"><b>CWD:</b></div><div class="col-xs-9">{{ proc.cwd }}</div></div>
-						<div class="row" data-toggle="tooltip" data-placement="left" title="The process's location on disk."><div class="col-xs-3"><b>EXE:</b></div><div class="col-xs-9">{{ proc.exe }}</div></div>
-						<div class="row" data-toggle="tooltip" data-placement="left" title="The command used to start the process."><div class="col-xs-3"><b>CMD:</b></div><div class="col-xs-9">{{ proc.cmdline | join(' ') }}</div></div>
+						<div class="row" data-toggle="tooltip" data-placement="left" title="The user that started the process."><div class="col-xs-3"><b>{{ "process.info.user" | locale }}:</b></div><div class="col-xs-9">{{ proc.username }}</div></div>
+						<div class="row" data-toggle="tooltip" data-placement="left" title="The process's current directory."><div class="col-xs-3"><b>{{ "process.info.cwd" | locale }}:</b></div><div class="col-xs-9">{{ proc.cwd }}</div></div>
+						<div class="row" data-toggle="tooltip" data-placement="left" title="The process's location on disk."><div class="col-xs-3"><b>{{ "process.info.exe" | locale }}:</b></div><div class="col-xs-9">{{ proc.exe }}</div></div>
+						<div class="row" data-toggle="tooltip" data-placement="left" title="The command used to start the process."><div class="col-xs-3"><b>{{ "process.info.cmd" | locale }}:</b></div><div class="col-xs-9">{{ proc.cmdline | join(' ') }}</div></div>
 					</div>
 				</div>
 			</div>
@@ -109,35 +109,35 @@
 		<div class="box box-default">
 			<div class="box-header with-border">
 				<i class="fa fa-braille"></i>
-				<h3 class="box-title">CPU Time <small>(in seconds)</small></h3>
+				<h3 class="box-title">{{ "process.info.cpu_time" | locale }} <small>{{ "process.info.cpu_time.in_seconds" | locale }}</small></h3>
 			</div>
 			<div class="box-body">
 				<div class="row">
 					<div class="col-sm-12">
 						{% set total = proc.cpu_times.user + proc.cpu_times.system %}
 						<div class="progress">
-							<div class="progress-bar progress-bar-striped" style="width:{{ proc.cpu_times.system / total * 100 }}%" data-toggle="tooltip" data-placement="top" title="The total amount of cpu time this process' tasks have spent in kernel mode.">
+							<div class="progress-bar progress-bar-striped" style="width:{{ proc.cpu_times.system / total * 100 }}%" data-toggle="tooltip" data-placement="top" title="{{ "process.info.cpu_time.kernel" | locale }}">
 								{{ proc.cpu_times.system }}s
 							</div>
-							<div class="progress-bar progress-bar-warning progress-bar-striped active" style="width:{{ proc.cpu_times.user / total * 100 }}%" data-toggle="tooltip" data-placement="top" title="The total amount of cpu time this process' tasks have spent in the program itself.">
+							<div class="progress-bar progress-bar-warning progress-bar-striped active" style="width:{{ proc.cpu_times.user / total * 100 }}%" data-toggle="tooltip" data-placement="top" title="{{ "process.info.cpu_time.process" | locale }}">
 								{{ proc.cpu_times.user }}s
 							</div>
 						</div>
 						{% set total = proc.cpu_times.children_user + proc.cpu_times.children_system %}
 						{% if total > 0 %}
-							<h5>Children</h5>
+							<h5>{{ "process.info.children" | locale }}</h5>
 							<div class="progress">
-								<div class="progress-bar progress-bar-striped" style="width:{{ proc.cpu_times.children_system / total * 100 }}%" data-toggle="tooltip" data-placement="top" title="The total amount of cpu time subprocess' tasks have spent in kernel mode.">
+								<div class="progress-bar progress-bar-striped" style="width:{{ proc.cpu_times.children_system / total * 100 }}%" data-toggle="tooltip" data-placement="top" title="{{ "process.info.cpu_time.subprocess.kernel" | locale }}">
 									{{ proc.cpu_times.children_system }}s
 								</div>
-								<div class="progress-bar progress-bar-warning progress-bar-striped active" style="width:{{ proc.cpu_times.children_user / total * 100 }}%" data-toggle="tooltip" data-placement="top" title="The total amount of cpu time subprocess' tasks have spent in the program itself.">
+								<div class="progress-bar progress-bar-warning progress-bar-striped active" style="width:{{ proc.cpu_times.children_user / total * 100 }}%" data-toggle="tooltip" data-placement="top" title="{{ "process.info.cpu_time.subprocess.process" | locale }}">
 									{{ proc.cpu_times.children_user }}s
 								</div>
 							</div>
 						{% endif %}
 					</div>
 					{% if proc.threads | length > 1 %}
-						<h4 class="text-center">Threads <small>({{ proc.threads | length }})</small></h4>
+						<h4 class="text-center">{{ "process.info.threads" | locale }} <small>({{ proc.threads | length }})</small></h4>
 						<hr />
 						<div class="col-sm-7">
 							{% set max_shown = 8 %}
@@ -147,16 +147,16 @@
 								{% set total = thread.user_time + thread.system_time %}
 								{% if total == 0 %}
 									<div class="progress">
-										<div class="progress-bar progress-bar-danger progress-bar-striped active" style="width:100%" data-toggle="tooltip" data-placement="top" title="This thread is completely unused.">
+										<div class="progress-bar progress-bar-danger progress-bar-striped active" style="width:100%" data-toggle="tooltip" data-placement="top" title="{{ "process.info.thread.unused" | locale }}">
 											0s
 										</div>
 									</div>
 								{% else %}
 									<div class="progress">
-										<div class="progress-bar progress-bar-striped" style="width:{{ thread.system_time / total * 100 }}%" data-toggle="tooltip" data-placement="top" title="The total amount of cpu time this thread's tasks have spent in kernel mode.">
+										<div class="progress-bar progress-bar-striped" style="width:{{ thread.system_time / total * 100 }}%" data-toggle="tooltip" data-placement="top" title="{{ "process.info.cpu_time.thread.kernel" | locale }}">
 											{{ thread.system_time }}s
 										</div>
-										<div class="progress-bar progress-bar-striped active" style="width:{{ thread.user_time / total * 100 }}%;background-color:{{ next_color(loop.index) }}" data-toggle="tooltip" data-placement="top" title="The total amount of cpu time this thread's tasks have spent in the program itself.">
+										<div class="progress-bar progress-bar-striped active" style="width:{{ thread.user_time / total * 100 }}%;background-color:{{ next_color(loop.index) }}" data-toggle="tooltip" data-placement="top" title="{{ "process.info.cpu_time.subprocess.process" | locale }}">
 											{{ thread.user_time }}s
 										</div>
 									</div>
@@ -180,7 +180,7 @@
 								$(function() {
 									new Chart($("#cpuTimes").get(0).getContext("2d")).Doughnut([
 										{% for thread in proc.threads %}
-											{value: {{ (thread.user_time + thread.system_time) | round(2) }}, color: '{{ next_color(loop.index) }}', label: 'Thread #{{ loop.index }}' },
+											{value: {{ (thread.user_time + thread.system_time) | round(2) }}, color: '{{ next_color(loop.index) }}', label: '{{ "process.info.thread" | locale }} #{{ loop.index }}' },
 										{% endfor %}
 									], {
 										percentageInnerCutout: 50,
@@ -201,13 +201,13 @@
 			<div class="box box-default">
 				<div class="box-header with-border">
 					<i class="fa fa-file"></i>
-					<h3 class="box-title">Connections</h3>
+					<h3 class="box-title">{{ "process.info.connections.list.header" | locale }}</h3>
 				</div>
 				<div class="box-body">
 					<div class="row">
 						<div class="col-sm-12">
 							<table class="table table-striped">
-								<thead><tr><th>Status</th><th>Type</th><th>Protocol</th><th>Listen</th><th>Remote</th></tr></thead>
+								<thead><tr><th>{{ "process.info.connections.list.status" | locale }}</th><th>{{ "process.info.connections.list.type" | locale }}</th><th>{{ "process.info.connections.list.protocol" | locale }}</th><th>{{ "process.info.connections.list.listen" | locale }}</th><th>{{ "process.info.connections.list.remote" | locale }}</th></tr></thead>
 								<tbody>
 									{% for con in proc.connections %}
 										{% if con.laddr == '' and con.raddr == None %}
@@ -254,13 +254,13 @@
 			<div class="box box-default">
 				<div class="box-header with-border">
 					<i class="fa fa-file"></i>
-					<h3 class="box-title">Open Files</h3>
+					<h3 class="box-title">{{ "process.info.open_files.list.header" | locale }}</h3>
 				</div>
 				<div class="box-body">
 					<div class="row">
 						<div class="col-sm-12">
 							<table class="table table-striped">
-								<thead><tr><th>Mode</th><th>File</th></tr></thead>
+								<thead><tr><th>{{ "process.info.open_files.list.mode" | locale }}</th><th>{{ "process.info.open_files.list.file" | locale }}</th></tr></thead>
 								<tbody>
 									{% for file in proc.open_files %}
 										<tr>

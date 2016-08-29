@@ -1,0 +1,130 @@
+widget.more_info=More Info
+
+widget.info.header=System
+widget.info.os=OS
+widget.info.hostname=Hostname
+widget.info.ipaddress=IP Address
+widget.info.uptime=Uptime
+
+widget.hardware.header=System Hardware
+widget.hardware.processor=Processor
+widget.hardware.disk=Disk
+widget.hardware.memory=Memory
+widget.hardware.swap=Swap
+
+widget.usage.cpu=CPU Usage
+widget.usage.ram=RAM Usage
+widget.usage.disk=Disk Usage
+widget.usage.network=Network Usage
+
+
+cron.list.header=Cron Jobs
+cron.list.user=User
+cron.list.command=Command
+cron.list.comment=Comment
+cron.list.last_run=Last Run
+
+cron.editor.header=Editor
+cron.editor.minute=Minute
+cron.editor.hour=Hour
+cron.editor.day=Day
+cron.editor.month=Minute
+cron.editor.weekday=Minute
+cron.editor.user=User
+cron.editor.command=Command
+cron.editor.button.save=Save
+
+
+cpu.cores.physical=Physical Cores
+cpu.cores.logical=Logical Cores
+
+processes.list.prism=This is Prism's process
+
+processes.list.show_all=Show All
+processes.list.header=Processes
+process.info.usage.cpu=CPU Usage
+process.info.usage.memory=Memory Usage
+processes.list.info.core_affinity=Core Affinity
+processes.list.info.button.advanced=Advanced
+
+process.button.terminate=Terminate
+process.button.terminate.info=Safely stop the process.
+process.button.terminate.disabled.info=Terminate is disabled for this process.
+process.button.kill=Kill
+process.button.kill.info=Forceably kill the process.
+process.button.kill.disabled.info=Kill is disabled for this process.
+
+process.info.usage.cpu=CPU Usage
+process.info.usage.memory=Memory Usage
+
+process.info.cpu_time=CPU Time
+process.info.cpu_time.in_seconds=(in seconds)
+process.info.children=Children
+process.info.thread=Thread
+process.info.threads=Threads
+process.info.thread.unused=This thread is completely unused.
+
+process.info.cpu_time.kernel=The total amount of cpu time this process' tasks have spent in kernel mode.
+process.info.cpu_time.process=The total amount of cpu time this process' tasks have spent in the program itself.
+process.info.cpu_time.subprocess.kernel=The total amount of cpu time this subprocess' tasks have spent in kernel mode.
+process.info.cpu_time.subprocess.process=The total amount of cpu time this subprocess' tasks have spent in the program itself.
+process.info.cpu_time.thread.kernel=The total amount of cpu time this thread's tasks have spent in kernel mode.
+process.info.cpu_time.thread.process=The total amount of cpu time this thread's tasks have spent in the program itself.
+
+process.info.total.read=Read
+process.info.total.wrote=Wrote
+process.info.user=User
+process.info.cwd=CWD
+process.info.exe=EXE
+process.info.cmd=CMD
+
+process.info.connections.list.header=Connections
+process.info.connections.list.status=Status
+process.info.connections.list.type=Type
+process.info.connections.list.protocol=Protocol
+process.info.connections.list.listen=Listen
+process.info.connections.list.remote=Remote
+
+process.info.open_files.list.header=Open Files
+process.info.open_files.list.mode=Mode
+process.info.open_files.list.file=File
+
+
+users.list.header=Users
+users.list.id=ID
+users.list.group=Group
+users.list.username=Username
+
+user.info=Info
+user.home=Home
+user.shell=Shell
+
+groups.list.header=Groups
+groups.list.id=ID
+groups.list.name=Name
+groups.list.users=Users
+
+
+disk.list.header=Mounted Filesystems
+disk.list.device=Device
+disk.list.mount_point=Mount Point
+disk.list.type=Type
+disk.list.usage=Usage
+disk.list.usage.long=Disk Usage
+
+disk.info.options=Mount Options
+disk.info.total_size=Total Size
+disk.info.total_used=Used
+disk.info.free_space=Free Space
+
+
+hosts.list.header=Hosts
+hosts.list.host=Host
+hosts.list.address=Address
+hosts.list.aliases=Aliases
+
+
+networks.list.header=Networks
+networks.list.id=ID
+networks.list.total.sent=Total Sent
+networks.list.total.received=Total Received

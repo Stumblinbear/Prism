@@ -5,3 +5,12 @@ error.fix.unknown=No known fix.
 error.fix.unknown.sorry=I'm terribly sorry, please click the "Send Error Report" button so we can attempt to fix the bug!
 
 error.button.send=Send Error Report
+
+restart.redirect=I will redirect you in a few moments.
+restart.stage.shutting_down=is shutting down...
+restart.stage.restarting=is restarting...
+restart.stage.started=has started.
+
+restart.return.1=If not, click
+restart.return.2=here
+restart.return.3=once you are sure I have completely started up.

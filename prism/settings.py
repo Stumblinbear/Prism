@@ -130,28 +130,28 @@ def init(pid):
 		PRISM_CONFIG = JSONConfig(path=CONFIG_FILE)
 
 		if 'locale' not in PRISM_CONFIG:
-			PRISM_CONFIG['password'] = 'en_US'
+			PRISM_CONFIG['locale'] = 'en_US'
 
 		# Make sure some VERY imporant values are set
 		if 'secret_key' not in PRISM_CONFIG:
-			prism.output(PRISM_LOCALE['start.secret.missing'])
+			prism.output(PRISM_LOCALE['start.missing.secret'])
 			PRISM_CONFIG['secret_key'] = prism.generate_random_string(32)
 			prism.output('')
 
 		if 'host' not in PRISM_CONFIG:
 			host = socket.gethostbyname(socket.gethostname())
-			prism.output(PRISM_LOCALE['start.host.missing'])
+			prism.output(PRISM_LOCALE['start.missing.host'])
 			PRISM_CONFIG['host'], used_default = prism.get_input(PRISM_LOCALE['start.host.prompt'], default=host)
 			prism.output('')
 
 		if 'username' not in PRISM_CONFIG:
-			prism.output(PRISM_LOCALE['start.username.missing'])
-			PRISM_CONFIG['username'], used_default = prism.get_input(PRISM_LOCALE['start.username.prompt'], default='admin')
+			prism.output(PRISM_LOCALE['start.missing.username'])
+			PRISM_CONFIG['username'], used_default = prism.get_input(PRISM_LOCALE['start.login.username.prompt'], default='admin')
 			prism.output('')
 
 		if 'password' not in PRISM_CONFIG:
-			prism.output(PRISM_LOCALE['start.password.missing'])
-			PRISM_CONFIG['password'], used_default = prism.get_input(PRISM_LOCALE['start.password.prompt'], default='password')
+			prism.output(PRISM_LOCALE['start.missing.password'])
+			PRISM_CONFIG['password'], used_default = prism.get_input(PRISM_LOCALE['start.login.password.prompt'], default='password')
 			prism.output('')
 
 	# Detect if the password isn't md5'd. If not, hash it. This allows

@@ -2,39 +2,39 @@
 	<div class="small-box bg-aqua">
 		<div class="inner">
 			<h3>{{ cpu }}<sup style="font-size:20px">%</sup></h3>
-			<p>CPU Usage</p>
+			<p>{{ "widget.usage.cpu" | locale }}</p>
 		</div>
 		<div class="icon"><i class="fa fa-cog"></i></div>
-		<a href="{{ url_for('system.processes') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+		<a href="{{ url_for('system.processes') }}" class="small-box-footer">{{ "widget.more_info" | locale }} <i class="fa fa-arrow-circle-right"></i></a>
 	</div>
 </div>
 <div class="col-md-3 col-xs-6">
 	<div class="small-box bg-green">
 		<div class="inner">
 			<h3>{{ ram }}<sup style="font-size:20px">%</sup></h3>
-			<p>RAM Usage</p>
+			<p>{{ "widget.usage.ram" | locale }}</p>
 		</div>
 		<div class="icon"><i class="fa fa-database"></i></div>
-		<a href="{{ url_for('system.processes') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+		<a href="{{ url_for('system.processes') }}" class="small-box-footer">{{ "widget.more_info" | locale }} <i class="fa fa-arrow-circle-right"></i></a>
 	</div>
 </div>
 <div class="col-md-3 col-xs-6">
 	<div class="small-box bg-yellow">
 		<div class="inner">
 			<h3>{{ disk }}<sup style="font-size:20px">%</sup></h3>
-			<p>Disk Usage</p>
+			<p>{{ "widget.usage.disk" | locale }}</p>
 		</div>
 		<div class="icon"><i class="fa fa-clone"></i></div>
-		<a href="{{ url_for('system.disk') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+		<a href="{{ url_for('system.disk') }}" class="small-box-footer">{{ "widget.more_info" | locale }} <i class="fa fa-arrow-circle-right"></i></a>
 	</div>
 </div>
 <div class="col-md-3 col-xs-6">
 	<div class="small-box bg-red">
 		<div class="inner">
 			<h3>{{ network }} <sup style="font-size:20px">{{ network_type }}/s</sup></h3>
-			<p>Network Usage</p>
+			<p>{{ "widget.usage.network" | locale }}</p>
 		</div>
 		<div class="icon"><i class="fa fa-exchange"></i></div>
-		<a href="{{ url_for('system.network') }}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+		<a href="{{ url_for('system.network') }}" class="small-box-footer">{{ "widget.more_info" | locale }} <i class="fa fa-arrow-circle-right"></i></a>
 	</div>
 </div>

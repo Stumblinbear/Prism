@@ -63,6 +63,8 @@ def locale(s):
 	plugin_id = flask.g.current_plugin
 	if plugin_id is None:
 		plugin_id = 'prism'
+	elif not plugin_id.startswith('prism_'):
+		plugin_id = 'prism_' + plugin_id
 
 	# Allow setting their own plugin id (Iunno why, but it might be useful)
 	if ':' in s:
@@ -70,9 +72,15 @@ def locale(s):
 
 	# Search the plugin that's rendering the template for the requested locale
 	if plugin_id == 'prism':
-		s = settings.PRISM_LOCALE[s]
+		s = prism.settings.PRISM_LOCALE[s]
 	else:
-		s = prism.get_plugin(flask.g.current_plugin).locale[s]
+		plugin = prism.get_plugin(plugin_id)
+
+		if plugin is None:
+			prism.output('Unknown plugin ID. Offender: %s' % plugin_id)
+			return s
+
+		s = plugin.locale[s]
 
 	s = publish_string(s, writer=html_fragment_writer).decode('utf-8').rstrip('\r\n')
 	s = s.split('<p>', 1)[1]

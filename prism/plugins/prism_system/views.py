@@ -29,7 +29,7 @@ class SystemView(BaseView):
 
         cpu_count = get_cpu_count()
         return ('processes.html', {
-                                    'panel_pid': settings.PANEL_PID,
+                                    'panel_pid': prism.settings.PANEL_PID,
                                     'cpu_count': cpu_count[0],
                                     'cpu_count_logical': cpu_count[1],
                                     'ram': psutil.virtual_memory()[0],
@@ -65,7 +65,7 @@ class SystemView(BaseView):
 
         cpu_count = get_cpu_count()
         return ('process.html', {
-                                    'panel_pid': settings.PANEL_PID,
+                                    'panel_pid': prism.settings.PANEL_PID,
                                     'process_id': process_id,
                                     'cpu_count': cpu_count[0],
                                     'cpu_count_logical': cpu_count[1],

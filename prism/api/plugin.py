@@ -11,6 +11,7 @@ class BasePlugin(object):
 		self.order = 999
 
 		self._config = None
+		self._locale = None
 		self._module = None
 
 		for k in kwargs:
@@ -86,7 +87,7 @@ class BasePlugin(object):
 
 	@property
 	def plugin_folder(self):
-		return os.path.join(prism.settings.PLUGINS_PATH if self.is_core else prism.settings.CORE_PLUGINS_PATH,
+		return os.path.join(prism.settings.PLUGINS_PATH if not self.is_core else prism.settings.CORE_PLUGINS_PATH,
 								self.plugin_id)
 
 	# Called when the plugin is enabled.

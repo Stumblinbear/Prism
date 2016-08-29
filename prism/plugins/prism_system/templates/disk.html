@@ -3,14 +3,14 @@
 {% block content %}
 <div class="box box-default color-palette-box">
 	<div class="box-header with-border">
-		<h3 class="box-title"><i class="fa fa-circle-o"></i> Mounted Filesystems</h3>
+		<h3 class="box-title"><i class="fa fa-circle-o"></i> {{ "disk.list.header" | locale }}</h3>
 	</div>
 	<div class="box-body">
 		<div class="row-fluid">
-			<div class="col-xs-6 col-sm-3"><b>Device</b></div>
-			<div class="col-xs-6 col-sm-3"><b>Mount Point</b></div>
-			<div class="col-xs-6 col-sm-1"><b>Type</b></div>
-			<div class="col-xs-6 col-sm-5"><b>Usage</b></div>
+			<div class="col-xs-6 col-sm-3"><b>{{ "disk.list.device" | locale }}</b></div>
+			<div class="col-xs-6 col-sm-3"><b>{{ "disk.list.mount_point" | locale }}</b></div>
+			<div class="col-xs-6 col-sm-1"><b>{{ "disk.list.type" | locale }}</b></div>
+			<div class="col-xs-6 col-sm-5"><b>{{ "disk.list.usage" | locale }}</b></div>
 		</div>
 		<hr />
 		{%- for fs in file_systems -%}
@@ -19,7 +19,7 @@
 				<div class="col-xs-6 col-sm-3">{{ fs.mount_point }}</div>
 				<div class="col-xs-6 col-sm-1">{{ fs.fs_type }}</div>
 				<div class="col-xs-6 col-sm-5">
-					<div class="progress" data-toggle="tooltip" data-placement="top" title="Disk Usage: {{ fs.usage.percent }}%">
+					<div class="progress" data-toggle="tooltip" data-placement="top" title="{{ "disk.list.usage.long" | locale }}: {{ fs.usage.percent }}%">
 						<div class="progress-bar {% if fs.usage.percent >= 70 %}progress-bar-{% if fs.usage.percent >= 85 %}danger{% else %}warning{% endif %} {% endif %} progress-bar-striped active" role="progressbar" style="width:{{ fs.usage.percent }}%"></div>
 					</div>
 				</div>
@@ -29,16 +29,16 @@
 					<div class="collapse" id="fs-{{ fs.device|replace('/', "") }}">
 						<div class="well well-sm">
 							<div class="col-sm-10">
-								<h4>Mount Options</h4>
+								<h4>{{ "disk.info.options" | locale }}</h4>
 								{%- for id, desc in fs.options.items() -%}
 									<h5><b>{{ id }}</b></h5>
 									<i>{{ desc }}</i>
 								{%- endfor -%}
 							</div>
 							<div class="col-sm-2">
-								<b>Total Size:</b><i class="pull-right">{{ fs.usage.total | convert_bytes }}</i><br />
-								<b>Used:</b><i class="pull-right">{{ fs.usage.used | convert_bytes }}</i><br />
-								<b>Free Space:</b><i class="pull-right">{{ fs.usage.free | convert_bytes }}</i>
+								<b>{{ "disk.info.total_size" | locale }}:</b><i class="pull-right">{{ fs.usage.total | convert_bytes }}</i><br />
+								<b>{{ "disk.info.total_used" | locale }}:</b><i class="pull-right">{{ fs.usage.used | convert_bytes }}</i><br />
+								<b>{{ "disk.info.free_space" | locale }}:</b><i class="pull-right">{{ fs.usage.free | convert_bytes }}</i>
 							</div>
 							<div class="clearfix"></div>
 						</div>

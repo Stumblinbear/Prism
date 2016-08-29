@@ -3,11 +3,11 @@
 {% block content %}
 <div class="box box-default color-palette-box">
 	<div class="box-header with-border">
-		<h3 class="box-title"><i class="fa fa-exchange"></i> Networks</h3>
+		<h3 class="box-title"><i class="fa fa-exchange"></i> {{ "networks.list.header" | locale }}</h3>
 	</div>
 	<div class="box-body no-padding">
 		<table class="table">
-			<thead><tr><th>ID</th><th>Total Sent</th><th>Total Received</th></tr></thead>
+			<thead><tr><th>{{ "networks.list.id" | locale }}</th><th>{{ "networks.list.total.sent" | locale }}</th><th>{{ "networks.list.total.received" | locale }}</th></tr></thead>
 			<tbody>
 				{%- for id, net in networks.items() -%}
 					<tr{% if id == 'lo' %} class="warning"{% endif %}><td>{{ id }}</td><td>{{ net.bytes_sent | convert_bytes }}</td><td>{{ net.bytes_recv | convert_bytes }}</td></tr>

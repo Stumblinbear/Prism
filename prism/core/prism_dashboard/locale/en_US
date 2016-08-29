@@ -1,0 +1,5 @@
+dashboard.widgets.edit=Edit Widgets
+dashboard.widgets.edit.done=Return Home
+
+dashboard.widgets.no.header=No widgets
+dashboard.widgets.no.body=You do not have any plugins installed that add widgets.

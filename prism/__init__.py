@@ -83,7 +83,7 @@ class Prism:
 		""" Attempt to log the user in if the username and password are correct """
 		if self.config['username'] != username:
 			return False
-		if crypt_verify(password, self.config['password']):
+		if not crypt_verify(password, self.config['password']):
 			return False
 		return True
 

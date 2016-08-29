@@ -2,14 +2,14 @@
 	<div class="box box-default">
 		<div class="box-header with-border">
 			<i class="fa fa-server"></i>
-			<h3 class="box-title">System</h3>
+			<h3 class="box-title">{{ "widget.info.header" | locale }}</h3>
 		</div>
 		<div class="box-body no-padding">
 			<table class="table">
-				<tr><td>OS</td><td>{{ os }}</td></tr>
-				<tr><td>Hostname</td><td>{{ hostname }}</td></tr>
-				<tr><td>IP Address</td><td>{{ address }}</td></tr>
-				<tr><td>Uptime</td><td>{{ uptime }}</td></tr>
+				<tr><td>{{ "widget.info.os" | locale }}</td><td>{{ os }}</td></tr>
+				<tr><td>{{ "widget.info.hostname" | locale }}</td><td>{{ hostname }}</td></tr>
+				<tr><td>{{ "widget.info.ipaddress" | locale }}s</td><td>{{ address }}</td></tr>
+				<tr><td>{{ "widget.info.uptime" | locale }}</td><td>{{ uptime }}</td></tr>
 			</table>
 		</div>
 	</div>
@@ -18,14 +18,14 @@
 	<div class="box box-default">
 		<div class="box-header with-border">
 			<i class="fa fa-circle-o"></i>
-			<h3 class="box-title">System Hardware</h3>
+			<h3 class="box-title">{{ "widget.hardware.header" | locale }}</h3>
 		</div>
 		<div class="box-body no-padding">
 			<table class="table">
-				<tr><td>Processor</td><td>{{ processor }}</td></tr>
-				<tr><td>Disk</td><td>{{ disk | convert_bytes }}</td></tr>
-				<tr><td>Memory</td><td>{{ memory | convert_bytes }}</td></tr>
-				<tr><td>Swap</td><td>{{ swap | convert_bytes }}</td></tr>
+				<tr><td>{{ "widget.hardware.processor" | locale }}</td><td>{{ processor }}</td></tr>
+				<tr><td>{{ "widget.hardware.disk" | locale }}</td><td>{{ disk | convert_bytes }}</td></tr>
+				<tr><td>{{ "widget.hardware.memory" | locale }}</td><td>{{ memory | convert_bytes }}</td></tr>
+				<tr><td>{{ "widget.hardware.swap" | locale }}</td><td>{{ swap | convert_bytes }}</td></tr>
 			</table>
 		</div>
 	</div>

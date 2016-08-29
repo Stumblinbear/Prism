@@ -16,7 +16,7 @@ class UsageWidget(Widget):
 		Widget.__init__(self, 'usage')
 
 	def render(self):
-		netusage = helpers.convert_bytes(self.get_network())
+		netusage = prism.helpers.convert_bytes(self.get_network())
 		return ('widget/usage.html',
 								{
 									'cpu': self.get_cpu(),
@@ -70,7 +70,7 @@ class InfoWidget(Widget):
 								{
 									'os': '%s %s (%s)' % (platform.system(), platform.release(), platform.architecture()[0]),
 									'hostname': platform.node(),
-									'address': settings.PRISM_CONFIG['host'],
+									'address': prism.settings.PRISM_CONFIG['host'],
 									'uptime': self.get_uptime(),
 									'disk': self.get_total_disk(),
 									'processor': platform.processor(),

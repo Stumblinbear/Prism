@@ -1,10 +1,10 @@
 {% extends 'panel.html' %}
-{% block title %}Dashboard - Editor{% endblock %}
+{% block title %}Dashboard - Editor<div class="pull-right"><small><a href="{{ url_for('dashboard.home') }}">{{ "dashboard.widgets.edit.done" | locale }}</a></small></div>{% endblock %}
 {% block content %}
 {% if widgets|length == 0 %}
 	<div class="callout callout-info">
-	<h4>No widgets</h4>
-	<p>You do not have any plugins installed that add widgets.</p>
+	<h4>{{ "dashboard.widgets.no.header" | locale }}</h4>
+	<p>{{ "dashboard.widgets.no.body" | locale }}</p>
   </div>
 {% else %}
 	<style>
