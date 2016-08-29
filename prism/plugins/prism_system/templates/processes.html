@@ -1,5 +1,4 @@
 {% extends 'panel.html' %}
-{% block title %}Processes</small>{% endblock %}
 {% block content %}
 <style>
 	.core { display: inline-block; width: 64px; height: 64px; margin: 10px 0 0 10px; padding-top: 20px; text-align: center; box-sizing: border-box; }
@@ -55,7 +54,7 @@
 							<div class="collapse" id="process-{{ proc.pid }}">
 								<div class="well well-sm">
 									<div class="col-xs-9">
-										<h4>{{ "processes.list.info.usage.cpu" | locale }} <small>({{ proc.cpu_percent|round(2) }}%) over {{ proc.num_threads }} thread{% if proc.num_threads != 1 %}s{% endif %} [priority: {{ proc.nice }}]</small></h4>
+										<h4>{{ "process.info.usage.cpu" | locale }} <small>({{ proc.cpu_percent|round(2) }}%) over {{ proc.num_threads }} thread{% if proc.num_threads != 1 %}s{% endif %} [priority: {{ proc.nice }}]</small></h4>
 										<div class="progress">
 											<div class="progress-bar {% if proc.cpu_percent >= 30 %}progress-bar-{% if proc.cpu_percent >= 70 %}danger{% else %}warning{% endif %} {% endif %}progress-bar-striped active" style="width:{{ proc.cpu_percent }}%"></div>
 										</div>
@@ -70,7 +69,7 @@
 									</div>
 									<div class="col-xs-9">
 										{% if proc.memory_full_info %}
-											<h4>{{ "processes.list.info.usage.memory" | locale }} <small>({{ proc.memory_percent|round(2) }}%)</small></h4>
+											<h4>{{ "process.info.usage.memory" | locale }} <small>({{ proc.memory_percent|round(2) }}%)</small></h4>
 											<div class="progress progress-sm">
 												<div class="progress-bar" style="width:{{ (proc.memory_full_info.rss - proc.memory_full_info.text) / ram * 100 }}%" tabindex="0" data-toggle="popover" data-trigger="focus" data-placement="top" title="Resident Set Size" data-content="The non-swapped physical memory this process has used."></div>
 												<div class="progress-bar progress-bar-success" style="width:{{ proc.memory_full_info.text / ram * 100 }}%" tabindex="0" data-toggle="popover" data-trigger="focus" data-placement="top" title="Text Resident Set" data-content="The amount of memory devoted to executable code."></div>

@@ -44,7 +44,7 @@
 			</header>
 			{% include 'navigation.html' %}
 			<div class="content-wrapper">
-				<section class="content-header"><h1>{% block title %}{% endblock %}</h1></section>
+				<section class="content-header"><h1>{% block title %}{% if title %}{{ title }}{% endif %}{% endblock %}{% block title_append %}{% endblock %}<div class="pull-right">{% block title_right %}{% endblock %}</div></h1></section>
 				<section class="content">
 					{% block content %}{% endblock %}
 				</section>

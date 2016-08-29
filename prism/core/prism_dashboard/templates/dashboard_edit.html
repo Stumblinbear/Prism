@@ -1,5 +1,6 @@
 {% extends 'panel.html' %}
-{% block title %}Dashboard - Editor<div class="pull-right"><small><a href="{{ url_for('dashboard.home') }}">{{ "dashboard.widgets.edit.done" | locale }}</a></small></div>{% endblock %}
+{% block title %}Dashboard - Editor{% endblock %}
+{% block title_right %}<small><a href="{{ url_for('dashboard.home') }}">{{ "dashboard.widgets.edit.done" | locale }}</a></small>{% endblock %}
 {% block content %}
 {% if widgets|length == 0 %}
 	<div class="callout callout-info">

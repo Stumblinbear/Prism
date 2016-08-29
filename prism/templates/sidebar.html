@@ -5,7 +5,7 @@
 </ul>
 <div class="tab-content">
 	<div class="tab-pane active" id="control-sidebar-home-tab">
-		<h3 class="control-sidebar-heading">Updates</h3>
+		<h3 class="control-sidebar-heading">{{ "prism:sidebar.updates" | locale }}</h3>
 		<ul class="control-sidebar-menu">
 			<li>
 				<a href="javascript::;">
@@ -17,7 +17,7 @@
 				</a>
 			</li>
 		</ul>
-		<h3 class="control-sidebar-heading">Prism News</h3>
+		<h3 class="control-sidebar-heading">{{ "prism:sidebar.news" | locale }}</h3>
 		<ul class="control-sidebar-menu">
 			<li>
 				<a href="javascript::;">
@@ -32,16 +32,17 @@
 	</div>
 	<div class="tab-pane" id="control-sidebar-settings-tab">
 		<div class="form-group">
-			<a href="{{ url_for('core.restart') }}"><button class="form-control btn btn-danger">Restart Prism</button></a>
+			<a href="/logout"><button class="form-control btn btn-warning">{{ "prism:sidebar.option.logout" | locale }}</button></a>
+			<a href="{{ url_for('core.restart') }}"><button class="form-control btn btn-danger">{{ "prism:sidebar.option.restart" | locale }}</button></a>
 		</div>
 		<form method="post">
-			<h3 class="control-sidebar-heading">General Settings</h3>
+			<h3 class="control-sidebar-heading">{{ "prism:sidebar.settings" | locale }}</h3>
 			<div class="form-group">
 				<label class="control-sidebar-subheading">
-					Rainbow Census
+					{{ "prism:sidebar.setting.usage_statistics.name" | locale }}
 					<input type="checkbox" class="pull-right" checked>
 				</label>
-				<p>Sends anonymous usage statistics to PrismCP.org.</p>
+				<p>{{ "prism:sidebar.setting.usage_statistics.info" | locale }}</p>
 			</div>
 		</form>
 	</div>

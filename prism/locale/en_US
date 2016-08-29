@@ -24,7 +24,19 @@ start.missing.host=You don't have a host set in your config. Please tell me one,
 start.missing.username=You seem to have disappeared from the config! Who are you again?
 start.missing.password=You uhh... You don\'t have a password. Please set it before you continue.
 
+
 login.welcome=Welcome to **Prism**
 login.username.placeholder=Username
 login.password.placeholder=Password
 login.button=Sign In
+
+
+sidebar.updates=Updates
+sidebar.news=Prism News
+
+sidebar.option.logout=Logout
+sidebar.option.restart=Restart Prism
+
+sidebar.settings=General Settings
+sidebar.setting.usage_statistics.name=Rainbow Census
+sidebar.setting.usage_statistics.info=Sends anonymous usage statistics to PrismCP.org

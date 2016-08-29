@@ -1,21 +1,22 @@
 {% extends 'panel.html' %}
-{% block title %}
+{% block title %}View Process:{% endblock %}
+{% block title_append %}
 	{% if proc.pid == panel_pid %}<i class="fa fa-asterisk" data-toggle="tooltip" data-placement="top" title="This is Prism's process."></i> {% endif %}
-	View Process: {{ proc.name }}({{ process_id }}) <small>is {{ proc.status }}</small>
-	<div class="pull-right">
-		{% if proc.pid != panel_pid %}
-			<form class="pull-right" method="POST">
-				<input type="hidden" name="id" value="{{ proc.pid }}" />
-				<button class="btn btn-danger" name="action" value="terminate" data-toggle="tooltip" data-placement="bottom" title="{{ "process.button.terminate.info" | locale }}">{{ "process.button.terminate" | locale }}</button>
-				<button class="btn btn-danger" name="action" value="kill" data-toggle="tooltip" data-placement="bottom" title="{{ "process.button.kill.info" | locale }}">{{ "process.button.kill" | locale }}</button>
-			</form>
-		{% else %}
-			<div class="pull-right">
-				<button class="btn btn-danger" disabled data-toggle="tooltip" data-placement="bottom" title="{{ "process.button.terminate.disabled.info" | locale }}">{{ "process.button.terminate" | locale }}</button>
-				<button class="btn btn-danger" disabled data-toggle="tooltip" data-placement="bottom" title="{{ "process.button.kill.disabled.info" | locale }}">{{ "process.button.kill" | locale }}</button>
-			</div>
-		{% endif %}
-	</div>
+	{{ proc.name }}({{ process_id }}) <small>is {{ proc.status }}</small>
+{% endblock %}
+{% block title_right %}
+	{% if proc.pid != panel_pid %}
+		<form class="pull-right" method="POST">
+			<input type="hidden" name="id" value="{{ proc.pid }}" />
+			<button class="btn btn-danger" name="action" value="terminate" data-toggle="tooltip" data-placement="bottom" title="{{ "process.button.terminate.info" | locale }}">{{ "process.button.terminate" | locale }}</button>
+			<button class="btn btn-danger" name="action" value="kill" data-toggle="tooltip" data-placement="bottom" title="{{ "process.button.kill.info" | locale }}">{{ "process.button.kill" | locale }}</button>
+		</form>
+	{% else %}
+		<div class="pull-right">
+			<button class="btn btn-danger" disabled data-toggle="tooltip" data-placement="bottom" title="{{ "process.button.terminate.disabled.info" | locale }}">{{ "process.button.terminate" | locale }}</button>
+			<button class="btn btn-danger" disabled data-toggle="tooltip" data-placement="bottom" title="{{ "process.button.kill.disabled.info" | locale }}">{{ "process.button.kill" | locale }}</button>
+		</div>
+	{% endif %}
 {% endblock %}
 {% block content %}
 <style>
