@@ -2,6 +2,7 @@ import base64
 import inspect
 import json
 import os
+import pip
 import platform
 import re
 import sys
@@ -201,6 +202,8 @@ class PluginManager:
 	def _sort_dependencies(self):
 		# These will always be initialized.
 		poof('Sorting dependencies')
+		installed_packages = pip.get_installed_distributions()
+		installed_packages_list = sorted([i.key for i in installed_packages])
 		for plugin_id, plugin_info in self.available_plugins.items():
 			if not plugin_info['_is_core']:
 				if 'dependencies' not in plugin_info:
@@ -213,12 +216,12 @@ class PluginManager:
 							plugin_info['_is_satisfied'] = False
 						plugin_info['_dependencies'].append(('binary', depend_name, installed))
 
-				if 'library' in plugin_info['dependencies']:
-					for depend_name in plugin_info['dependencies']['library']:
-						installed = True
+				if 'module' in plugin_info['dependencies']:
+					for depend_name in plugin_info['dependencies']['module']:
+						installed = (depend_name in installed_packages_list)
 						if not installed:
 							plugin_info['_is_satisfied'] = False
-						plugin_info['_dependencies'].append(('library', depend_name, installed))
+						plugin_info['_dependencies'].append(('module', depend_name, installed))
 
 				if not plugin_info['_is_satisfied']:
 					# Create a dummy plugin container
@@ -448,8 +451,8 @@ class PluginManager:
 				elif get_url_for(obj) is not None:
 					return flask.redirect(get_url_for(obj))
 			elif isinstance(obj, dict):
-				return json.dumps(obj)
-			return obj
+				return flask.jsonify(obj)
+			return repr(obj)
 		func_wrapper.__name__ = func.__name__
 		return func_wrapper
 
@@ -477,6 +480,10 @@ class PluginManager:
 		# If the function is called an http method
 		elif func.__name__ in ['get', 'post', 'put', 'delete']:
 			http_methods = [func.__name__.upper()]
+		elif '_' in func.__name__:
+			parts = func.__name__.split('_')
+			if parts[len(parts) - 1] in ['get', 'post', 'put', 'delete']:
+				http_methods = [parts[len(parts) - 1].upper()]
 		return http_methods
 
 	def get_http_endpoint(self, func):
@@ -490,6 +497,12 @@ class PluginManager:
 			endpoint_http = func.endpoint
 		elif func.__name__ in ['get', 'post', 'put', 'delete']:
 			endpoint_http = '/'
+
+		if '_' in endpoint_http:
+			parts = endpoint_http.split('_')
+			if parts[len(parts) - 1] in ['get', 'post', 'put', 'delete']:
+				endpoint_http = '_'.join(parts[:-1])
+
 		return endpoint_http
 
 # Utility functions
@@ -568,15 +581,21 @@ def is_package_installed(id):
 						'pkg_info | grep %s' % id)
 	return (len(output) > 0)
 
-def os_command(redhat, debian, bsd):
-	""" Runs a command based on the OS currently in use """
+def get_os_command(redhat, debian=None, bsd=None):
+	if debian is None and bsd is None:
+		return redhat
+
 	os = get_general_os()
 	if os == 'redhat':
-		return subprocess.Popen(redhat, shell=True, stdout=PIPE).stdout.read()
+		return redhat
 	elif os == 'debian':
-		return subprocess.Popen(debian, shell=True, stdout=PIPE).stdout.read()
+		return debian
 	else:
-		return subprocess.Popen(bsd, shell=True, stdout=PIPE).stdout.read()
+		return bsd
+
+def os_command(redhat, debian=None, bsd=None):
+	""" Runs a command based on the OS currently in use """
+	return subprocess.Popen(get_os_command(redhat, debian, bsd), shell=True, stdout=PIPE).stdout.read()
 
 # Returns if the OS is a Debian, Red Hat, or BSD derivative
 def get_general_os():
