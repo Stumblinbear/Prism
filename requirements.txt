@@ -10,3 +10,5 @@ flask_wtf>=0.12
 flask_sijax>=0.4.1
 
 docutils>=0.12
+
+ptyprocess>=0.5.1

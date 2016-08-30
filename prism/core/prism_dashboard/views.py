@@ -45,7 +45,7 @@ class PluginsView(BaseView):
     def list(self):
         return ('plugins/list.html', {'plugins': prism.plugin_manager().get_sorted_plugins()})
 
-    @route('/list', methods=['POST'])
+    @route('/list')
     def post(self, request):
         id = request.form['id']
         action = request.form['action']

@@ -16,7 +16,7 @@ class UsageWidget(Widget):
 		Widget.__init__(self, 'usage')
 
 	def render(self):
-		netusage = prism.helpers._convert_bytes(self.get_network())
+		netusage = prism.helpers.do_convert_bytes(self.get_network())
 		return ('widget/usage.html',
 								{
 									'cpu': self.get_cpu(),

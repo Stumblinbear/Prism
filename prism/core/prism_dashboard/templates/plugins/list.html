@@ -57,7 +57,7 @@
 												Installed
 											{% else %}
 												Not Installed
-												<a href="{{ url_for('core.install', type=depend_type, install=depend_id) }}" class="btn btn-sm btn-default pull-right"><i class="fa fa-download"></i> Download</a>
+												<a href="{{ url_for('core.terminal_install', install_type=depend_type, install_name=depend_id, restart=True, return_url='dashboard.plugins.list') }}" class="btn btn-sm btn-default pull-right"><i class="fa fa-download"></i> Download</a>
 											{% endif %}
 										</td>
 									</tr>

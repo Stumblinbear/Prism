@@ -39,7 +39,7 @@ class SystemView(BaseView):
 
     @route('/processes')
     @route('/processes/<show>')
-    def post(self, request, show=False):
+    def processes_post(self, request, show=False):
         action = request.form['action']
         id = request.form['id']
 
@@ -74,7 +74,7 @@ class SystemView(BaseView):
                                 })
 
     @route('/process/<int:process_id>')
-    def post(self, request, process_id):
+    def process_post(self, request, process_id):
         import json
         try:
             p = psutil.Process(process_id)
@@ -100,7 +100,7 @@ class SystemView(BaseView):
         return ('cron_jobs.html', {'crontabs': CronTabs(), 'locations': get_cron_locations()})
 
     @route('/cron_jobs')
-    def post(self, request):
+    def cron_jobs_post(self, request):
         action = request.form['action']
         if action == 'delete':
             crontab_id = int(request.form['crontab_id'])
@@ -125,7 +125,7 @@ class SystemView(BaseView):
             return ('system.cron_jobs')
 
     @route('/cron_jobs/edit/<int:crontab_id>/<int:cron_id>')
-    def post(self, request, crontab_id, cron_id):
+    def cron_job_edit_post(self, request, crontab_id, cron_id):
         obj = parse_cron_widget(CronTabs()[crontab_id - 1], cron_id)
         if obj is not None:
             return obj

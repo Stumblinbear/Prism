@@ -1,16 +1,16 @@
 {
     "version": [ 1, 0, 0, "indev" ],
-	
-    "icon": "fire", 
-    "name": "Firewall", 
-    "description": "Basic firewall management.", 
-	
+
+    "icon": "fire",
+    "name": "Firewall",
+    "description": "Basic firewall management.",
+
     "dependencies": {
         "binary": [
-            "iptables", 
+            "iptables",
             "firewalld"
-        ], 
-        "library": [
+        ],
+        "module": [
             "netfilter"
         ]
     }

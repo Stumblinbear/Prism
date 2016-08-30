@@ -29,7 +29,7 @@
 					<div class="modal-body">
 						<div class="box-body table-responsive">
 							<div class="box-body">
-								{% if error.fixes != None %}
+								{% if error.fixes != None and error.fixes | length > 0 %}
 									<div class="row">
 										<div class="col-xs-12">
 											<h4>{{ "error.fix.known" | locale }}</h4>
@@ -38,6 +38,13 @@
 												{% if 'text' in fix %}
 													<p>
 														{{ fix['text'] }}
+													</p>
+												{% endif %}
+												{% if 'link' in fix %}
+													<p>
+														<a href="{{ url_for(fix['link']) }}">
+															<button type="button" id="btn-fix" class="btn btn-info btn-sm">Attempt Fix #{{ loop.index }}</button>
+														</a>
 													</p>
 												{% endif %}
 												{% if 'command' in fix %}
@@ -51,17 +58,7 @@
 														</a>
 													</p>
 												{% endif %}
-												{% if error.fixes | length != loop.index %}
-													<hr />
-												{% endif %}
 											{% endfor %}
-										</div>
-									</div>
-								{% else %}
-									<h4>{{ "error.fix.unknown" | locale }}</h4>
-									<div class="row">
-										<div class="col-xs-12">
-											{{ "error.fix.unknown.sorry" | locale }}
 										</div>
 									</div>
 								{% endif %}

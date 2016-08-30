@@ -28,11 +28,9 @@ def route(endpoint=None, methods=None, defaults=None):
 		return func
 	return func_wrapper
 
-def ignore():
-	def func_wrapper(func):
-		func.ignore = True
-		return func
-	return func_wrapper
+def ignore(func):
+	func.ignore = True
+	return func
 
 def menu(title, icon=None, order=999):
 	def obj_wrapper(obj):

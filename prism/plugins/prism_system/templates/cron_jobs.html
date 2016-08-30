@@ -24,6 +24,10 @@
 
 					{% set crontab_id = loop.index %}
 					{%- for cron in crontab.crons -%}
+						{% if (cron | string).startswith('#') %}
+							{% continue %}
+						{% endif %}
+
 						<div class="row-fluid" style="cursor:pointer" data-toggle="collapse" data-target="#cron-{{ loop.index }}">
 							<div class="col-xs-6 col-sm-1">
 								{% if cron.enabled %}<i class="fa fa-asterisk" data-toggle="tooltip" data-placement="top" title="Cron Job is enabled."></i>{% endif %}

@@ -16,6 +16,7 @@ import prism.settings
 flask_app = prism.flask_app()
 
 def next_color(i):
+	""" Provides a way to loop through a list of colors in templates """
 	colors = ['#337AB7', '#00A65A', '#F39C12',
 				'#DD4B39', '#4682B4', '#20B2AA',
 				'#FFD700', '#00FA9A', '#7B68EE',
@@ -25,13 +26,14 @@ def next_color(i):
 flask_app.jinja_env.globals["next_color"] = next_color
 
 def include_static(name):
-	directory = flask_app.static_folder
-	desired_file = os.path.join(directory, name)
+	""" Load a file from the /static/ directory """
+	desired_file = os.path.join(flask_app.static_folder, name)
 	with open(desired_file) as f:
 		return jinja2.Markup(f.read())
 flask_app.jinja_env.globals["include_static"] = include_static
 
-def _convert_bytes(size, format=False):
+def do_convert_bytes(size, format=False):
+	""" Convert amount of bytes, size, to its easier to read representation """
 	if(size == 0):
 		if format:
 			return '0b'
@@ -60,6 +62,7 @@ html_fragment_writer.translator_class = HTMLFragmentTranslator
 
 @flask_app.template_filter()
 def locale(s):
+	""" Used for localization """
 	plugin_id = flask.g.current_plugin
 	if plugin_id is None:
 		plugin_id = 'prism'
@@ -89,7 +92,7 @@ def locale(s):
 
 @flask_app.template_filter()
 def convert_bytes(size):
-	return _convert_bytes(size, True)
+	return do_convert_bytes(size, True)
 
 @flask_app.template_filter()
 def ctime(s):
