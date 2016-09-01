@@ -33,7 +33,7 @@
 	<div class="tab-pane" id="control-sidebar-settings-tab">
 		<div class="form-group">
 			<a href="/logout"><button class="form-control btn-warning">{{ "prism:sidebar.option.logout" | locale }}</button></a>
-			<a href="{{ url_for('core.restart') }}"><button class="form-control btn-danger">{{ "prism:sidebar.option.restart" | locale }}</button></a>
+			<a href="{{ url_for('core.RestartView') }}"><button class="form-control btn-danger">{{ "prism:sidebar.option.restart" | locale }}</button></a>
 		</div>
 		<form method="post">
 			<h3 class="control-sidebar-heading">{{ "prism:sidebar.settings" | locale }}</h3>

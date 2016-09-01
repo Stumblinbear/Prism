@@ -5,7 +5,7 @@
 			<p>{{ "widget.usage.cpu" | locale }}</p>
 		</div>
 		<div class="icon"><i class="fa fa-cog"></i></div>
-		<a href="{{ url_for('system.processes') }}" class="small-box-footer">{{ "widget.more_info" | locale }} <i class="fa fa-arrow-circle-right"></i></a>
+		<a href="{{ url_for('system.SystemProcessesView') }}" class="small-box-footer">{{ "widget.more_info" | locale }} <i class="fa fa-arrow-circle-right"></i></a>
 	</div>
 </div>
 <div class="col-md-3 col-xs-6">
@@ -15,7 +15,7 @@
 			<p>{{ "widget.usage.ram" | locale }}</p>
 		</div>
 		<div class="icon"><i class="fa fa-database"></i></div>
-		<a href="{{ url_for('system.processes') }}" class="small-box-footer">{{ "widget.more_info" | locale }} <i class="fa fa-arrow-circle-right"></i></a>
+		<a href="{{ url_for('system.SystemProcessesView') }}" class="small-box-footer">{{ "widget.more_info" | locale }} <i class="fa fa-arrow-circle-right"></i></a>
 	</div>
 </div>
 <div class="col-md-3 col-xs-6">
@@ -25,7 +25,7 @@
 			<p>{{ "widget.usage.disk" | locale }}</p>
 		</div>
 		<div class="icon"><i class="fa fa-clone"></i></div>
-		<a href="{{ url_for('system.disk') }}" class="small-box-footer">{{ "widget.more_info" | locale }} <i class="fa fa-arrow-circle-right"></i></a>
+		<a href="{{ url_for('system.SystemDiskManagerView') }}" class="small-box-footer">{{ "widget.more_info" | locale }} <i class="fa fa-arrow-circle-right"></i></a>
 	</div>
 </div>
 <div class="col-md-3 col-xs-6">
@@ -35,6 +35,6 @@
 			<p>{{ "widget.usage.network" | locale }}</p>
 		</div>
 		<div class="icon"><i class="fa fa-exchange"></i></div>
-		<a href="{{ url_for('system.network') }}" class="small-box-footer">{{ "widget.more_info" | locale }} <i class="fa fa-arrow-circle-right"></i></a>
+		<a href="{{ url_for('system.SystemNetworkMonitorView') }}" class="small-box-footer">{{ "widget.more_info" | locale }} <i class="fa fa-arrow-circle-right"></i></a>
 	</div>
 </div>

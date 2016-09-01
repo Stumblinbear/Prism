@@ -8,22 +8,36 @@ import psutil
 
 import prism.settings
 from prism.memorize import memorize
-from prism.api.view import BaseView, route, menu
+from prism.api.view import BaseView, subroute
 
 
-class SystemView(BaseView):
-    @menu('General Information', icon='square', order=0)
-    def info(self):
+class SystemGeneralInfoView(BaseView):
+    def __init__(self):
+        BaseView.__init__(self, endpoint='/general',
+                                title='General Information',
+                                menu={'id': 'system.overview', 'icon': 'circle', 'order': 0,
+                                        'parent': {'id': 'system', 'text': 'System', 'icon': 'television'}})
+
+    def get(self, request):
         return ('general_info.html')
 
-    @menu('Users', icon='users')
-    def users(self):
+class SystemUsersView(BaseView):
+    def __init__(self):
+        BaseView.__init__(self, endpoint='/users',
+                                title='Users',
+                                menu={'id': 'system.users', 'icon': 'users'})
+
+    def get(self, request):
         return ('users.html', {'user_info': get_user_info()})
 
-    @menu('Processes', icon='cog')
-    @route('/processes')
-    @route('/processes/<show>')
-    def processes(self, show=False):
+class SystemProcessesView(BaseView):
+    def __init__(self):
+        BaseView.__init__(self, endpoint='/processes',
+                                title='Processes',
+                                menu={'id': 'system.processes', 'icon': 'cog'})
+
+    @subroute('/<show>')
+    def get(self, request, show=False):
         if show == 'all':
             show = True
 
@@ -37,9 +51,8 @@ class SystemView(BaseView):
                                                 lambda x: x['memory_percent'] + x['cpu_percent'])
                                 })
 
-    @route('/processes')
-    @route('/processes/<show>')
-    def processes_post(self, request, show=False):
+    @subroute('/<show>')
+    def post(self, request, show=False):
         action = request.form['action']
         id = request.form['id']
 
@@ -47,14 +60,19 @@ class SystemView(BaseView):
             prism.command('kill -KILL %s' % id)
         elif action == 'terminate':
             prism.command('kill %s' % id)
-        return ('system.processes')
+        return ('system.SystemProcessView')
 
-    @route('/process/<int:process_id>')
-    def process(self, process_id):
+class SystemProcessView(BaseView):
+    def __init__(self):
+        BaseView.__init__(self, endpoint='/process',
+                                title='View Process')
+
+    @subroute('/<int:process_id>')
+    def process_get(self, request, process_id):
         try:
             p = psutil.Process(process_id)
         except:
-            return ('system.processes')
+            return ('system.SystemProcessesView')
 
         process = p.as_dict(attrs=['pid', 'name', 'cwd', 'exe', 'username', 'nice',
                                    'cpu_percent', 'cpu_affinity', 'memory_full_info',
@@ -73,7 +91,7 @@ class SystemView(BaseView):
                                     'proc': process
                                 })
 
-    @route('/process/<int:process_id>')
+    @subroute('/<int:process_id>')
     def process_post(self, request, process_id):
         import json
         try:
@@ -83,24 +101,43 @@ class SystemView(BaseView):
         process = p.as_dict(attrs=['cpu_percent', 'memory_percent'])
         return {'cpu': process['cpu_percent'], 'memory': process['memory_percent']}
 
-    @menu('Disk Manager', icon='circle-o')
-    def disk(self):
+class SystemDiskManagerView(BaseView):
+    def __init__(self):
+        BaseView.__init__(self, endpoint='/disk',
+                                title='Disk Manager',
+                                menu={'id': 'system.disk', 'icon': 'circle-o'})
+
+    def get(self, request):
         return ('disk.html', {'file_systems': get_file_systems()})
 
-    @menu('Network Monitor', icon='exchange')
-    def network(self):
+class SystemNetworkMonitorView(BaseView):
+    def __init__(self):
+        BaseView.__init__(self, endpoint='/network',
+                                title='Network Monitor',
+                                menu={'id': 'system.network', 'icon': 'exchange'})
+
+    def get(self, request):
         return ('network.html', {'networks': get_networks()})
 
-    @menu('Hosts', icon='cubes')
-    def hosts(self):
+class SystemHostsView(BaseView):
+    def __init__(self):
+        BaseView.__init__(self, endpoint='/hosts',
+                                title='Hosts',
+                                menu={'id': 'system.hosts', 'icon': 'cubes'})
+
+    def get(self, request):
         return ('hosts.html', {'hosts': get_hosts()})
 
-    @menu('Cron Jobs', icon='cogs', order=3)
-    def cron_jobs(self):
+class SystemCronJobsView(BaseView):
+    def __init__(self):
+        BaseView.__init__(self, endpoint='/cron',
+                                title='Cron Jobs',
+                                menu={'id': 'system.cron', 'icon': 'cogs'})
+
+    def get(self, request):
         return ('cron_jobs.html', {'crontabs': CronTabs(), 'locations': get_cron_locations()})
 
-    @route('/cron_jobs')
-    def cron_jobs_post(self, request):
+    def post(self, request):
         action = request.form['action']
         if action == 'delete':
             crontab_id = int(request.form['crontab_id'])
@@ -117,19 +154,19 @@ class SystemView(BaseView):
             if obj is not None:
                 return obj
 
-    @route('/cron_jobs/edit/<int:crontab_id>/<int:cron_id>')
-    def cron_job_edit(self, crontab_id, cron_id):
+    @subroute('/edit/<int:crontab_id>/<int:cron_id>')
+    def edit_get(self, request, crontab_id, cron_id):
         try:
             return ('cron_job_edit.html', {'cron': CronTabs()[crontab_id - 1].crons[cron_id - 1]})
         except:
-            return ('system.cron_jobs')
+            return ('system.SystemCronJobsView')
 
-    @route('/cron_jobs/edit/<int:crontab_id>/<int:cron_id>')
-    def cron_job_edit_post(self, request, crontab_id, cron_id):
+    @subroute('/edit/<int:crontab_id>/<int:cron_id>')
+    def edit_post(self, request, crontab_id, cron_id):
         obj = parse_cron_widget(CronTabs()[crontab_id - 1], cron_id)
         if obj is not None:
             return obj
-        return ('system.cron_jobs')
+        return ('system.SystemCronJobsView')
 
 @memorize(320)
 def get_cron_locations():

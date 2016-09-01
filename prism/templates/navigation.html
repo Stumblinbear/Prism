@@ -15,9 +15,9 @@
 					<li{% if item.active %} class="active"{% endif %}>
 						<a href="{{ item.url }}"><i class="fa fa-{{ item.icon }}"></i> <span>{{ item.text }}</span></a>
 						{%- if item.children -%}
-						<ul class="treeview-menu">
-							{{ loop(item.children) }}
-						</ul>
+							<ul class="treeview-menu">
+								{{ loop(item.children) }}
+							</ul>
 						{%- endif -%}
 					</li>
 				{% endif %}

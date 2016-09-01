@@ -1,16 +1,31 @@
+import prism
+
 class BaseView(object):
-	def __init__(self, endpoint='/'):
-		if endpoint is None:
-			exit('Fatal Error: Endpoint cannot be of type None! Offender: %s' % self)
-		if not endpoint.startswith('/'):
-			exit('Fatal Error: Endpoints must begin with a leading slash! Offender: %s' % self)
+	def __init__(self, endpoint, title=None, menu=None):
+		assert endpoint.startswith('/'), 'Endpoint does not begin with a /! Offender: %s' % endpoint
+		assert '<' not in endpoint, 'Endpoint should not contain arguments. Offender: %s' % endpoint
 
 		self.endpoint = endpoint
+		self.title = title
 
-	def index(self):
-		return ('abort', 404)
+		if menu is not None:
+			assert 'id' in menu, '%s has a menu item, but the id has not been set!' % endpoint
+			if 'icon' not in menu:
+				menu['icon'] = 'circle-o'
+			if 'order' not in menu:
+				menu['order'] = 999
 
-def route(endpoint=None, methods=None, defaults=None):
+			if 'parent' in menu:
+				assert 'id' in menu['parent'], '%s has a parent menu item, but the id has not been set!' % endpoint
+				assert 'text' in menu['parent'], '%s has a parent menu item, but the text has not been set!' % endpoint
+				if 'icon' not in menu['parent']:
+					menu['parent']['icon'] = 'circle-o'
+				if 'order' not in menu['parent']:
+					menu['parent']['order'] = 999
+
+		self.menu = menu
+
+def subroute(endpoint=None, methods=None, defaults=None):
 	def func_wrapper(func):
 		route = {}
 
@@ -27,13 +42,3 @@ def route(endpoint=None, methods=None, defaults=None):
 
 		return func
 	return func_wrapper
-
-def ignore(func):
-	func.ignore = True
-	return func
-
-def menu(title, icon=None, order=999):
-	def obj_wrapper(obj):
-		obj.menu = {'title': title, 'icon': icon, 'order': order}
-		return obj
-	return obj_wrapper

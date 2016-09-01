@@ -1,20 +1,24 @@
 import prism
 import prism.settings
 
-from prism.api.view import BaseView, route, menu
+from prism.api.view import BaseView, subroute
 
 
 class DashboardView(BaseView):
-    @menu('Home', icon='home', order=0)
-    def home(self):
+    def __init__(self):
+        BaseView.__init__(self, endpoint='/home',
+                                title='Dashboard',
+                                menu={'id': 'dashboard', 'icon': 'home', 'order': 0})
+
+    def get(self, request):
         return ('dashboard.html', {'widgets': prism.get_plugin('prism_dashboard').get_widgets()})
 
-    @route('/home/edit')
-    def edit(self):
+    @subroute('/edit')
+    def edit_get(self, request):
         return ('dashboard_edit.html', {'widgets': prism.get_plugin('prism_dashboard').get_widgets(all=True)})
 
-    @route('/home/edit')
-    def post(self, request):
+    @subroute('/edit')
+    def edit_post(self, request):
         prism_dashboard = prism.get_plugin('prism_dashboard')
 
         action = request.form['action']
@@ -36,16 +40,16 @@ class DashboardView(BaseView):
         prism_dashboard.save_widgets()
         return '1'
 
-@menu('Plugins', icon='cubes', order=1)
-class PluginsView(BaseView):
+class PluginListView(BaseView):
     def __init__(self):
-        BaseView.__init__(self, '/plugins')
+        BaseView.__init__(self, endpoint='/plugins/list',
+                                title='Installed Plugins',
+                                menu={'id': 'plugins.list', 'icon': 'square', 'order': 0,
+                                        'parent': {'id': 'plugins', 'text': 'Plugins', 'icon': 'cubes', 'order': 1}})
 
-    @menu('Installed Plugins', icon='square', order=1)
-    def list(self):
+    def get(self, request):
         return ('plugins/list.html', {'plugins': prism.plugin_manager().get_sorted_plugins()})
 
-    @route('/list')
     def post(self, request):
         id = request.form['id']
         action = request.form['action']
@@ -56,9 +60,14 @@ class PluginsView(BaseView):
             elif action == 'disable':
                 if id in prism.settings.PRISM_CONFIG['enabled_plugins']:
                     prism.settings.PRISM_CONFIG['enabled_plugins'].remove(id)
-            return ('core.restart', {'return_url': 'dashboard.plugins.list'})
-        return ('dashboard.plugins.list')
+            return ('core.RestartView', {'return_url': 'dashboard.PluginListView'})
+        return ('dashboard.PluginListView')
 
-    @menu('Install Plugins', icon='cube', order=2)
-    def install(self):
+class PluginInstallView(BaseView):
+    def __init__(self):
+        BaseView.__init__(self, endpoint='/plugins/install',
+                                title='Install Plugins',
+                                menu={'id': 'plugins.install', 'icon': 'cube', 'order': 1})
+
+    def get(self, request):
         return ('plugins/install.html')

@@ -16,7 +16,7 @@
 				ping_location = window.location.pathname
 
 				if(ping_location.indexOf('.') != -1)
-					ping_location = ping_location.substring(0, ping_location.lastIndexOf('/'))
+					ping_location = ping_location.substring(0, ping_location.lastIndexOf('/') + 1)
 
 				function doCall() {
 						if(action == -1)

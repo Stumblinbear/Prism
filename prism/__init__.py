@@ -312,107 +312,136 @@ class PluginManager:
 		plugin.init(PRISM_STATE)
 		plugin.config.save()
 
-		has_menus = False
-
-		# Go through each of the module's views and add them to flask
-		for view_class in plugin._module_views:
-			view = view_class()
-
+		if len(plugin._module_views) > 0:
 			blueprint_name = plugin._endpoint
 
-			if view.endpoint != '/':
-				blueprint_name += view.endpoint.replace('/', '.')
+			# Create the plugin blueprint in flask
+			plugin._blueprint = Blueprint(blueprint_name,
+											plugin.plugin_id,
+											template_folder='templates')
 
-			# Create the blueprint in flask
-			view._blueprint = Blueprint(blueprint_name,
-										plugin.plugin_id,
-										template_folder='templates')
+			# Go through each of the module's views and add them to flask
+			for view_class in plugin._module_views:
+				view = view_class()
 
-			if hasattr(view, 'menu'):
-				has_menus = True
-				with flask_app().app_context():
-					item = current_menu.submenu(blueprint_name)
-					item.register(blueprint_name + '.index',
-									view.menu['title'],
-									view.menu['order'],
-									icon=view.menu['icon'])
+				endpoint_id = '%s' % view_class.__name__
 
-			for func_name in dir(view):
-				# Ignore any non-user-defined methods
-				if func_name.startswith('_'):
-					continue
-
-				# Get the method's attributes
-				func = getattr(view, func_name)
-
-				# We don't want variables. Only methods.
-				if not hasattr(func, '__call__'):
-					continue
-
-				# If they have their own functions that shouldn't be endpoints
-				if hasattr(func, 'ignore') and func.ignore:
-					continue
-
-				endpoint_id = func_name
-				view_func_wrapper = self.func_wrapper(plugin.plugin_id, func)
-
-				fallback_endpoint = self.get_http_endpoint(func)
-				fallback_http_methods = self.get_http_methods(func)
-				fallback_defaults = self.get_defaults(func)
-
-				func_routes = list()
-				if not hasattr(func, 'routes'):
-					func_routes.append({
-											'endpoint': fallback_endpoint,
-											'http_methods': fallback_http_methods,
-											'defaults': fallback_defaults
-										})
-				else:
-					func_routes = func.routes
-
-				if hasattr(func, 'menu'):
-					has_menus = True
+				if view.menu is not None:
 					with flask_app().app_context():
-						item = current_menu.submenu(blueprint_name + '.' + endpoint_id)
+						# Generate the parent menu item
+						if 'parent' in view.menu:
+							if '.' not in view.menu['parent']['id']:
+								parts = ('/' + blueprint_name + view.endpoint).split('/')
+								flask_app().add_url_rule('/'.join(parts[:-1]),
+																endpoint=blueprint_name + view.menu['parent']['id'])
+								item = current_menu.submenu(view.menu['parent']['id'])
+								item.register(blueprint_name + view.menu['parent']['id'],
+												view.menu['parent']['text'],
+												view.menu['parent']['order'],
+												icon=view.menu['parent']['icon'])
+							else:
+								item = current_menu.submenu(view.menu['parent']['id'])
+								item.register(blueprint_name + '.' + endpoint_id,
+												view.menu['parent']['text'],
+												view.menu['parent']['order'],
+												icon=view.menu['parent']['icon'])
+						item = current_menu.submenu(view.menu['id'])
 						item.register(blueprint_name + '.' + endpoint_id,
-										func.menu['title'],
-										func.menu['order'],
-										icon=func.menu['icon'])
+										view.title,
+										view.menu['order'],
+										icon=view.menu['icon'])
+					prism.output('Registered menu item for /%s: %s' % (blueprint_name + view.endpoint, view.menu['id']))
 
-				for route in func_routes:
-					if 'endpoint' not in route:
-						route['endpoint'] = fallback_endpoint
-					if 'http_methods' not in route:
-						route['http_methods'] = fallback_http_methods
-					if 'defaults' not in route:
-						route['defaults'] = fallback_defaults.copy()
+				# Find all methods in the view class
+				for func_name in [method for method in dir(view) if callable(getattr(view, method))]:
+					if func_name.startswith('_'):
+						continue
 
-					# Defaults are odd. They cannot be attached to routes with the key in the url
-					# For example: if <id> in in the url rule, it cann't be in defaults.
-					pattern = re.compile(r'<(?:.+?(?=:):)?(.+?)>')
-					if '<' in route['endpoint'] and len(route['defaults']) > 0:
-						for id in re.findall(pattern, route['endpoint']):
-							try:
-								del route['defaults'][id]
-							except:
-								pass
+					if func_name not in ['get', 'post', 'put', 'delete']:
+						if not func_name.endswith(('_get', '_post', '_put', '_delete')):
+							continue
+						else:
+							# Set the fallback http method to the extention of the function name
+							parts = func_name.split('_')
+							if parts[len(parts) - 1] in ('get', 'post', 'put', 'delete'):
+								fallback_http_methods = [parts[len(parts) - 1].upper()]
+					else:
+						# Set the fallback http method to the function name
+						fallback_http_methods = [func_name.upper()]
 
-					view._blueprint.add_url_rule(route['endpoint'],
-													endpoint=endpoint_id,
-													methods=route['http_methods'],
-													view_func=view_func_wrapper,
-													defaults=route['defaults'])
+					if func_name == 'get':
+						endpoint_id = '%s' % view_class.__name__
+					else:
+						endpoint_id = '%s:%s' % (view_class.__name__, func_name)
 
-			flask_app().register_blueprint(view._blueprint, url_prefix='/' +
+					# Get the method
+					func = getattr(view, func_name)
+					view_func_wrapper = self.func_wrapper(plugin.plugin_id, func)
+
+					# If the http methods have been specified in the @subroute decorator
+					if hasattr(func, 'http_methods'):
+						fallback_http_methods = func.http_methods
+
+					fallback_endpoint = '/'
+					# If an endpoint has been specified in the @subroute decorator
+					if hasattr(func, 'endpoint'):
+						fallback_endpoint = func.endpoint
+
+					# Prepare fallback defaults for the page
+					if hasattr(func, 'defaults'):
+						fallback_defaults = func.defaults
+					elif func.__defaults__ is not None:
+						args, varargs, keywords, defaults = inspect.getargspec(func)
+						fallback_defaults = dict(zip(args[-len(defaults):], defaults))
+					else:
+						fallback_defaults = {}
+
+					func_routes = list()
+					if not hasattr(func, 'routes'):
+						func_routes.append({
+												'endpoint': fallback_endpoint,
+												'http_methods': fallback_http_methods,
+												'defaults': fallback_defaults
+											})
+					else:
+						func_routes = func.routes
+
+					# Add a route for the get function with no parameters
+					if func_name == 'get':
+						plugin._blueprint.add_url_rule(view.endpoint + fallback_endpoint,
+														endpoint=endpoint_id,
+														methods=fallback_http_methods,
+														view_func=view_func_wrapper,
+														defaults=fallback_defaults)
+
+					for route in func_routes:
+						if 'endpoint' not in route:
+							route['endpoint'] = fallback_endpoint
+						if 'http_methods' not in route:
+							route['http_methods'] = fallback_http_methods
+						if 'defaults' not in route:
+							route['defaults'] = fallback_defaults.copy()
+
+						# Defaults are odd. They cannot be attached to routes with the key in the url
+						# For example: if <id> in in the url rule, it cann't be in defaults.
+						pattern = re.compile(r'<(?:.+?(?=:):)?(.+?)>')
+						if '<' in route['endpoint'] and len(route['defaults']) > 0:
+							for id in re.findall(pattern, route['endpoint']):
+								try:
+									del route['defaults'][id]
+								except:
+									pass
+
+						prism.output('Registered page /%s: %s %s' % (blueprint_name + view.endpoint + route['endpoint'], blueprint_name + '.' + endpoint_id, route['http_methods']))
+
+						plugin._blueprint.add_url_rule(view.endpoint + route['endpoint'],
+														endpoint=endpoint_id,
+														methods=route['http_methods'],
+														view_func=view_func_wrapper,
+														defaults=route['defaults'])
+
+			flask_app().register_blueprint(plugin._blueprint, url_prefix='/' +
 																blueprint_name.replace('.', '/'))
-
-		if has_menus:
-			with flask_app().app_context():
-				item = current_menu.submenu(plugin._endpoint)
-				item.register(plugin._endpoint + '.index',
-								plugin.name_display,
-								plugin.order,
-								icon=plugin.menu_icon)
 
 		paaf()
 
@@ -422,10 +451,7 @@ class PluginManager:
 		def func_wrapper(*args, **kwargs):
 			flask.g.current_plugin = plugin_id
 
-			if flask.request.method != 'GET':
-				obj = func(flask.request, *args, **kwargs)
-			else:
-				obj = func(*args, **kwargs)
+			obj = func(flask.request, *args, **kwargs)
 
 			# from flask import request, redirect, url_for, render_template
 			if isinstance(obj, tuple):
@@ -444,7 +470,7 @@ class PluginManager:
 						flask.abort(obj[1])
 					elif obj[0] == 'error':
 						error_json = base64.b64encode(json.dumps(page_args).encode('utf-8'))
-						return flask.redirect(flask.url_for('core.error', error_json=error_json))
+						return flask.redirect(flask.url_for('core.ErrorView', error_json=error_json))
 			elif isinstance(obj, str):
 				if obj.endswith('.html'):
 					return flask.render_template(obj)
@@ -455,55 +481,6 @@ class PluginManager:
 			return repr(obj)
 		func_wrapper.__name__ = func.__name__
 		return func_wrapper
-
-	def get_defaults(self, func):
-		""" Returns the default values for the route """
-		defaults = {}
-		if hasattr(func, 'defaults'):
-			defaults = func.defaults
-		elif func.__defaults__ is not None:
-			defaults = self.get_default_args(func)
-		return defaults
-
-	def get_default_args(self, func):
-		""" Returns a dictionary of arg_name: default_values
-		for the input function """
-		args, varargs, keywords, defaults = inspect.getargspec(func)
-		return dict(zip(args[-len(defaults):], defaults))
-
-	def get_http_methods(self, func):
-		""" Returns the HTTP methods for the route """
-		http_methods = ['GET']
-		# If the http methods have been specified in the @route decorator
-		if hasattr(func, 'http_methods'):
-			http_methods = func.http_methods
-		# If the function is called an http method
-		elif func.__name__ in ['get', 'post', 'put', 'delete']:
-			http_methods = [func.__name__.upper()]
-		elif '_' in func.__name__:
-			parts = func.__name__.split('_')
-			if parts[len(parts) - 1] in ['get', 'post', 'put', 'delete']:
-				http_methods = [parts[len(parts) - 1].upper()]
-		return http_methods
-
-	def get_http_endpoint(self, func):
-		""" Returns the URL endpoint that the route uses for access """
-		endpoint_http = '/' + func.__name__
-		# If the function is named index
-		if endpoint_http == '/index':
-			endpoint_http = '/'
-		# If an endpoint has been specified in the @route decorator
-		elif hasattr(func, 'endpoint'):
-			endpoint_http = func.endpoint
-		elif func.__name__ in ['get', 'post', 'put', 'delete']:
-			endpoint_http = '/'
-
-		if '_' in endpoint_http:
-			parts = endpoint_http.split('_')
-			if parts[len(parts) - 1] in ['get', 'post', 'put', 'delete']:
-				endpoint_http = '_'.join(parts[:-1])
-
-		return endpoint_http
 
 # Utility functions
 def public_endpoint(function):
