@@ -28,25 +28,25 @@ class SystemUsersView(BaseView):
 
     def get(self, request):
         user_info = get_user_info()
-        return View().add(ViewRow().add(ViewBox(title='groups.list.header', icon='users', padding=False
-                                ).add(ViewBox(title='users.list.header', icon='user', padding=False
-                                    ).add(ViewTableExtended(
-                                        ['users.list.id', 'users.list.group', 'users.list.username'],
-                                        [(
-                                            user_id,
-                                            user_info['groups'][user['group_id']]['name'] if user_info['groups'][user['group_id']]['name'] != user['name'] else '',
-                                            user['name'],
-                                            ViewTable(content=[('user.info', user['info']),
-                                                        ('user.home', user['home']),
-                                                        ('user.shell', user['shell'])
-                                                    ])
-                                        ) for user_id, user in user_info['users'].items()]
+        return View().add(ViewRow().add(ViewBox(title='users.list.header', icon='user', padding=False
+                                        ).add(ViewTableExtended(
+                                            ['users.list.id', 'users.list.group', 'users.list.username'],
+                                            [(
+                                                user_id,
+                                                user_info['groups'][user['group_id']]['name'] if user_info['groups'][user['group_id']]['name'] != user['name'] else '',
+                                                user['name'],
+                                                ViewTable(content=[('user.info', user['info']),
+                                                            ('user.home', user['home']),
+                                                            ('user.shell', user['shell'])
+                                                        ])
+                                            ) for user_id, user in user_info['users'].items()]
                                     ))
-                                ).add(ViewTable(
-                                        ['groups.list.id', 'groups.list.name', 'groups.list.users'],
-                                        [(group_id, group['name'], group['users']) for group_id, group in user_info['groups'].items()]
+                                    ).add(ViewBox(title='groups.list.header', icon='users', padding=False
+                                        ).add(ViewTable(
+                                            ['groups.list.id', 'groups.list.name', 'groups.list.users'],
+                                            [(group_id, group['name'], group['users']) for group_id, group in user_info['groups'].items()]
+                                        )
                                     ))
-                                )
                             )
 
 class SystemProcessesView(BaseView):
