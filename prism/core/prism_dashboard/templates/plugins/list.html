@@ -66,9 +66,13 @@
 						</table>
 					{% endif %}
 
-					{% if not plugin.is_core %}
+					{% if plugin.is_enabled or not plugin.is_core %}
 						<hr />
-
+					{% endif %}
+					{% if plugin.is_enabled %}
+						<button class="btn btn-primary" name="action" value="disable"><i class="fa fa-cog"></i></button>
+					{% endif %}
+					{% if not plugin.is_core %}
 						<form class="pull-right" method="POST">
 							<input type="hidden" name="id" value="{{ plugin.plugin_id }}" />
 							{% if not plugin.is_enabled %}
