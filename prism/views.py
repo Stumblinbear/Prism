@@ -22,8 +22,9 @@ def site_map():
 		# and rules that require parameters
 		if "GET" in rule.methods and has_no_empty_params(rule):
 			url = flask.url_for(rule.endpoint, **(rule.defaults or {}))
-			links.append((url, rule.endpoint))
-	return str(links)
+			links.append(url + ': ' + rule.endpoint)
+
+	return '<pre>' + str('\n'.join(links)) + '</pre>'
 
 @flask_app.context_processor
 def inject_things():
