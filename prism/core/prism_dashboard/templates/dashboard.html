@@ -1,5 +1,5 @@
 {% extends 'panel.html' %}
-{% block title_right %}<small><a href="{{ url_for('dashboard.DashboardView:edit_get') }}">{{ "dashboard.widgets.edit" | locale }}</a></small>{% endblock %}
+{% block title_right %}<small><a href="{{ url_for('dashboard.DashboardView:edit') }}">{{ "dashboard.widgets.edit" | locale }}</a></small>{% endblock %}
 {% block content %}
 {% if widgets|length == 0 %}
 	<div class="callout callout-info">
