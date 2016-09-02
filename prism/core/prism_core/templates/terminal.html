@@ -52,7 +52,7 @@
                 text: "This command requires prism to restart.",
                 type: "warning"
               }, function() {
-                window.location = "{{ url_for('core.restart', return_url=terminal.return_url) }}";
+                window.location = "{{ url_for('core.RestartView', return_url=terminal.return_url) }}";
               });
             {% else %}
               swal({
@@ -60,7 +60,7 @@
                 text: "This command requires prism to restart.",
                 type: "warning"
               }, function() {
-                window.location = "{{ url_for('core.restart') }}";
+                window.location = "{{ url_for('core.RestartView') }}";
               });
             {% endif %}
           {% elif terminal.return_url != None %}

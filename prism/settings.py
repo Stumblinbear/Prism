@@ -139,7 +139,7 @@ def init(pid):
 			PRISM_CONFIG['locale'] = 'en_US'
 
 		if 'enabled_plugins' not in PRISM_CONFIG:
-			PRISM_CONFIG['enabled_plugins'] = []
+			PRISM_CONFIG['enabled_plugins'] = [F]
 
 		# Make sure some VERY imporant values are set
 		if 'secret_key' not in PRISM_CONFIG:

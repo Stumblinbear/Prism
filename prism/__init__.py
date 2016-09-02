@@ -333,9 +333,9 @@ class PluginManager:
 							if '.' not in view.menu['parent']['id']:
 								parts = ('/' + blueprint_name + view.endpoint).split('/')
 								flask_app().add_url_rule('/'.join(parts[:-1]),
-																endpoint=blueprint_name + view.menu['parent']['id'])
+																endpoint=blueprint_name + '.' + view.menu['parent']['id'])
 								item = current_menu.submenu(view.menu['parent']['id'])
-								item.register(blueprint_name + view.menu['parent']['id'],
+								item.register(blueprint_name + '.' + view.menu['parent']['id'],
 												view.menu['parent']['text'],
 												view.menu['parent']['order'],
 												icon=view.menu['parent']['icon'])
@@ -371,6 +371,8 @@ class PluginManager:
 
 					if func_name == 'get':
 						endpoint_id = '%s' % view_class.__name__
+					elif func_name.endswith('_get'):
+						endpoint_id = '%s:%s' % (view_class.__name__, '_'.join(func_name.split('_')[:-1]))
 					else:
 						endpoint_id = '%s:%s' % (view_class.__name__, func_name)
 

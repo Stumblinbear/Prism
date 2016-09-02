@@ -49,7 +49,7 @@ class TerminalView(BaseView):
         self.terminals = {}
 
     @subroute('/<terminal_id>')
-    def get(self, terminal_id=None):
+    def get(self, request, terminal_id=None):
         terminal = None
 
         if terminal_id is None:
@@ -59,6 +59,7 @@ class TerminalView(BaseView):
                             }
                     )
         else:
+            print(terminal_id)
             terminal = self.get_terminal(terminal_id)
             if isinstance(terminal, tuple):
                 return terminal
@@ -68,21 +69,21 @@ class TerminalView(BaseView):
     @subroute('/install/<install_type>/<install_name>')
     @subroute('/install/<install_type>/<install_name>/<return_url>')
     @subroute('/install/<install_type>/<install_name>/<restart>/<return_url>')
-    def terminal_install(self, install_type, install_name, restart=False, return_url=None):
+    def install_get(self, request, install_type, install_name, restart=False, return_url=None):
         if install_type == 'binary':
             cmd = prism.get_os_command('yum install %s', 'apt-get install %s', 'pkg_add -v %s')
         elif install_type == 'module':
             cmd = 'pip install %s'
         else:
             return ('error')
-        return ('core.terminal_command', {'command': cmd % install_name, 'restart': restart, 'return_url': return_url})
+        return ('core.TerminalView:command', {'command': cmd % install_name, 'restart': restart, 'return_url': return_url})
 
     @subroute('/command/')
     @subroute('/command/<command>')
     @subroute('/command/<command>/<return_url>')
     @subroute('/command/<command>/<restart>')
     @subroute('/command/<command>/<restart>/<return_url>')
-    def terminal_command(self, command=None, restart=False, return_url=None):
+    def command_get(self, request, command=None, restart=False, return_url=None):
         if command is None:
             return ('error', {
                                 'title': 'Terminal',
@@ -91,11 +92,11 @@ class TerminalView(BaseView):
                     )
         terminal = TerminalCommand(command, return_url=return_url, restart=bool(restart))
         self.terminals[terminal.terminal_id] = terminal
-        return ('core.terminal', {'terminal_id': terminal.terminal_id})
+        return ('core.TerminalView', {'terminal_id': terminal.terminal_id})
 
     @subroute('/stream')
     @subroute('/stream/<terminal_id>')
-    def terminal_stream(self, terminal_id=None):
+    def stream_get(self, request, terminal_id=None):
         terminal = self.get_terminal(terminal_id)
         if isinstance(terminal, tuple):
             return terminal
@@ -109,7 +110,7 @@ class TerminalView(BaseView):
 
     @subroute('/stream')
     @subroute('/stream/<terminal_id>')
-    def terminal_stream_post(self, request, terminal_id):
+    def stream_post(self, request, terminal_id):
         terminal = self.get_terminal(terminal_id)
         if isinstance(terminal, tuple):
             return terminal
