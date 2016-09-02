@@ -550,12 +550,12 @@ def generate_random_string(length):
 	import string
 	return ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(length))
 
-def is_package_installed(id):
+def is_package_installed(pkg):
 	""" Returns true of the linux system has a
-	binary installed under the name "id" """
-	output = os_command('rpm -qa | grep %s' % id,
-						'dpkg -list | grep %s' % id,
-						'pkg_info | grep %s' % id)
+	binary installed under the name "pkg" """
+	output = os_command('rpm -qa | grep %s' % pkg,
+						'dpkg -l | grep %s' % pkg,
+						'pkg_info | grep %s' % pkg)
 	return (len(output) > 0)
 
 def get_os_command(redhat, debian=None, bsd=None):
