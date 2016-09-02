@@ -6,9 +6,6 @@ from .views import *
 
 
 class DashboardPlugin(BasePlugin):
-	def __init__(self):
-		BasePlugin.__init__(self, display_name='Dashboard', order=0)
-
 	def init(self, prism_state):
 		self._available_widgets = {}
 		self._widgets = self.config('widgets', {})

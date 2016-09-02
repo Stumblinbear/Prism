@@ -4,4 +4,5 @@ from .views import *
 
 
 class CorePlugin(BasePlugin):
-	pass
+	def init(self, prism_state):
+		self.settings.add('terminal', True)

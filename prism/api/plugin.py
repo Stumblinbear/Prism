@@ -6,10 +6,6 @@ import prism
 # 	After load: (binary/library, name, is satisfied)
 class BasePlugin(object):
 	def __init__(self, **kwargs):
-		self.display_name = None
-		self.icon = None
-		self.order = 999
-
 		self._config = None
 		self._locale = None
 		self._module = None
@@ -28,7 +24,7 @@ class BasePlugin(object):
 	@property
 	def settings(self):
 		if self._settings is None:
-			self._settings = {}
+			self._settings = prism.config.Settings(self)
 		return self._settings
 
 	@property
