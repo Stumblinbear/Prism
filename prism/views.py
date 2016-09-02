@@ -15,6 +15,8 @@ flask_app = prism.flask_app()
 @flask_app.route("/static/plugin/<plugin_id>/<path:static_file>")
 def plugin_static(plugin_id, static_file):
 	""" Allows plugins to load files from their own static directories """
+	plugin_id = 'prism_' + plugin_id
+
 	plugin = prism.get_plugin(plugin_id)
 	if plugin is None:
 		return 'Unknown plugin: %s' % plugin_id
