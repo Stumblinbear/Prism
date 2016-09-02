@@ -7,7 +7,6 @@ from docutils.core import publish_string
 from docutils.writers.html4css1 import Writer, HTMLTranslator
 import flask
 import jinja2
-from markupsafe import Markup
 
 import prism
 import prism.settings
@@ -88,7 +87,7 @@ def locale(s):
 	s = publish_string(s, writer=html_fragment_writer).decode('utf-8').rstrip('\r\n')
 	s = s.split('<p>', 1)[1]
 	s = s[:s.rfind('</p>')]
-	return Markup(s)
+	return jinja2.Markup(s)
 
 @flask_app.template_filter()
 def convert_bytes(size):

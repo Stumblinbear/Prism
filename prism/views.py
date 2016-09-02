@@ -1,6 +1,9 @@
+import os
+
 import flask
 import flask_login
 from flask_menu import current_menu
+import jinja2
 
 import prism
 import prism.settings
@@ -8,6 +11,24 @@ import prism.helpers
 
 
 flask_app = prism.flask_app()
+
+@flask_app.route("/static/plugin/<plugin_id>/<path:static_file>")
+def plugin_static(plugin_id, static_file):
+	""" Allows plugins to load files from their own static directories """
+	plugin = prism.get_plugin('prism_' + plugin_id)
+	if plugin is None:
+		return 'Unknown plugin: %s' % ('prism_' + plugin_id)
+
+	if plugin.is_core:
+		desired_file = os.path.join(prism.settings.CORE_PLUGINS_PATH, plugin_id)
+	else:
+		desired_file = os.path.join(prism.settings.PLUGINS_PATH, plugin_id)
+	desired_file = os.path.join(desired_file, 'static', static_file)
+	if not os.path.exists(desired_file):
+		return 'Unknown file: %s/static/%s' % ('prism_' + plugin_id, static_file)
+
+	with open(desired_file) as f:
+		return jinja2.Markup(f.read())
 
 def has_no_empty_params(rule):
 	defaults = rule.defaults if rule.defaults is not None else ()
