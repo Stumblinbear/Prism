@@ -1,0 +1,19 @@
+<table class="table">
+  {% if view.headers != None %}
+    <thead><tr>
+      {% for header in view.headers %}
+        <th>{{ header | locale }}</th>
+      {% endfor %}
+    </tr></thead>
+  {% endif %}
+  <tbody>
+    {% for row in view.content %}
+      <tr>
+        {% for column in row %}
+          {% set local = (column | locale) %}
+          <td>{% if column != local %}<b>{{ local }}</b>{% else %}{{ local }}{% endif %}</td>
+        {%- endfor -%}
+      </tr>
+    {%- endfor -%}
+  </tbody>
+</table>

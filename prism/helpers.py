@@ -24,6 +24,8 @@ def next_color(i):
 	return colors[i % len(colors)]
 flask_app.jinja_env.globals["next_color"] = next_color
 
+flask_app.jinja_env.globals["generate_random_string"] = prism.generate_random_string
+
 def include_static(name):
 	""" Load a file from the /static/ directory """
 	desired_file = os.path.join(flask_app.static_folder, name)
@@ -31,7 +33,7 @@ def include_static(name):
 		return jinja2.Markup(f.read())
 flask_app.jinja_env.globals["include_static"] = include_static
 
-def do_convert_bytes(size, format=False):
+def convert_bytes_format(size, format):
 	""" Convert amount of bytes, size, to its easier to read representation """
 	if(size == 0):
 		if format:
@@ -44,6 +46,10 @@ def do_convert_bytes(size, format=False):
 	if format:
 		return '%s%s' % (int(s), size_name[i])
 	return (int(s), size_name[i])
+
+@flask_app.template_filter()
+def convert_bytes(size):
+	return convert_bytes_format(size, True)
 
 class HTMLFragmentTranslator(HTMLTranslator):
 	def __init__(self, document):
@@ -61,6 +67,9 @@ html_fragment_writer.translator_class = HTMLFragmentTranslator
 
 @flask_app.template_filter()
 def locale(s):
+	if not isinstance(s, str):
+		return repr(s)
+
 	""" Used for localization """
 	plugin_id = flask.g.current_plugin
 	if plugin_id is None:
@@ -72,7 +81,7 @@ def locale(s):
 
 	# Search the plugin that's rendering the template for the requested locale
 	if plugin_id == 'prism':
-		s = prism.settings.PRISM_LOCALE[s]
+		ns = prism.settings.PRISM_LOCALE[s]
 	else:
 		plugin = prism.get_plugin(plugin_id)
 
@@ -80,16 +89,18 @@ def locale(s):
 			prism.output('Unknown plugin ID. Offender: %s' % plugin_id)
 			return s
 
-		s = plugin.locale[s]
+		ns = plugin.locale[s]
 
-	s = publish_string(s, writer=html_fragment_writer).decode('utf-8').rstrip('\r\n')
-	s = s.split('<p>', 1)[1]
-	s = s[:s.rfind('</p>')]
-	return jinja2.Markup(s)
+	if s == ns:
+		return s
 
-@flask_app.template_filter()
-def convert_bytes(size):
-	return do_convert_bytes(size, True)
+	ns = publish_string(ns, writer=html_fragment_writer).decode('utf-8').rstrip('\r\n')
+	if '<p>' not in ns:
+		return ''
+
+	ns = ns.split('<p>', 1)[1]
+	ns = ns[:ns.rfind('</p>')]
+	return jinja2.Markup(ns)
 
 @flask_app.template_filter()
 def ctime(s):

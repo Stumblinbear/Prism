@@ -1,5 +1,5 @@
 import flask
-from markupsafe import Markup
+import jinja2
 from prism.api.plugin import BasePlugin
 
 from .views import *
@@ -72,7 +72,7 @@ class Widget(object):
 				hold_current = flask.g.current_plugin
 				flask.g.current_plugin = self.plugin_id
 
-				ret = Markup(flask.render_template(obj[0], **page_args))
+				ret = jinja2.Markup(flask.render_template(obj[0], **page_args))
 
 				flask.g.current_plugin = hold_current
 

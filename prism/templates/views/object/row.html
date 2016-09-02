@@ -1,0 +1,8 @@
+<div class="row">
+  {% set size = ((12 / (view.children | length)) | round | int) %}
+	{% for child in children %}
+    <div class="col-md-{{ size }}">
+      {{ child.render() | safe }}
+    </div>
+  {% endfor %}
+</div>

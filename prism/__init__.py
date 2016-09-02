@@ -14,10 +14,12 @@ from subprocess import PIPE
 import flask
 from flask import Blueprint
 from flask_menu import current_menu
+import jinja2
 
 from prism.config import JSONConfig
 import prism.settings
 import prism.api.plugin
+import prism.api.view
 
 
 from prism.version import get_version
@@ -480,6 +482,8 @@ class PluginManager:
 					return flask.redirect(get_url_for(obj))
 			elif isinstance(obj, dict):
 				return flask.jsonify(obj)
+			elif isinstance(obj, prism.api.view.View):
+				return jinja2.Markup(obj.render())
 			return str(obj)
 		func_wrapper.__name__ = func.__name__
 		return func_wrapper

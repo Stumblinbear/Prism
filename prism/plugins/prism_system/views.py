@@ -6,15 +6,15 @@ from crontab import CronTab
 from crontabs import CronTabs
 import psutil
 
+import prism.helpers
 import prism.settings
 from prism.memorize import memorize
-from prism.api.view import BaseView, subroute
+from prism.api.view import BaseView, subroute, View, ViewRow, ViewBox, ViewTable, ViewTableExtended
 
 
 class SystemGeneralInfoView(BaseView):
     def __init__(self):
-        BaseView.__init__(self, endpoint='/general',
-                                title='General Information',
+        BaseView.__init__(self, endpoint='/general', title='General Information',
                                 menu={'id': 'system.overview', 'icon': 'circle', 'order': 0,
                                         'parent': {'id': 'system', 'text': 'System', 'icon': 'television'}})
 
@@ -23,17 +23,36 @@ class SystemGeneralInfoView(BaseView):
 
 class SystemUsersView(BaseView):
     def __init__(self):
-        BaseView.__init__(self, endpoint='/users',
-                                title='Users',
+        BaseView.__init__(self, endpoint='/users', title='Users',
                                 menu={'id': 'system.users', 'icon': 'users'})
 
     def get(self, request):
-        return ('users.html', {'user_info': get_user_info()})
+        user_info = get_user_info()
+        return View().add(ViewRow().add(ViewBox(title='groups.list.header', icon='users', padding=False
+                                    ).add(ViewTable(
+                                        ['groups.list.id', 'groups.list.name', 'groups.list.users'],
+                                        [(group_id, group['name'], group['users']) for group_id, group in user_info['groups'].items()]
+                                    ))
+                                ).add(ViewBox(title='users.list.header', icon='user', padding=False
+                                    ).add(ViewTableExtended(
+                                        ['users.list.id', 'users.list.group', 'users.list.username'],
+                                        [(
+                                            user_id,
+                                            user_info['groups'][user['group_id']]['name'] if user_info['groups'][user['group_id']]['name'] != user['name'] else '',
+                                            user['name'],
+                                            ViewTable(content=[('user.info', user['info']),
+                                                        ('user.home', user['home']),
+                                                        ('user.shell', user['shell'])
+                                                    ])
+                                        ) for user_id, user in user_info['users'].items()]
+                                    ))
+                                )
+                            )
+        #return ('users.html', {'user_info': get_user_info()})
 
 class SystemProcessesView(BaseView):
     def __init__(self):
-        BaseView.__init__(self, endpoint='/processes',
-                                title='Processes',
+        BaseView.__init__(self, endpoint='/processes', title='Processes',
                                 menu={'id': 'system.processes', 'icon': 'cog'})
 
     @subroute('/<show>')
@@ -64,8 +83,7 @@ class SystemProcessesView(BaseView):
 
 class SystemProcessView(BaseView):
     def __init__(self):
-        BaseView.__init__(self, endpoint='/process',
-                                title='View Process')
+        BaseView.__init__(self, endpoint='/process', title='View Process')
 
     @subroute('/<int:process_id>')
     def get(self, request, process_id):
@@ -103,8 +121,7 @@ class SystemProcessView(BaseView):
 
 class SystemDiskManagerView(BaseView):
     def __init__(self):
-        BaseView.__init__(self, endpoint='/disk',
-                                title='Disk Manager',
+        BaseView.__init__(self, endpoint='/disk', title='Disk Manager',
                                 menu={'id': 'system.disk', 'icon': 'circle-o'})
 
     def get(self, request):
@@ -112,29 +129,37 @@ class SystemDiskManagerView(BaseView):
 
 class SystemNetworkMonitorView(BaseView):
     def __init__(self):
-        BaseView.__init__(self, endpoint='/network',
-                                title='Network Monitor',
+        BaseView.__init__(self, endpoint='/network', title='Network Monitor',
                                 menu={'id': 'system.network', 'icon': 'exchange'})
 
     def get(self, request):
-        return ('network.html', {'networks': get_networks()})
+        return View().add(ViewBox(title='networks.list.header', icon='exchange', padding=False
+                                ).add(ViewTable(
+                                    ['networks.list.id', 'networks.list.total.sent', 'networks.list.total.received'],
+                                    [(network_id, prism.helpers.convert_bytes(network.bytes_sent), prism.helpers.convert_bytes(network.bytes_recv)) for network_id, network in get_networks().items()]
+                                ))
+                            )
 
 class SystemHostsView(BaseView):
     def __init__(self):
-        BaseView.__init__(self, endpoint='/hosts',
-                                title='Hosts',
+        BaseView.__init__(self, endpoint='/hosts', title='Hosts',
                                 menu={'id': 'system.hosts', 'icon': 'cubes'})
 
     def get(self, request):
-        return ('hosts.html', {'hosts': get_hosts()})
+        return View().add(ViewBox(title='hosts.list.header', icon='cubes', padding=False
+                                ).add(ViewTable(
+                                    ['hosts.list.address', 'hosts.list.host', 'hosts.list.aliases'],
+                                    [(address, host['hostname'], ', '.join(host['aliases'])) for address, host in get_hosts().items()]
+                                ))
+                            )
 
 class SystemCronJobsView(BaseView):
     def __init__(self):
-        BaseView.__init__(self, endpoint='/cron',
-                                title='Cron Jobs',
+        BaseView.__init__(self, endpoint='/cron', title='Cron Jobs',
                                 menu={'id': 'system.cron', 'icon': 'cogs'})
 
     def get(self, request):
+        print('s')
         return ('cron_jobs.html', {'crontabs': CronTabs(), 'locations': get_cron_locations()})
 
     def post(self, request):

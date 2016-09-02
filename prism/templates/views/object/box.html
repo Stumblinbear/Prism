@@ -1,0 +1,12 @@
+<div class="box box-default">
+  {% if view.title != None %}
+  	<div class="box-header with-border">
+  		<h3 class="box-title">{% if view.icon != None %}<i class="fa fa-{{ view.icon }}"></i> {% endif %}{{ view.title | locale }}</h3>
+  	</div>
+  {% endif %}
+	<div class="box-body{% if not view.padding %} no-padding{% endif %}">
+		{% for child in children %}
+      {{ child.render() | safe }}
+    {% endfor %}
+	</div>
+</div>

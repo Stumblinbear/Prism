@@ -1,0 +1,6 @@
+{% extends 'panel.html' %}
+{% block content %}
+  {% for view in content %}
+    {{ view.render() | safe }}
+  {% endfor %}
+{% endblock %}

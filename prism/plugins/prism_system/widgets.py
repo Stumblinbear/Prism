@@ -49,7 +49,7 @@ class UsageNetworkWidget(Widget):
 		Widget.__init__(self, 'usage.network', size=1)
 
 	def render(self):
-		netusage = prism.helpers.do_convert_bytes(self.get_network())
+		netusage = prism.helpers.convert_bytes(self.get_network())
 		return ('widget/usage.network.html', {'network': netusage[0], 'network_type': netusage[1]})
 
 	_last_check = 0

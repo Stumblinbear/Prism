@@ -1,0 +1,33 @@
+<table class="table table-hover">
+  {% if view.headers != None %}
+    <thead><tr>
+      {% for header in view.headers %}
+        <th>{{ header | locale }}</th>
+      {% endfor %}
+    </tr></thead>
+  {% endif %}
+  <tbody>
+    {% set table_id = generate_random_string(6) %}
+    {% for row in view.content %}
+      <tr style="cursor:pointer" data-toggle="collapse" data-target="#{{ table_id }}-{{ loop.index }}">
+        {% for column in row %}
+          {% if loop.index == (row | length) %}
+            {% continue %}
+          {% endif %}
+          <td>{{ column }}</td>
+        {%- endfor -%}
+      </tr>
+      {% if row[(row | length) - 1] != None %}
+        {% set size = ((12 / (row | length)) | round | int) %}
+        <tr>
+          <td colspan="{{ size }}" style="padding:0 8px">
+            <div class="collapse" id="{{ table_id }}-{{ loop.index }}">
+              <br />
+              {{ row[(row | length) - 1].render() | safe }}
+            </div>
+          </td>
+        </tr>
+      {% endif %}
+    {%- endfor -%}
+  </tbody>
+</table>
