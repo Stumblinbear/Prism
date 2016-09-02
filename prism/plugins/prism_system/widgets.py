@@ -13,7 +13,7 @@ from prism_dashboard import Widget
 
 class UsageWidget(Widget):
 	def __init__(self):
-		Widget.__init__(self, 'usage')
+		Widget.__init__(self, 'usage', size=4)
 
 	def render(self):
 		netusage = prism.helpers.do_convert_bytes(self.get_network())
@@ -63,7 +63,7 @@ class UsageWidget(Widget):
 
 class InfoWidget(Widget):
 	def __init__(self):
-		Widget.__init__(self, 'info')
+		Widget.__init__(self, 'info', size=2)
 
 	def render(self):
 		return ('widget/info.html',
@@ -71,11 +71,7 @@ class InfoWidget(Widget):
 									'os': '%s %s (%s)' % (platform.system(), platform.release(), platform.architecture()[0]),
 									'hostname': platform.node(),
 									'address': prism.settings.PRISM_CONFIG['host'],
-									'uptime': self.get_uptime(),
-									'disk': self.get_total_disk(),
-									'processor': platform.processor(),
-									'memory': self.get_total_memory(),
-									'swap': self.get_total_swap()
+									'uptime': self.get_uptime()
 								})
 
 	@memorize(5)
@@ -87,6 +83,19 @@ class InfoWidget(Widget):
 			uptime_string = str(timedelta(seconds=uptime_seconds))
 
 		return uptime_string
+
+class HardwareWidget(Widget):
+	def __init__(self):
+		Widget.__init__(self, 'hardware', size=2)
+
+	def render(self):
+		return ('widget/hardware.html',
+								{
+									'disk': self.get_total_disk(),
+									'processor': platform.processor(),
+									'memory': self.get_total_memory(),
+									'swap': self.get_total_swap()
+								})
 
 	@memorize(60)
 	def get_total_disk(self):

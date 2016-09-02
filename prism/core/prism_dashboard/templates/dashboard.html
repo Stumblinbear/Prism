@@ -7,10 +7,12 @@
 	<p>{{ "dashboard.widgets.no.body" | locale }}</p>
   </div>
 {% else %}
-	{% for widget_id, widget in widgets %}
-		<div class="row" id="plugin-{{ widget_id }}">
-			{{ widget.do_render() | safe }}
-		</div>
-	{% endfor %}
+	<div class="row" id="plugins">
+		{% for widget_id, widget in widgets %}
+			<div class="col-md-{{ 3 * widget.size }}">
+				{{ widget.do_render() | safe }}
+			</div>
+		{% endfor %}
+	</div>
 {% endif %}
 {% endblock %}

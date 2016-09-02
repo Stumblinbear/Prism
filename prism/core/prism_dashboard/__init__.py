@@ -58,8 +58,9 @@ class DashboardPlugin(BasePlugin):
 		self.config.save()
 
 class Widget(object):
-	def __init__(self, widget_id):
+	def __init__(self, widget_id, size=4):
 		self.widget_id = widget_id
+		self.size = size
 
 	def do_render(self):
 		obj = self.render()
