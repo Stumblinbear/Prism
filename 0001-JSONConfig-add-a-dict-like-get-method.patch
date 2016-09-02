@@ -1,0 +1,70 @@
+From 0b37dce8a7e3faa3e6946fc204454bbb57e4379b Mon Sep 17 00:00:00 2001
+From: Alexander Lenz <alexander.lenz@frm2.tum.de>
+Date: Fri, 2 Sep 2016 13:56:29 +0200
+Subject: [PATCH] JSONConfig: add a dict like get method.
+
++ Remove some uses of id as name.
+---
+ prism/__init__.py | 14 +++++++-------
+ prism/config.py   |  5 +++++
+ 2 files changed, 12 insertions(+), 7 deletions(-)
+
+diff --git a/prism/__init__.py b/prism/__init__.py
+index 10e9cf6..4352257 100644
+--- a/prism/__init__.py
++++ b/prism/__init__.py
+@@ -106,7 +106,7 @@ class PluginManager:
+ 		self.plugins = {}
+ 
+ 		# Holds the list of enabled plugins
+-		self.enabled_plugins = config['enabled_plugins']
++		self.enabled_plugins = config.get('enabled_plugins', [])
+ 
+ 	def init(self):
+ 		poof('Searching')
+@@ -131,20 +131,20 @@ class PluginManager:
+ 
+ 		return plugins
+ 
+-	def get_plugin(self, id):
++	def get_plugin(self, plugin):
+ 		""" Get a plugin, loaded or not """
+ 		if id in self.plugins:
+-			return self.plugins[id]
++			return self.plugins[plugin]
+ 		return None
+ 
+-	def is_enabled(self, id):
++	def is_enabled(self, plugin):
+ 		""" Returns true if and only if all the plugin's dependencies are satisfied and
+ 		it's set it enabled """
+-		return id in self.enabled_plugins
++		return plugin in self.enabled_plugins
+ 
+-	def is_satisfied(self, id):
++	def is_satisfied(self, plugin):
+ 		""" Returns true if the plugin's dependencies are satisfied """
+-		return self.plugins[id].is_satisfied
++		return self.plugins[plugin].is_satisfied
+ 
+ 	def get_classes(self, module, search_class):
+ 		classes = list()
+diff --git a/prism/config.py b/prism/config.py
+index d2f6b82..1088ebe 100644
+--- a/prism/config.py
++++ b/prism/config.py
+@@ -41,6 +41,11 @@ class JSONConfig(object):
+             with open(self.path, 'w') as file:
+                 json.dump(config, file, indent=4, sort_keys=True)
+ 
++    def get(self, key, default=None):
++        if key not in self.__dict__:
++            return default
++        return self[key]
++
+     def __getitem__(self, key):
+         if key not in self.__dict__:
+             return None
+-- 
+2.7.4
+

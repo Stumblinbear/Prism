@@ -1,6 +1,11 @@
 {% extends 'panel.html' %}
 {% block content %}
 <div class="row">
-	{{ render_widget('prism_system.info') | safe }}
+	<div class="col-md-6">
+		{{ render_widget('prism_system.info') }}
+	</div>
+	<div class="col-md-6">
+		{{ render_widget('prism_system.hardware') }}
+	</div>
 </div>
 {% endblock %}

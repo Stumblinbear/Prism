@@ -11,7 +11,7 @@
 		{% set x = 0 %}
 		{% for widget_id, widget in widgets %}
 			<div class="col-md-{{ 3 * widget.size }}">
-				{{ widget.do_render() | safe }}
+				{{ widget.do_render() }}
 			</div>
 			{% set x = x + widget.size %}
 			{% if x >= 4 %}
