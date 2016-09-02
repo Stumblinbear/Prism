@@ -478,7 +478,7 @@ class PluginManager:
 					return flask.redirect(get_url_for(obj))
 			elif isinstance(obj, dict):
 				return flask.jsonify(obj)
-			return repr(obj)
+			return str(obj)
 		func_wrapper.__name__ = func.__name__
 		return func_wrapper
 
