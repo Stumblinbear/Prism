@@ -68,7 +68,7 @@ class SystemProcessView(BaseView):
                                 title='View Process')
 
     @subroute('/<int:process_id>')
-    def process_get(self, request, process_id):
+    def get(self, request, process_id):
         try:
             p = psutil.Process(process_id)
         except:
@@ -92,7 +92,7 @@ class SystemProcessView(BaseView):
                                 })
 
     @subroute('/<int:process_id>')
-    def process_post(self, request, process_id):
+    def post(self, request, process_id):
         import json
         try:
             p = psutil.Process(process_id)
