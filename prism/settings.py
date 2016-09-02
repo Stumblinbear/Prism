@@ -86,11 +86,12 @@ def init(pid):
 		# I never have to change it. xD
 		prism.output(PRISM_LOCALE['start.hello.1'])
 		prism.output(PRISM_LOCALE['start.hello.2'])
+		subst = {}
 
 		# IP Address/Hostname prompt
-		host = socket.gethostbyname(socket.gethostname())
-		prism.output(PRISM_LOCALE['start.host'] % host)
-		PRISM_CONFIG['host'], used_default = prism.get_input(PRISM_LOCALE['start.host.prompt'], default=host)
+		subst['host'] = socket.gethostbyname(socket.gethostname())
+		prism.output(PRISM_LOCALE['start.host'].format(**subst))
+		PRISM_CONFIG['host'], used_default = prism.get_input(PRISM_LOCALE['start.host.prompt'], default=subst['host'])
 
 		if used_default:
 			prism.output('')
@@ -99,14 +100,14 @@ def init(pid):
 		# Secret generation
 		prism.output('')
 		prism.output(PRISM_LOCALE['start.secret'])
-		secret_key, used_default = prism.get_input(PRISM_LOCALE['start.secret.prompt'])
+		subst['secret_key'], used_default = prism.get_input(PRISM_LOCALE['start.secret.prompt'])
 
 		prism.output('')
 		if used_default:
 			secret_key = prism.generate_random_string(32)
-			prism.output(PRISM_LOCALE['start.secret.generate'] % secret_key)
+			prism.output(PRISM_LOCALE['start.secret.generate'].format(**subst))
 		else:
-			prism.output(PRISM_LOCALE['start.secret.done'] % secret_key)
+			prism.output(PRISM_LOCALE['start.secret.done'].format(**subst))
 
 		PRISM_CONFIG['secret_key'] = secret_key
 
