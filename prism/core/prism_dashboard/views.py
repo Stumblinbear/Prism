@@ -51,15 +51,15 @@ class PluginListView(BaseView):
         return ('plugins/list.html', {'plugins': prism.plugin_manager().get_sorted_plugins()})
 
     def post(self, request):
-        id = request.form['id']
+        plugin_id = request.form['id']
         action = request.form['action']
-        if id is not None and action is not None:
+        if plugin_id is not None and action is not None:
             if action == 'enable':
-                if id not in prism.settings.PRISM_CONFIG['enabled_plugins']:
-                    prism.settings.PRISM_CONFIG['enabled_plugins'].append(id)
+                if plugin_id not in prism.settings.PRISM_CONFIG['enabled_plugins']:
+                    prism.settings.PRISM_CONFIG['enabled_plugins'].append(plugin_id)
             elif action == 'disable':
-                if id in prism.settings.PRISM_CONFIG['enabled_plugins']:
-                    prism.settings.PRISM_CONFIG['enabled_plugins'].remove(id)
+                if plugin_id in prism.settings.PRISM_CONFIG['enabled_plugins']:
+                    prism.settings.PRISM_CONFIG['enabled_plugins'].remove(plugin_id)
             return ('core.RestartView', {'return_url': 'dashboard.PluginListView'})
         return ('dashboard.PluginListView')
 

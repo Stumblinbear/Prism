@@ -24,7 +24,8 @@ PRISM_CONFIG = {
 		'username': 'admin',
 		'password': 'admin',
 		'enabled': [],
-		'locale': 'en_US'
+		'locale': 'en_US',
+		'enabled_plugins': []
 	}
 
 PRISM_LOCALE = None
@@ -136,6 +137,9 @@ def init(pid):
 
 		if 'locale' not in PRISM_CONFIG:
 			PRISM_CONFIG['locale'] = 'en_US'
+
+		if 'enabled_plugins' not in PRISM_CONFIG:
+			PRISM_CONFIG['enabled_plugins'] = []
 
 		# Make sure some VERY imporant values are set
 		if 'secret_key' not in PRISM_CONFIG:
