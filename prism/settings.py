@@ -126,6 +126,10 @@ def init(pid):
 
 		prism.output('')
 		prism.output(PRISM_LOCALE['start.done'])
+		conf = JSONConfig(path=CONFIG_FILE)
+		for key, value in PRISM_CONFIG.items():
+			conf[key] = value
+		PRISM_CONFIG = conf
 	else:
 		# Load prism's config
 		PRISM_CONFIG = JSONConfig(path=CONFIG_FILE)
@@ -160,7 +164,7 @@ def init(pid):
 	if not prism.is_crypted(PRISM_CONFIG['password']):
 		PRISM_CONFIG['password'] = prism.crypt_string(PRISM_CONFIG['password'])
 
-	PRISM_CONFIG.save()
+	#PRISM_CONFIG.save()
 
 def generate_certificate():
 	import subprocess
