@@ -14,6 +14,8 @@ class BasePlugin(object):
 		self._locale = None
 		self._module = None
 
+		self._settings = None
+
 		for k in kwargs:
 			setattr(self, k, kwargs[k])
 
@@ -22,6 +24,12 @@ class BasePlugin(object):
 		if self._config is None:
 			self._config = prism.config.JSONConfig(self, 'config.json')
 		return self._config
+
+	@property
+	def settings(self):
+		if self._settings is None:
+			self._settings = {}
+		return self._settings
 
 	@property
 	def locale(self):

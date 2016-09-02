@@ -9,7 +9,7 @@
 					{% if '.' not in plugin.plugin_icon %}
 						<i class="fa fa-{{ plugin.plugin_icon }}"></i>
 					{% else %}
-						<img src="/static/plugin/{{ plugin.plugin_id }}/{{ plugin.plugin_icon }}" />
+						<img src="/static/plugin/{{ plugin.plugin_id }}/{{ plugin.plugin_icon }}" with="16" height="16" />
 					{% endif %}
 					<a role="button" data-toggle="collapse" data-parent="#plugins" href="#plugin-{{ plugin.plugin_id }}">
 						{{ plugin.name }} <small>v{{ plugin.version }}</small>
@@ -74,7 +74,9 @@
 						<hr />
 					{% endif %}
 					{% if plugin.is_enabled %}
-						<button class="btn btn-primary" name="action" value="disable"><i class="fa fa-cog"></i></button>
+						{% if plugin._settings != None %}
+							<button class="btn btn-primary" name="action" value="settings"><i class="fa fa-cog"></i></button>
+						{% endif %}
 					{% endif %}
 					{% if not plugin.is_core %}
 						<form class="pull-right" method="POST">
