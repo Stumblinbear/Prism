@@ -23,7 +23,10 @@
           <td colspan="{{ size }}" style="padding:0 8px">
             <div class="collapse" id="{{ table_id }}-{{ loop.index }}">
               <br />
-              {{ row[(row | length) - 1].render() | safe }}
+              <div class="well">
+                <br />
+                {{ row[(row | length) - 1].render() | safe }}
+              </div>
             </div>
           </td>
         </tr>
