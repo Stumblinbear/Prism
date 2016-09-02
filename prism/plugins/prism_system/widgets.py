@@ -11,32 +11,46 @@ from prism.memorize import memorize
 from prism_dashboard import Widget
 
 
-class UsageWidget(Widget):
+class UsageCPUWidget(Widget):
 	def __init__(self):
-		Widget.__init__(self, 'usage', size=4)
+		Widget.__init__(self, 'usage.cpu', size=1)
 
 	def render(self):
-		netusage = prism.helpers.do_convert_bytes(self.get_network())
-		return ('widget/usage.html',
-								{
-									'cpu': self.get_cpu(),
-									'ram': self.get_memory(),
-									'disk': self.get_disk(),
-									'network': netusage[0],
-									'network_type': netusage[1]
-								})
+		return ('widget/usage.cpu.html', {'cpu': self.get_cpu()})
 
 	@memorize(10)
 	def get_cpu(self):
 		return int(psutil.cpu_percent())
 
+class UsageRAMWidget(Widget):
+	def __init__(self):
+		Widget.__init__(self, 'usage.ram', size=1)
+
+	def render(self):
+		return ('widget/usage.ram.html', {'ram': self.get_memory()})
+
 	@memorize(10)
 	def get_memory(self):
 		return int(psutil.virtual_memory()[2])
 
+class UsageDiskWidget(Widget):
+	def __init__(self):
+		Widget.__init__(self, 'usage.disk', size=1)
+
+	def render(self):
+		return ('widget/usage.disk.html', {'disk': self.get_disk()})
+
 	@memorize(60)
 	def get_disk(self):
 		return int(psutil.disk_usage('/')[3])
+
+class UsageNetworkWidget(Widget):
+	def __init__(self):
+		Widget.__init__(self, 'usage.network', size=1)
+
+	def render(self):
+		netusage = prism.helpers.do_convert_bytes(self.get_network())
+		return ('widget/usage.network.html', {'network': netusage[0], 'network_type': netusage[1]})
 
 	_last_check = 0
 	_previous_network = 0

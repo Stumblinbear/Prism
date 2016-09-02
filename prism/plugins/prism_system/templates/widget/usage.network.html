@@ -1,0 +1,8 @@
+<div class="small-box bg-red">
+	<div class="inner">
+		<h3>{{ network }} <sup style="font-size:20px">{{ network_type }}/s</sup></h3>
+		<p>{{ "widget.usage.network" | locale }}</p>
+	</div>
+	<div class="icon"><i class="fa fa-exchange"></i></div>
+	<a href="{{ url_for('system.SystemNetworkMonitorView') }}" class="small-box-footer">{{ "widget.more_info" | locale }} <i class="fa fa-arrow-circle-right"></i></a>
+</div>

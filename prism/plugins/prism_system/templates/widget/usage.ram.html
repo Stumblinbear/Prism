@@ -1,0 +1,8 @@
+<div class="small-box bg-green">
+	<div class="inner">
+		<h3>{{ ram }}<sup style="font-size:20px">%</sup></h3>
+		<p>{{ "widget.usage.ram" | locale }}</p>
+	</div>
+	<div class="icon"><i class="fa fa-database"></i></div>
+	<a href="{{ url_for('system.SystemProcessesView') }}" class="small-box-footer">{{ "widget.more_info" | locale }} <i class="fa fa-arrow-circle-right"></i></a>
+</div>

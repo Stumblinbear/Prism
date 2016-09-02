@@ -10,27 +10,24 @@
 {% else %}
 	<style>
 		#sortable { list-style-type: none; margin: 0; padding: 0; width: 100%; }
+		.plugin-content { pointer-events: none }
 	</style>
-	<div class="row">
-		<ul id="sortable">
-			{% for widget_id, widget, widget_config in widgets %}
-				<li class="ui-state-default plugin" data-widget="{{ widget_id }}">
-					<div class="col-md-{{ 3 * widget.size }}">
-						<div class="box box-solid">
-							<div class="box-header with-border">
-								<h3 class="box-title">{{ widget_id }}</h3>
-								<div class="pull-right">
-									<input type="checkbox" class="shown" data-widget="{{ widget_id }}" {% if widget_config.shown %}checked{% endif %} />
-								</div>
-							</div>
-							<div class="box-body no-padding">
-								{{ widget.do_render() | safe }}
-							</div>
+	<div id="sortable" class="row">
+		{% for widget_id, widget, widget_config in widgets %}
+			<div class="plugin col-md-{{ 3 * widget.size }}" data-widget="{{ widget_id }}">
+				<div class="box box-solid">
+					<div class="box-header with-border">
+						<div class="pull-right">
+							<input type="checkbox" class="shown" data-widget="{{ widget_id }}" {% if widget_config.shown %}checked{% endif %} />
 						</div>
 					</div>
-				</li>
-			{% endfor %}
-		</ul>
+					<div class="box-body no-padding plugin-content">
+						<br />
+						{{ widget.do_render() | safe }}
+					</div>
+				</div>
+			</div>
+		{% endfor %}
 	</div>
 	<script>
 		$(function() {
@@ -39,6 +36,10 @@
 			});
 
 			$("#sortable").sortable({
+				helper: "clone",
+      	revert: "invalid",
+				cursor: "move",
+				opacity: 0.5,
 				stop: function(event, ui) {
 					var data = "";
 
@@ -55,8 +56,5 @@
 			$("#sortable").disableSelection();
 		});
 	</script>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/gridstack.js/0.2.6/gridstack.min.js"></script>
 {% endif %}
 {% endblock %}

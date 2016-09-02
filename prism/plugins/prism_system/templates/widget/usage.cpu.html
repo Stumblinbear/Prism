@@ -1,0 +1,8 @@
+<div class="small-box bg-aqua">
+	<div class="inner">
+		<h3>{{ cpu }}<sup style="font-size:20px">%</sup></h3>
+		<p>{{ "widget.usage.cpu" | locale }}</p>
+	</div>
+	<div class="icon"><i class="fa fa-cog"></i></div>
+	<a href="{{ url_for('system.SystemProcessesView') }}" class="small-box-footer">{{ "widget.more_info" | locale }} <i class="fa fa-arrow-circle-right"></i></a>
+</div>

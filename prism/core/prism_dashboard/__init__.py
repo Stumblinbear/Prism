@@ -36,23 +36,22 @@ class DashboardPlugin(BasePlugin):
 		return self._widgets[id].shown
 
 	def get_widgets(self, all=False):
-		ret_widgets = []
+		ret_widgets = {}
 
 		if all:
 			for widget_id, widget_config in self._widgets.items():
 				if widget_id not in self._available_widgets:
 					continue
-				ret_widgets.insert(widget_config['order'],
-									(widget_id, self._available_widgets[widget_id], widget_config))
+				ret_widgets[widget_config['order']] = (widget_id, self._available_widgets[widget_id], widget_config)
 		else:
 			for widget_id, widget_config in self._widgets.items():
 				if widget_id not in self._available_widgets:
 					continue
 				if widget_config['shown']:
-					ret_widgets.insert(widget_config['order'],
-										(widget_id, self._available_widgets[widget_id]))
+					ret_widgets[widget_config['order']] = (widget_id, self._available_widgets[widget_id])
 
-		return ret_widgets
+		ret_widgets = sorted(ret_widgets.items(), key=lambda x: x[0])
+		return [v[1] for v in ret_widgets]
 
 	def save_widgets(self):
 		self.config.save()

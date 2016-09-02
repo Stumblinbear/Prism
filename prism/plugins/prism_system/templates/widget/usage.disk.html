@@ -1,0 +1,8 @@
+<div class="small-box bg-yellow">
+	<div class="inner">
+		<h3>{{ disk }}<sup style="font-size:20px">%</sup></h3>
+		<p>{{ "widget.usage.disk" | locale }}</p>
+	</div>
+	<div class="icon"><i class="fa fa-clone"></i></div>
+	<a href="{{ url_for('system.SystemDiskManagerView') }}" class="small-box-footer">{{ "widget.more_info" | locale }} <i class="fa fa-arrow-circle-right"></i></a>
+</div>
