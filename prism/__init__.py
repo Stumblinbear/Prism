@@ -44,8 +44,8 @@ def plugin_manager():
 		PRISM_STATE.plugin_manager.init()
 	return PRISM_STATE.plugin_manager
 
-def get_plugin(id):
-	return PRISM_STATE.plugin_manager.get_plugin(id)
+def get_plugin(plugin_id):
+	return PRISM_STATE.plugin_manager.get_plugin(plugin_id)
 
 class Prism:
 	def __init__(self, flask_app, config):
@@ -131,20 +131,20 @@ class PluginManager:
 
 		return plugins
 
-	def get_plugin(self, plugin):
+	def get_plugin(self, plugin_id):
 		""" Get a plugin, loaded or not """
-		if id in self.plugins:
-			return self.plugins[plugin]
+		if plugin_id in self.plugins:
+			return self.plugins[plugin_id]
 		return None
 
-	def is_enabled(self, plugin):
+	def is_enabled(self, plugin_id):
 		""" Returns true if and only if all the plugin's dependencies are satisfied and
 		it's set it enabled """
-		return plugin in self.enabled_plugins
+		return plugin_id in self.enabled_plugins
 
-	def is_satisfied(self, plugin):
+	def is_satisfied(self, plugin_id):
 		""" Returns true if the plugin's dependencies are satisfied """
-		return self.plugins[plugin].is_satisfied
+		return self.plugins[plugin_id].is_satisfied
 
 	def get_classes(self, module, search_class):
 		classes = list()
