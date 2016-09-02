@@ -106,7 +106,7 @@ class PluginManager:
 		self.plugins = {}
 
 		# Holds the list of enabled plugins
-		self.enabled_plugins = config['enabled_plugins']
+		self.enabled_plugins = config.get('enabled_plugins', [])
 
 	def init(self):
 		poof('Searching')
@@ -131,20 +131,20 @@ class PluginManager:
 
 		return plugins
 
-	def get_plugin(self, id):
+	def get_plugin(self, plugin):
 		""" Get a plugin, loaded or not """
 		if id in self.plugins:
-			return self.plugins[id]
+			return self.plugins[plugin]
 		return None
 
-	def is_enabled(self, id):
+	def is_enabled(self, plugin):
 		""" Returns true if and only if all the plugin's dependencies are satisfied and
 		it's set it enabled """
-		return id in self.enabled_plugins
+		return plugin in self.enabled_plugins
 
-	def is_satisfied(self, id):
+	def is_satisfied(self, plugin):
 		""" Returns true if the plugin's dependencies are satisfied """
-		return self.plugins[id].is_satisfied
+		return self.plugins[plugin].is_satisfied
 
 	def get_classes(self, module, search_class):
 		classes = list()

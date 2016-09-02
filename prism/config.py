@@ -41,6 +41,11 @@ class JSONConfig(object):
             with open(self.path, 'w') as file:
                 json.dump(config, file, indent=4, sort_keys=True)
 
+    def get(self, key, default=None):
+        if key not in self.__dict__:
+            return default
+        return self[key]
+
     def __getitem__(self, key):
         if key not in self.__dict__:
             return None
