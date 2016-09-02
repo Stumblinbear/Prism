@@ -65,8 +65,6 @@ def locale(s):
 	plugin_id = flask.g.current_plugin
 	if plugin_id is None:
 		plugin_id = 'prism'
-	elif not plugin_id.startswith('prism_'):
-		plugin_id = 'prism_' + plugin_id
 
 	# Allow setting their own plugin id (Iunno why, but it might be useful)
 	if ':' in s:

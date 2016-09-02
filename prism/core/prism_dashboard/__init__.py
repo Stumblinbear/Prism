@@ -17,8 +17,8 @@ class DashboardPlugin(BasePlugin):
 		for plugin_id, plugin in prism_state.plugin_manager.plugins.items():
 			for name, obj in prism_state.plugin_manager.get_classes(plugin._module, Widget):
 				widget = obj()
-				widget.plugin_id = plugin_id
-				widget.widget_id = plugin_id + '.' + widget.widget_id
+				widget.plugin_id = plugin.plugin_id
+				widget.widget_id = plugin.plugin_id + '.' + widget.widget_id
 				self._available_widgets[widget.widget_id] = widget
 
 				if widget.widget_id not in self._widgets:

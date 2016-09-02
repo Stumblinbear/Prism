@@ -170,6 +170,9 @@ class PluginManager:
 		sys.path.append(path)
 
 		for plugin_id in os.listdir(path):
+			if not plugin_id.startswith('prism_'):
+				continue
+
 			base_folder = os.path.join(path, plugin_id)
 			if not os.path.isfile(base_folder):
 				if not os.path.exists(os.path.join(base_folder, 'plugin.json')):
@@ -284,10 +287,7 @@ class PluginManager:
 			plugin = obj()
 			plugin._module = module
 			plugin._info = plugin_info
-
 			plugin._endpoint = plugin.plugin_id
-			if plugin._endpoint.startswith('prism_'):
-				plugin._endpoint = plugin._endpoint.split('_', 1)[1]
 
 			self.plugins[plugin.plugin_id] = plugin
 
@@ -317,7 +317,7 @@ class PluginManager:
 
 			# Create the plugin blueprint in flask
 			plugin._blueprint = Blueprint(blueprint_name,
-											plugin.plugin_id,
+											plugin._info['_id'],
 											template_folder='templates')
 
 			# Go through each of the module's views and add them to flask

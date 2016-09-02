@@ -15,20 +15,17 @@ flask_app = prism.flask_app()
 @flask_app.route("/static/plugin/<plugin_id>/<path:static_file>")
 def plugin_static(plugin_id, static_file):
 	""" Allows plugins to load files from their own static directories """
-	plugin = prism.get_plugin('prism_' + plugin_id)
+	plugin = prism.get_plugin(plugin_id)
 	if plugin is None:
-		return 'Unknown plugin: %s' % ('prism_' + plugin_id)
+		return 'Unknown plugin: %s' % plugin_id
 
 	if plugin.is_core:
-		desired_file = os.path.join(prism.settings.CORE_PLUGINS_PATH, plugin_id)
+		static_dir = os.path.join(prism.settings.CORE_PLUGINS_PATH, plugin_id)
 	else:
-		desired_file = os.path.join(prism.settings.PLUGINS_PATH, plugin_id)
-	desired_file = os.path.join(desired_file, 'static', static_file)
-	if not os.path.exists(desired_file):
-		return 'Unknown file: %s/static/%s' % ('prism_' + plugin_id, static_file)
+		static_dir = os.path.join(prism.settings.PLUGINS_PATH, plugin_id)
 
-	with open(desired_file) as f:
-		return jinja2.Markup(f.read())
+	static_dir = os.path.join(static_dir, 'static')
+	return flask.send_from_directory(static_dir, static_file)
 
 def has_no_empty_params(rule):
 	defaults = rule.defaults if rule.defaults is not None else ()

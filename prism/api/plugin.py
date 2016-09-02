@@ -31,7 +31,7 @@ class BasePlugin(object):
 
 	@property
 	def plugin_id(self):
-		return self._info['_id']
+		return self._info['_id'].split('_', 1)[1]
 
 	@property
 	def version(self):
@@ -83,12 +83,12 @@ class BasePlugin(object):
 
 	@property
 	def data_folder(self):
-		return os.path.join(prism.settings.CONFIG_FOLDER_PLUGINS, self.plugin_id)
+		return os.path.join(prism.settings.CONFIG_FOLDER_PLUGINS, self._info['_id'])
 
 	@property
 	def plugin_folder(self):
 		return os.path.join(prism.settings.PLUGINS_PATH if not self.is_core else prism.settings.CORE_PLUGINS_PATH,
-								self.plugin_id)
+								self._info['_id'])
 
 	# Called when the plugin is enabled.
 	def init(self, prism_state):

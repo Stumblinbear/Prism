@@ -11,15 +11,15 @@ class DashboardView(BaseView):
                                 menu={'id': 'dashboard', 'icon': 'home', 'order': 0})
 
     def get(self, request):
-        return ('dashboard.html', {'widgets': prism.get_plugin('prism_dashboard').get_widgets()})
+        return ('dashboard.html', {'widgets': prism.get_plugin('dashboard').get_widgets()})
 
     @subroute('/edit')
     def edit_get(self, request):
-        return ('dashboard_edit.html', {'widgets': prism.get_plugin('prism_dashboard').get_widgets(all=True)})
+        return ('dashboard_edit.html', {'widgets': prism.get_plugin('dashboard').get_widgets(all=True)})
 
     @subroute('/edit')
     def edit_post(self, request):
-        prism_dashboard = prism.get_plugin('prism_dashboard')
+        prism_dashboard = prism.get_plugin('dashboard')
 
         action = request.form['action']
         if action == 'show' or action == 'hide':
