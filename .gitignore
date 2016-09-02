@@ -4,6 +4,5 @@ __pycache__
 RELEASE-VERSION
 
 config/
-config.json
 
 tmp/
