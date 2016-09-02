@@ -29,10 +29,6 @@ class SystemUsersView(BaseView):
     def get(self, request):
         user_info = get_user_info()
         return View().add(ViewRow().add(ViewBox(title='groups.list.header', icon='users', padding=False
-                                    ).add(ViewTable(
-                                        ['groups.list.id', 'groups.list.name', 'groups.list.users'],
-                                        [(group_id, group['name'], group['users']) for group_id, group in user_info['groups'].items()]
-                                    ))
                                 ).add(ViewBox(title='users.list.header', icon='user', padding=False
                                     ).add(ViewTableExtended(
                                         ['users.list.id', 'users.list.group', 'users.list.username'],
@@ -46,9 +42,12 @@ class SystemUsersView(BaseView):
                                                     ])
                                         ) for user_id, user in user_info['users'].items()]
                                     ))
+                                ).add(ViewTable(
+                                        ['groups.list.id', 'groups.list.name', 'groups.list.users'],
+                                        [(group_id, group['name'], group['users']) for group_id, group in user_info['groups'].items()]
+                                    ))
                                 )
                             )
-        #return ('users.html', {'user_info': get_user_info()})
 
 class SystemProcessesView(BaseView):
     def __init__(self):
