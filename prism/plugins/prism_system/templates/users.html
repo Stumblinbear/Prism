@@ -10,7 +10,7 @@
 				<table class="table table-hover">
 					<thead><tr><th>{{ "users.list.id" | locale }}</th><th>{{ "users.list.group" | locale }}</th><th>{{ "users.list.username" | locale }}</th></tr></thead>
 					<tbody>
-						{%- for id, user in user_info.users.items() -%}
+						{% for id, user in user_info.users.items() %}
 						<tr>
 							<td colspan="3">
 							<div class="row-fluid" style="cursor:pointer" data-toggle="collapse" data-target="#user-{{ id }}">
@@ -31,7 +31,7 @@
 							</div>
 							</td>
 						</tr>
-						{%- endfor -%}
+						{% endfor %}
 					</tbody>
 				</table>
 			</div>
@@ -46,9 +46,9 @@
 				<table class="table">
 					<thead><tr><th>{{ "groups.list.id" | locale }}</th><th>{{ "groups.list.name" | locale }}</th><th>{{ "groups.list.users" | locale }}</th></tr></thead>
 					<tbody>
-						{%- for id, group in user_info.groups.items() -%}
+						{% for id, group in user_info.groups.items() %}
 							<tr><td>{{ id }}</td><td>{{ group.name }}</td><td>{{ group.users }}</td></tr>
-						{%- endfor -%}
+						{% endfor %}
 					</tbody>
 				</table>
 			</div>

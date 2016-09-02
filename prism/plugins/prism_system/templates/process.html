@@ -28,17 +28,17 @@
 	<div class="col-sm-6">
 		<div class="text-center">
 			<h4>{{ "cpu.cores.physical" | locale }}</h4>
-			{%- for i in range(cpu_count) -%}
+			{% for i in range(cpu_count) %}
 				<div class="bg-{% if i in proc.cpu_affinity %}primary{% else %}danger{% endif %} core">{{ i + 1 }}</div>
-			{%- endfor -%}
+			{% endfor %}
 		</div>
 	</div>
 	<div class="col-sm-6">
 		<div class="text-center">
 			<h4>{{ "cpu.cores.logical" | locale }}</h4>
-			{%- for i in range(cpu_count_logical) -%}
+			{% for i in range(cpu_count_logical) %}
 				<div class="bg-{% if i in proc.cpu_affinity %}primary{% else %}danger{% endif %} core">{{ cpu_count + i + 1 }}</div>
-			{%- endfor -%}
+			{% endfor %}
 		</div>
 	</div>
 </div>

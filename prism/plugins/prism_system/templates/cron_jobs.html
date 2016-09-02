@@ -17,13 +17,13 @@
 					<div class="col-xs-6 col-sm-2"></div>
 				</div>
 				<hr />
-				{%- for crontab in crontabs -%}
+				{% for crontab in crontabs %}
 					{% if crontab.filen == None %}
 						{% continue %}
 					{% endif %}
 
 					{% set crontab_id = loop.index %}
-					{%- for cron in crontab.crons -%}
+					{% for cron in crontab.crons %}
 						{% if (cron | string).startswith('#') %}
 							{% continue %}
 						{% endif %}
@@ -68,8 +68,8 @@
 								</div>
 							</div>
 						</div>
-					{%- endfor -%}
-				{%- endfor -%}
+					{% endfor %}
+				{% endfor %}
 			</div>
 		</div>
 	</div>

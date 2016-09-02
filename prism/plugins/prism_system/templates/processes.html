@@ -10,17 +10,17 @@
 	<div class="col-sm-6">
 		<div class="text-center">
 			<h4>{{ "cpu.cores.physical" | locale }}</h4>
-			{%- for i in range(cpu_count) -%}
+			{% for i in range(cpu_count) %}
 				<div class="bg-primary core">{{ i + 1 }}</div>
-			{%- endfor -%}
+			{% endfor %}
 		</div>
 	</div>
 	<div class="col-sm-6">
 		<div class="text-center">
 			<h4>{{ "cpu.cores.logical" | locale }}</h4>
-			{%- for i in range(cpu_count_logical) -%}
+			{% for i in range(cpu_count_logical) %}
 				<div class="bg-primary core">{{ cpu_count + i + 1 }}</div>
-			{%- endfor -%}
+			{% endfor %}
 		</div>
 	</div>
 </div>
@@ -33,7 +33,7 @@
 				<h3 class="box-title">{{ "processes.list.header" | locale }} <small><a href="{{ url_for('system.SystemProcessesView') }}/all">{{ "processes.list.show_all" | locale }}</a></h3>
 			</div>
 			<div class="box-body">
-				{%- for proc in processes -%}
+				{% for proc in processes %}
 					<div class="row-fluid" style="cursor:pointer" data-toggle="collapse" data-target="#process-{{ proc.pid }}">
 						<div class="col-xs-3 col-sm-1">{% if proc.pid == panel_pid %}<i class="fa fa-asterisk" data-toggle="tooltip" data-placement="top" title="{{ "processes.list.prism" | locale }}"></i> {% endif %}{{ proc.pid }}</div>
 						<div class="col-xs-3 col-sm-1">{{ proc.username }}</div>
@@ -62,9 +62,9 @@
 									<div class="col-xs-3">
 										<div class="pull-right text-center">
 											<h5>{{ "processes.list.info.core_affinity" | locale }}</h5>
-											{%- for i in range(cpu_count + cpu_count_logical) -%}
+											{% for i in range(cpu_count + cpu_count_logical) %}
 												<div class="bg-{% if i in proc.cpu_affinity %}success{% else %}danger{% endif %} core small">{{ i + 1 }}</div>
-											{%- endfor -%}
+											{% endfor %}
 										</div>
 									</div>
 									<div class="col-xs-9">
@@ -103,7 +103,7 @@
 							</div>
 						</div>
 					</div>
-				{%- endfor -%}
+				{% endfor %}
 			</div>
 		</div>
 	</div>

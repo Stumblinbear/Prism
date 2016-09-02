@@ -12,9 +12,9 @@
 						{% if not cron is defined %}
 						<div class="col-sm-2 text-center">
 							<select class="form-control" name="tabfile">
-								{%- for file in locations -%}
+								{% for file in locations %}
 									<option value="{{ file }}">{{ file }}</option>
-								{%- endfor -%}
+								{% endfor %}
 							</select>
 							<small tabindex="0" data-toggle="popover" data-html="true" data-container="#croncreate" data-trigger="hover" data-placement="bottom" title="Minute" data-content="The cron file to save this to.">File</small>
 						</div>

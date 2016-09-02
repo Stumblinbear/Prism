@@ -9,19 +9,19 @@
 			</div>
 		</form>
 		<ul class="sidebar-menu">
-			{%- for item in current_menu.children recursive -%}
+			{% for item in current_menu.children recursive %}
 				{% if not item.hidden %}
 					{% if item.header %}<li class="header">{{ item.header }}</li>{% endif %}
 					<li{% if item.active %} class="active"{% endif %}>
 						<a href="{{ item.url }}"><i class="fa fa-{{ item.icon }}"></i> <span>{{ item.text }}</span></a>
-						{%- if item.children -%}
+						{% if item.children %}
 							<ul class="treeview-menu">
 								{{ loop(item.children) }}
 							</ul>
-						{%- endif -%}
+						{% endif %}
 					</li>
 				{% endif %}
-			{%- endfor -%}
+			{% endfor %}
 		</ul>
 	</section>
 </aside>
