@@ -60,24 +60,7 @@ class Widget(object):
 		self.size = size
 
 	def do_render(self):
-		obj = self.render()
-
-		if isinstance(obj, tuple):
-			page_args = {}
-			if len(obj) > 1:
-				page_args = obj[1]
-
-			if obj[0].endswith('.html'):
-				# Let widgets respect locale rules
-				hold_current = flask.g.current_plugin
-				flask.g.current_plugin = self.plugin_id
-
-				ret = jinja2.Markup(flask.render_template(obj[0], **page_args))
-
-				flask.g.current_plugin = hold_current
-
-				return ret
-		return obj
+		return jinja2.Markup(prism.handle_render(self.plugin_id, self.render))
 
 	def render(self):
 		pass

@@ -15,8 +15,7 @@ from prism_core.terminal import TerminalCommand
 
 class ErrorView(BaseView):
     def __init__(self):
-        BaseView.__init__(self, endpoint='/error',
-                                title='Fatal Error')
+        BaseView.__init__(self, endpoint='/error', title='Fatal Error')
 
     @subroute('/<path:error_json>')
     def get(self, request, error_json):
@@ -25,8 +24,7 @@ class ErrorView(BaseView):
 
 class RestartView(BaseView):
     def __init__(self):
-        BaseView.__init__(self, endpoint='/restart',
-                                title='Restarting')
+        BaseView.__init__(self, endpoint='/restart', title='Restarting')
 
     @subroute('/<return_url>')
     def get(self, request, return_url='dashboard.home'):
@@ -43,8 +41,7 @@ class RestartView(BaseView):
 
 class TerminalView(BaseView):
     def __init__(self):
-        BaseView.__init__(self, endpoint='/terminal',
-                                title='Terminal')
+        BaseView.__init__(self, endpoint='/terminal', title='Terminal')
 
         self.terminals = {}
 

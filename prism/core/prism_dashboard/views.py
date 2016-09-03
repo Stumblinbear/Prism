@@ -6,8 +6,7 @@ from prism.api.view import BaseView, subroute
 
 class DashboardView(BaseView):
     def __init__(self):
-        BaseView.__init__(self, endpoint='/home',
-                                title='Dashboard',
+        BaseView.__init__(self, endpoint='/home', title='Dashboard',
                                 menu={'id': 'dashboard', 'icon': 'home', 'order': 0})
 
     def get(self, request):
@@ -42,8 +41,7 @@ class DashboardView(BaseView):
 
 class PluginListView(BaseView):
     def __init__(self):
-        BaseView.__init__(self, endpoint='/plugins/list',
-                                title='Installed Plugins',
+        BaseView.__init__(self, endpoint='/plugins/list', title='Installed Plugins',
                                 menu={'id': 'plugins.list', 'icon': 'square', 'order': 0,
                                         'parent': {'id': 'plugins', 'text': 'Plugins', 'icon': 'cubes', 'order': 1}})
 
@@ -69,8 +67,7 @@ class PluginListView(BaseView):
 
 class PluginInstallView(BaseView):
     def __init__(self):
-        BaseView.__init__(self, endpoint='/plugins/install',
-                                title='Install Plugins',
+        BaseView.__init__(self, endpoint='/plugins/install', title='Install Plugins',
                                 menu={'id': 'plugins.install', 'icon': 'cube', 'order': 1})
 
     def get(self, request):

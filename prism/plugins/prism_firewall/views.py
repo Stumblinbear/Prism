@@ -5,8 +5,7 @@ from prism.api.view import BaseView
 
 class FirewallView(BaseView):
     def __init__(self):
-        BaseView.__init__(self, endpoint='/overview',
-                                title='Overview',
+        BaseView.__init__(self, endpoint='/overview', title='Overview',
                                 menu={'id': 'firewall.overview', 'icon': 'circle',
                                         'parent': {'id': 'firewall', 'text': 'Firewall', 'icon': 'fire'}})
 

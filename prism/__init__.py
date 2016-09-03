@@ -453,40 +453,44 @@ class PluginManager:
 		""" Wraps the route return function. This allows us
 		to do fun things with the return value :D """
 		def func_wrapper(*args, **kwargs):
-			flask.g.current_plugin = plugin_id
-
-			obj = func(flask.request, *args, **kwargs)
-
-			# from flask import request, redirect, url_for, render_template
-			if isinstance(obj, tuple):
-				page_args = {}
-				if len(obj) > 1:
-					page_args = obj[1]
-
-				if obj[0].endswith('.html'):
-					return flask.render_template(obj[0], **page_args)
-				elif get_url_for(obj[0]) is not None:
-					return flask.redirect(get_url_for(obj[0], **page_args))
-				elif len(obj) > 1:
-					if obj[0] == 'redirect':
-						return flask.redirect(flask.url_for(obj[1]))
-					elif obj[0] == 'abort':
-						flask.abort(obj[1])
-					elif obj[0] == 'error':
-						error_json = base64.b64encode(json.dumps(page_args).encode('utf-8'))
-						return flask.redirect(flask.url_for('core.ErrorView', error_json=error_json))
-			elif isinstance(obj, str):
-				if obj.endswith('.html'):
-					return flask.render_template(obj)
-				elif get_url_for(obj) is not None:
-					return flask.redirect(get_url_for(obj))
-			elif isinstance(obj, dict):
-				return flask.jsonify(obj)
-			elif isinstance(obj, prism.api.view.View):
-				return jinja2.Markup(obj.render())
-			return str(obj)
+			return handle_render(plugin_id, func, flask.request, *args, **kwargs)
 		func_wrapper.__name__ = func.__name__
 		return func_wrapper
+
+def handle_render(plugin_id, func, *args, **kwargs):
+	hold_previous = flask.g.current_plugin
+	flask.g.current_plugin = plugin_id
+	obj = func(*args, **kwargs)
+
+	# from flask import request, redirect, url_for, render_template
+	if isinstance(obj, tuple):
+		page_args = {}
+		if len(obj) > 1:
+			page_args = obj[1]
+
+		if obj[0].endswith('.html'):
+			obj = flask.render_template(obj[0], **page_args)
+		elif get_url_for(obj[0]) is not None:
+			obj = flask.redirect(get_url_for(obj[0], **page_args))
+		elif len(obj) > 1:
+			if obj[0] == 'redirect':
+				obj = flask.redirect(flask.url_for(obj[1]))
+			elif obj[0] == 'abort':
+				obj = flask.abort(obj[1])
+			elif obj[0] == 'error':
+				error_json = base64.b64encode(json.dumps(page_args).encode('utf-8'))
+				obj = flask.redirect(flask.url_for('core.ErrorView', error_json=error_json))
+	elif isinstance(obj, str):
+		if obj.endswith('.html'):
+			obj = flask.render_template(obj)
+		elif get_url_for(obj) is not None:
+			obj = flask.redirect(get_url_for(obj))
+	elif isinstance(obj, dict):
+		obj = flask.jsonify(obj)
+	elif isinstance(obj, prism.api.view.View):
+		obj = jinja2.Markup(obj.render())
+	flask.g.current_plugin = hold_previous
+	return obj
 
 # Utility functions
 def public_endpoint(function):

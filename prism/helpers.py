@@ -101,7 +101,11 @@ def locale(s):
 
 	# Allow setting their own plugin id (Iunno why, but it might be useful)
 	if ':' in s:
-		plugin_id, s = s.split(':', 1)
+		new_plugin_id, ns = s.split(':', 1)
+
+		if prism.get_plugin(new_plugin_id) is not None:
+			plugin_id = new_plugin_id
+			s = ns
 
 	return locale_(plugin_id, s)
 

@@ -10,6 +10,8 @@ from prism.memorize import memorize
 
 from prism_dashboard import Widget
 
+from prism.api.view import View, ViewRow, ViewBox, ViewTable, ViewTableExtended
+
 
 class UsageCPUWidget(Widget):
 	def __init__(self):
@@ -80,13 +82,16 @@ class InfoWidget(Widget):
 		Widget.__init__(self, 'info', size=2)
 
 	def render(self):
-		return ('widget/info.html',
-								{
-									'os': '%s %s (%s)' % (platform.system(), platform.release(), platform.architecture()[0]),
-									'hostname': platform.node(),
-									'address': prism.settings.PRISM_CONFIG['host'],
-									'uptime': self.get_uptime()
-								})
+		return View('none').add(ViewBox(title='widget.info.header', icon='server', padding=False
+                                ).add(ViewTable(
+                                    content=[
+											('widget.info.os', '%s %s (%s)' % (platform.system(), platform.release(), platform.architecture()[0])),
+											('widget.info.hostname', platform.node()),
+											('widget.info.ipaddress', prism.settings.PRISM_CONFIG['host']),
+											('widget.info.uptime', self.get_uptime())
+										]
+                                ))
+                            )
 
 	@memorize(5)
 	def get_uptime(self):
@@ -103,13 +108,16 @@ class HardwareWidget(Widget):
 		Widget.__init__(self, 'hardware', size=2)
 
 	def render(self):
-		return ('widget/hardware.html',
-								{
-									'disk': self.get_total_disk(),
-									'processor': platform.processor(),
-									'memory': self.get_total_memory(),
-									'swap': self.get_total_swap()
-								})
+		return View('none').add(ViewBox(title='widget.hardware.header', icon='circle-o', padding=False
+                                ).add(ViewTable(
+                                    content=[
+											('widget.hardware.processor', platform.processor()),
+											('widget.hardware.disk', prism.helpers.convert_bytes(self.get_total_disk())),
+											('widget.hardware.memory', prism.helpers.convert_bytes(self.get_total_memory())),
+											('widget.hardware.swap', prism.helpers.convert_bytes(self.get_total_swap()))
+										]
+                                ))
+                            )
 
 	@memorize(60)
 	def get_total_disk(self):
