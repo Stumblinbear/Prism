@@ -179,15 +179,33 @@
 							</div>
 							<script type="text/javascript">
 								$(function() {
-									new Chart($("#cpuTimes").get(0).getContext("2d")).Doughnut([
-										{% for thread in proc.threads %}
-											{value: {{ (thread.user_time + thread.system_time) | round(2) }}, color: '{{ next_color(loop.index) }}', label: '{{ "process.info.thread" | locale }} #{{ loop.index }}' },
-										{% endfor %}
-									], {
-										percentageInnerCutout: 50,
-										animateRotate: false,
-										responsive: true,
-										maintainAspectRatio: true,
+									new Chart($("#cpuTimes").get(0).getContext("2d"), {
+										type: 'doughnut',
+										data: {
+											labels: [
+												{% for thread in proc.threads %}
+													'{{ "process.info.thread" | locale }} #{{ loop.index }}',
+												{% endfor %}
+											],
+											datasets: [{
+												data: [
+													{% for thread in proc.threads %}
+														{{ (thread.user_time + thread.system_time) | round(2) }},
+													{% endfor %}
+												],
+												backgroundColor: [
+													{% for thread in proc.threads %}
+														'{{ next_color(loop.index) }}',
+													{% endfor %}
+												]
+											}]
+										},
+										options: {
+											cutoutPercentage: 50,
+											animateRotate: false,
+											responsive: true,
+											legend: { display: false }
+										}
 									});
 								});
 							</script>
