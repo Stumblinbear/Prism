@@ -65,20 +65,7 @@ class HTMLFragmentTranslator(HTMLTranslator):
 html_fragment_writer = Writer()
 html_fragment_writer.translator_class = HTMLFragmentTranslator
 
-@flask_app.template_filter()
-def locale(s):
-	if not isinstance(s, str):
-		return repr(s)
-
-	""" Used for localization """
-	plugin_id = flask.g.current_plugin
-	if plugin_id is None:
-		plugin_id = 'prism'
-
-	# Allow setting their own plugin id (Iunno why, but it might be useful)
-	if ':' in s:
-		plugin_id, s = s.split(':', 1)
-
+def locale_(plugin_id, s):
 	# Search the plugin that's rendering the template for the requested locale
 	if plugin_id == 'prism':
 		ns = prism.settings.PRISM_LOCALE[s]
@@ -101,6 +88,22 @@ def locale(s):
 	ns = ns.split('<p>', 1)[1]
 	ns = ns[:ns.rfind('</p>')]
 	return jinja2.Markup(ns)
+
+@flask_app.template_filter()
+def locale(s):
+	if not isinstance(s, str):
+		return repr(s)
+
+	""" Used for localization """
+	plugin_id = flask.g.current_plugin
+	if plugin_id is None:
+		plugin_id = 'prism'
+
+	# Allow setting their own plugin id (Iunno why, but it might be useful)
+	if ':' in s:
+		plugin_id, s = s.split(':', 1)
+
+	return locale_(plugin_id, s)
 
 @flask_app.template_filter()
 def ctime(s):

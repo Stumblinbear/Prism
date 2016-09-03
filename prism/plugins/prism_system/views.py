@@ -245,53 +245,6 @@ def get_processes(show=False, sort=None):
 
     return process_list
 
-_mount_options = {}
-_mount_options['async'] = 'Allows the asynchronous input/output operations on the file system.'
-_mount_options['auto'] = 'Allows the file system to be mounted automatically using the mount -a command. '
-_mount_options['defaults'] = 'Provides an alias for async, auto, dev, exec, nouser, rw, and suid.'
-_mount_options['exec'] = 'Allows the execution of binary files on the particular file system.'
-_mount_options['loop'] = 'Mounts an image as a loop device.'
-_mount_options['noauto'] = 'Default behavior disallows the automatic mount of the file system using the mount -a command.'
-_mount_options['noexec'] = 'Disallows the execution of binary files on the particular file system.'
-_mount_options['nouser'] = 'Disallows an ordinary user (that is, other than root) to mount and unmount the file system.'
-_mount_options['remount'] = 'Remounts the file system in case it is already mounted.'
-_mount_options['ro'] = 'Mounts the file system for reading only.'
-_mount_options['rw'] = 'Mounts the file system for both reading and writing.'
-_mount_options['user'] = 'Allows an ordinary user (that is, other than root) to mount and unmount the file system.'
-
-_mount_options['relatime'] = 'The access time (atime) will not be written to the disc during every access.'
-_mount_options['seclabel'] = 'An indicator added by the selinux code, that the filesystem is using xattrs for labels and that it supports label changes by setting the xattrs.'
-
-_mount_options['attr2'] = 'Enables an "opportunistic" improvement to be made in the way inline extended attributes are stored on-disk.'
-_mount_options['noattr2'] = 'Disables an "opportunistic" improvement to be made in the way inline extended attributes are stored on-disk.'
-_mount_options['barrier'] = 'Enables the use of block layer write barriers for writes into the journal and for data integrity operations.'
-_mount_options['nobarrier'] = 'Disables the use of block layer write barriers for writes into the journal and for data integrity operations.'
-_mount_options['discard'] = 'Enables the issuing of commands to let the block device reclaim space freed by the filesystem.'
-_mount_options['nodiscard'] = 'Disables the issuing of commands to let the block device reclaim space freed by the filesystem.'
-_mount_options['filestreams'] = 'Make the data allocator use the filestreams allocation mode across the entire filesystem rather than just on directories configured to use it.'
-_mount_options['ikeep'] = 'Does not delete empty inode clusters and keeps them around on disk.'
-_mount_options['noikeep'] = 'Empty inode clusters are returned to the free space pool.'
-_mount_options['inode32'] = 'Limits inode creation to locations which will not result in inode numbers with more than 32 bits of significance.'
-_mount_options['inode64'] = 'Inodes will be placed in the location where their data is, minimizing disk seeks and fixing problems with large disks.'
-_mount_options['largeio'] = 'Will return the "swidth" value (in bytes) in st_blksize. If the filesystem does not have a "swidth" specified but does specify an "allocsize" then "allocsize" (in bytes) will be returned instead. Otherwise the behaviour is the same as if "nolargeio" was specified.'
-_mount_options['nolargeio'] = 'The optimal I/O reported in st_blksize by stat(2) will be as small as possible to allow user applications to avoid inefficient read/modify/write I/O.'
-_mount_options['noalign'] = 'Data allocations will not be aligned at stripe unit boundaries.'
-_mount_options['norecovery'] = 'Will be mounted without running log recovery.'
-_mount_options['nouuid'] = 'Don\'t check for double mounted file systems using the file system uuid.'
-_mount_options['noquota'] = 'Forcibly turns off all quota accounting and enforcement within the filesystem.'
-_mount_options['uquota'] = 'User disk quota accounting enabled, and limits (optionally) enforced.'
-_mount_options['usrquota'] = 'User disk quota accounting enabled, and limits (optionally) enforced.'
-_mount_options['uqnoenforce'] = 'User disk quota accounting enabled, and limits (optionally) enforced.'
-_mount_options['quota'] = 'User disk quota accounting enabled, and limits (optionally) enforced.'
-_mount_options['gquota'] = 'Group disk quota accounting enabled and limits (optionally) enforced.'
-_mount_options['grpquota'] = 'Group disk quota accounting enabled and limits (optionally) enforced.'
-_mount_options['gqnoenforce'] = 'Group disk quota accounting enabled and limits (optionally) enforced.'
-_mount_options['pquota'] = 'Project disk quota accounting enabled and limits (optionally) enforced.'
-_mount_options['prjquota'] = 'Project disk quota accounting enabled and limits (optionally) enforced.'
-_mount_options['pqnoenforce'] = 'Project disk quota accounting enabled and limits (optionally) enforced.'
-_mount_options['swalloc'] = 'Data allocations will be rounded up to stripe width boundaries when the current end of file is being extended and the file size is larger than the stripe width size.'
-_mount_options['wsync'] = 'When specified, all filesystem namespace operations are executed synchronously.'
-
 @memorize(30)
 def get_file_systems():
     systems = psutil.disk_partitions()
@@ -301,10 +254,11 @@ def get_file_systems():
 
         system_options = {}
         for option in system.opts.split(','):
-            if option in _mount_options:
-                system_options[option] = _mount_options[option]
+            option_local = prism.helpers.locale_('system', 'mount.options.' + option)
+            if option != option_local:
+                system_options[option] = option_local
             else:
-                system_options[option] = 'No known information on this option.'
+                system_options[option] = prism.helpers.locale_('system', 'mount.options.unknown')
 
         systems[i] = {'device': system.device, 'mount_point': system.mountpoint,
                         'fs_type': system.fstype, 'options': system_options,
