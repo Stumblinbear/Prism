@@ -232,7 +232,6 @@ class SystemCronJobsView(BaseView):
                                 menu={'id': 'system.cron', 'icon': 'cogs'})
 
     def get(self, request):
-        print('s')
         return ('cron_jobs.html', {'crontabs': CronTabs(), 'locations': self.get_cron_locations()})
 
     @memorize(320)
