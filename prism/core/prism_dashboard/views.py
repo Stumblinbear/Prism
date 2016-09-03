@@ -1,5 +1,8 @@
+import json
+
 import prism
 import prism.settings
+import prism.helpers
 
 from prism.api.view import BaseView, subroute
 
@@ -50,12 +53,21 @@ class PluginListView(BaseView):
 
     def post(self, request):
         plugin_id = request.form['id']
+        plugin = prism.get_plugin(plugin_id)
+
         action = request.form['action']
-        if plugin_id is not None and action is not None:
-            if action == 'settings':
-                if plugin_id in prism.settings.PRISM_CONFIG['enabled_plugins']:
-                    prism.settings.PRISM_CONFIG['enabled_plugins'].remove(plugin_id)
-                    return ''
+        if plugin is not None and action is not None:
+            if action == 'get_settings':
+                options = {}
+                for option_id, option in plugin.settings.options.items():
+                    options[option_id] = option
+                    options[option_id]['locale'] = prism.helpers.locale_(plugin_id, 'setting.' + option_id)
+                return plugin.settings.options
+            elif action == 'set_settings':
+                settings = json.loads(request.form['settings'])
+                for setting, value in settings.items():
+                    plugin.settings[setting] = value
+                return ''
             elif action == 'enable':
                 if plugin_id not in prism.settings.PRISM_CONFIG['enabled_plugins']:
                     prism.settings.PRISM_CONFIG['enabled_plugins'].append(plugin_id)

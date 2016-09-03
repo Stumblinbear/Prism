@@ -3,7 +3,7 @@ import os
 import prism
 
 # Dependency: (binary/library, name)
-# 	After load: (binary/library, name, is satisfied)
+# 	 After load: (binary/library, name, is satisfied)
 class BasePlugin(object):
 	def __init__(self, **kwargs):
 		self._config = None
@@ -24,7 +24,7 @@ class BasePlugin(object):
 	@property
 	def settings(self):
 		if self._settings is None:
-			self._settings = prism.config.Settings(self)
+			self._settings = Settings(self)
 		return self._settings
 
 	@property
@@ -43,12 +43,6 @@ class BasePlugin(object):
 
 	@property
 	def name(self):
-		return self._info['name']
-
-	@property
-	def name_display(self):
-		if self.display_name:
-			return self.display_name
 		return self._info['name']
 
 	@property
@@ -97,3 +91,40 @@ class BasePlugin(object):
 	# Called when the plugin is enabled.
 	def init(self, prism_state):
 		pass
+
+class Settings(object):
+	""" Used by plugins to allow user settings """
+	def __init__(self, plugin):
+		self.options = {}
+
+		plugin.config['settings'] = {}
+		self.plugin_config = plugin.config
+
+	def add(self, key, default, options={}):
+		if 'type' not in options:
+			if isinstance(default, bool):
+				options['type'] = 'bool'
+		self.options[key] = {'value': default, 'default': default, 'options': options}
+		return self
+
+	def __getitem__(self, key):
+		if key not in self.plugin_config['settings']:
+			return None
+		return self.plugin_config['settings'][key]
+
+	def __setitem__(self, key, value):
+		self.options[key]['value'] = value
+		self.plugin_config['settings'][key] = value
+		self.plugin_config.save()
+
+	def __delitem__(self, key):
+		del self.plugin_config['settings'][key]
+
+	def __contains__(self, key):
+		return key in self.plugin_config['settings']
+
+	def __len__(self):
+		return len(self.plugin_config['settings'])
+
+	def __repr__(self):
+		return repr(self.options)

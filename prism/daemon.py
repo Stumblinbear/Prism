@@ -5,7 +5,6 @@ from flask.templating import DispatchingJinjaLoader
 
 import jinja2
 import flask_menu
-import flask_sijax
 
 import prism
 import prism.settings
@@ -55,11 +54,6 @@ class Daemon:
 		self.flask_app.jinja_env.add_extension('jinja2.ext.loopcontrols')
 
 	def init_flask_plugins(self):
-		# Add sijax as a flask plugin
-		self.flask_app.config['SIJAX_STATIC_PATH'] = os.path.join(prism.settings.PRISM_PATH, 'static/js/sijax/')
-		self.flask_app.config['SIJAX_JSON_URI'] = '/static/js/sijax/json2.js'
-		flask_sijax.Sijax(self.flask_app)
-
 		# Add flask menu
 		flask_menu.Menu(app=self.flask_app)
 

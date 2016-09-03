@@ -1,3 +1,5 @@
+setting.terminal=Enable Terminal
+
 error.title.fatal=Fatal Error
 
 error.fix.known=A possible fix is known.

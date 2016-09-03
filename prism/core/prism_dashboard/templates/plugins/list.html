@@ -75,7 +75,7 @@
 					{% endif %}
 					{% if plugin.is_enabled %}
 						{% if plugin._settings != None %}
-							<button class="btn btn-primary" name="action" value="settings"><i class="fa fa-cog"></i></button>
+							<button class="btn btn-primary" name="settings" data-plugin="{{ plugin.plugin_id }}" data-plugin-name="{{ plugin.name }}"><i class="fa fa-cog"></i></button>
 						{% endif %}
 					{% endif %}
 					{% if not plugin.is_core %}
@@ -93,4 +93,49 @@
 		</div>
 	{% endfor %}
 </div>
+<script type="text/javascript">
+	$(function() {
+		$("button[name=settings]").click(function() {
+			plugin_id = $(this).data("plugin");
+			plugin_name = $(this).data("plugin-name");
+			$.post(window.location.pathname, { action: "get_settings", id: plugin_id }, function(data) {
+				inputs = "";
+
+				$.each(data, function(id, setting) {
+					if(setting.options.type == "bool")
+						inputs += setting['locale'] + " <input type='checkbox' class='setting' name='" + id + "' " + (setting.value ? "checked" : "") + ">";
+					else if(setting.options.type == "string")
+						inputs += "<input type='text' class='setting' name='" + id + "' value='" + setting.value + "'>";
+
+					console.log(setting);
+				});
+
+				swal({
+					title: plugin_name + " Options",
+					html: inputs,
+  				showLoaderOnConfirm: true,
+					preConfirm: function() {
+						return new Promise(function(resolve, reject) {
+							values = {}
+
+							$(".setting").each(function() {
+								if($(this).attr("type") == "checkbox")
+									values[$(this).attr("name")] = $(this).is(':checked');
+								else
+									values[$(this).attr("name")] = $(this).val();
+							});
+
+							$.post(window.location.pathname, { action: "set_settings", id: plugin_id, settings: JSON.stringify(values) })
+							.done(function() {
+								resolve();
+							}).fail(function() {
+								reject();
+							});
+						});
+					}
+				});
+			});
+		});
+	})
+</script>
 {% endblock %}

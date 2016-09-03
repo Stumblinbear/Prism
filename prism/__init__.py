@@ -457,10 +457,10 @@ class PluginManager:
 		func_wrapper.__name__ = func.__name__
 		return func_wrapper
 
-def handle_render(plugin_id, func, *args, **kwargs):
+def handle_render(plugin_id, obj, *args, **kwargs):
 	hold_previous = flask.g.current_plugin
 	flask.g.current_plugin = plugin_id
-	obj = func(*args, **kwargs)
+	obj = obj(*args, **kwargs)
 
 	# from flask import request, redirect, url_for, render_template
 	if isinstance(obj, tuple):

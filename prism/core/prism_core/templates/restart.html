@@ -13,15 +13,15 @@
 <script type="text/javascript">
 	$(function() {
 		action = 0;
-		ping_location = window.location.pathname
-
-		if(ping_location.indexOf(".") != -1)
-			ping_location = ping_location.substring(0, ping_location.lastIndexOf("/") + 1)
+		
+		post_location = window.location.pathname
+		if(post_location.indexOf(".") != -1)
+			post_location = post_location.substring(0, post_location.lastIndexOf("/") + 1)
 
 		function doCall() {
 			if(action == -1)
 				return;
-			$.post(ping_location, { action: action }, function(data) {
+			$.post(post_location, { action: action }, function(data) {
 				if(data == "0") {
 						$("#process").html("{{ "restart.stage.restarting" | locale }}");
 						action = 1;

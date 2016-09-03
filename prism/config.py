@@ -112,38 +112,3 @@ class LocaleConfig(object):
         if key not in self.__dict__:
             return key
         return self.__dict__[key]
-
-class Settings(object):
-    """ Used by plugins to allow user settings """
-    def __init__(self, plugin):
-        plugin.config['settings'] = {}
-
-        self.plugin_settings = plugin.config['settings']
-
-    def add(self, key, default):
-        if key not in self.__dict__:
-            return default
-        return self[key]
-
-    def __getitem__(self, key):
-        if key not in self.plugin_settings:
-            return None
-        return self.plugin_settings[key]
-
-    def __setitem__(self, key, value):
-        self.plugin_settings[key] = value
-
-        if self.auto_save:
-            self.save()
-
-    def __delitem__(self, key):
-        del self.plugin_settings[key]
-
-    def __contains__(self, key):
-        return key in self.plugin_settings
-
-    def __len__(self):
-        return len(self.__dict__)
-
-    def __repr__(self):
-        return repr(self.__dict__)
