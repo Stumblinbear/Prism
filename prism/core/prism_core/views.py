@@ -27,7 +27,7 @@ class RestartView(BaseView):
         BaseView.__init__(self, endpoint='/restart', title='Restarting')
 
     @subroute('/<return_url>')
-    def get(self, request, return_url='dashboard.home'):
+    def get(self, request, return_url='dashboard.DashboardView'):
         return ('restart.html', {'return_url': return_url})
 
     def post(self, request):
