@@ -1,8 +1,6 @@
 prism/libs/
 __pycache__
 
-VERSION
-
 config/
 
 tmp/

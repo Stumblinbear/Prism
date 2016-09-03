@@ -15,7 +15,7 @@ GIT_REPO = os.path.join(os.path.dirname(__file__), '..', '.git')
 def get_git_version(abbrev=4, cwd=None):
     try:
         p = Popen(['git', '--git-dir=%s' % GIT_REPO,
-                   'describe', '--abbrev=%d' % abbrev],
+                   'describe', '--abbrev=%d' % abbrev, '--tags'],
                   stdout=PIPE, stderr=PIPE)
         stdout, _stderr = p.communicate()
         return stdout.strip().decode('utf-8', 'ignore')
