@@ -9,7 +9,7 @@ from subprocess import Popen, PIPE
 
 __all__ = ["get_git_version"]
 
-RELEASE_VERSION_FILE = os.path.join(os.path.dirname(__file__), 'RELEASE-VERSION')
+RELEASE_VERSION_FILE = os.path.join(os.path.dirname(__file__), 'VERSION')
 GIT_REPO = os.path.join(os.path.dirname(__file__), '..', '.git')
 
 def get_git_version(abbrev=4, cwd=None):

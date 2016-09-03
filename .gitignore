@@ -1,7 +1,7 @@
 prism/libs/
 __pycache__
 
-RELEASE-VERSION
+VERSION
 
 config/
 
