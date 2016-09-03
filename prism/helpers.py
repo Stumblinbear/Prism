@@ -103,7 +103,7 @@ def locale(s):
 	if ':' in s:
 		new_plugin_id, ns = s.split(':', 1)
 
-		if prism.get_plugin(new_plugin_id) is not None:
+		if new_plugin_id == 'prism' or prism.get_plugin(new_plugin_id) is not None:
 			plugin_id = new_plugin_id
 			s = ns
 
