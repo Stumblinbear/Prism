@@ -27,7 +27,7 @@ class SystemUsersView(BaseView):
                                 menu={'id': 'system.users', 'icon': 'users'})
 
     def get(self, request):
-        user_info = get_user_info()
+        user_info = self.get_user_info()
         return View().add(ViewRow().add(ViewBox(title='users.list.header', icon='user', padding=False
                                         ).add(ViewTableExtended(
                                             ['users.list.id', 'users.list.group', 'users.list.username'],
@@ -49,6 +49,21 @@ class SystemUsersView(BaseView):
                                     ))
                             )
 
+    @memorize(60)
+    def get_user_info(self):
+        user_info = {'groups': {}, 'users': {}}
+        with open("/etc/group", "r") as f:
+            for line in f.readlines():
+                info = line.replace('\n', ' ').replace('\r', '').split(':')
+                user_info['groups'][info[2]] = {'name': info[0], 'passwd': info[1], 'users': info[3]}
+        with open("/etc/passwd", "r") as f:
+            for line in f.readlines():
+                info = line.replace('\n', ' ').replace('\r', '').split(':')
+                user_info['users'][info[2]] = {'name': info[0], 'passwd': info[1],
+                                                'group_id': info[3], 'info': info[4],
+                                                'home': info[5], 'shell': info[6]}
+        return user_info
+
 class SystemProcessesView(BaseView):
     def __init__(self):
         BaseView.__init__(self, endpoint='/processes', title='Processes',
@@ -65,9 +80,33 @@ class SystemProcessesView(BaseView):
                                     'cpu_count': cpu_count[0],
                                     'cpu_count_logical': cpu_count[1],
                                     'ram': psutil.virtual_memory()[0],
-                                    'processes': get_processes(show,
+                                    'processes': self.get_processes(show,
                                                 lambda x: x['memory_percent'] + x['cpu_percent'])
                                 })
+    @memorize(30)
+    def get_processes(self, show=False, sort=None):
+        process_list = []
+        for proc in psutil.process_iter():
+            if not show and ('rcuob/' in proc.name() or
+                            'rcuos/' in proc.name() or
+                            'scsi_' in proc.name() or
+                            'xfs-' in proc.name() or
+                            'xfs_' in proc.name() or
+                            'kworker/' in proc.name()):
+                continue
+            try:
+                process = proc.as_dict(attrs=['pid', 'name', 'cwd', 'exe', 'username', 'nice',
+                                                'num_threads', 'cpu_percent', 'cpu_affinity',
+                                                'memory_full_info', 'memory_percent'])
+                # process['net_connections'] = proc.connections(kind='all')
+                process_list.append(process)
+            except:
+                continue
+
+        if sort is not None:
+            process_list = sorted(process_list, key=sort, reverse=True)
+
+        return process_list
 
     @subroute('/<show>')
     def post(self, request, show=False):
@@ -124,7 +163,28 @@ class SystemDiskManagerView(BaseView):
                                 menu={'id': 'system.disk', 'icon': 'circle-o'})
 
     def get(self, request):
-        return ('disk.html', {'file_systems': get_file_systems()})
+        return ('disk.html', {'file_systems': self.get_file_systems()})
+
+    @memorize(30)
+    def get_file_systems(self):
+        systems = psutil.disk_partitions()
+
+        for i in range(0, len(systems)):
+            system = systems[i]
+
+            system_options = {}
+            for option in system.opts.split(','):
+                option_local = prism.helpers.locale_('system', 'mount.options.' + option)
+                if option != option_local:
+                    system_options[option] = option_local
+                else:
+                    system_options[option] = prism.helpers.locale_('system', 'mount.options.unknown')
+
+            systems[i] = {'device': system.device, 'mount_point': system.mountpoint,
+                            'fs_type': system.fstype, 'options': system_options,
+                            'usage': psutil.disk_usage(system.mountpoint)}
+
+        return systems
 
 class SystemNetworkMonitorView(BaseView):
     def __init__(self):
@@ -135,9 +195,13 @@ class SystemNetworkMonitorView(BaseView):
         return View().add(ViewBox(title='networks.list.header', icon='exchange', padding=False
                                 ).add(ViewTable(
                                     ['networks.list.id', 'networks.list.total.sent', 'networks.list.total.received'],
-                                    [(network_id, prism.helpers.convert_bytes(network.bytes_sent), prism.helpers.convert_bytes(network.bytes_recv)) for network_id, network in get_networks().items()]
+                                    [(network_id, prism.helpers.convert_bytes(network.bytes_sent), prism.helpers.convert_bytes(network.bytes_recv)) for network_id, network in self.get_networks().items()]
                                 ))
                             )
+
+    @memorize(30)
+    def get_networks(self):
+        return psutil.net_io_counters(pernic=True)
 
 class SystemHostsView(BaseView):
     def __init__(self):
@@ -148,9 +212,19 @@ class SystemHostsView(BaseView):
         return View().add(ViewBox(title='hosts.list.header', icon='cubes', padding=False
                                 ).add(ViewTable(
                                     ['hosts.list.address', 'hosts.list.host', 'hosts.list.aliases'],
-                                    [(address, host['hostname'], ', '.join(host['aliases'])) for address, host in get_hosts().items()]
+                                    [(address, host['hostname'], ', '.join(host['aliases'])) for address, host in self.get_hosts().items()]
                                 ))
                             )
+
+    @memorize(5)
+    def get_hosts(self):
+        hosts = {}
+        with open('/etc/hosts') as f:
+            for line in f.readlines():
+                line = line.replace('\n', ' ').replace('\r', '')
+                info = ' '.join(line.split()).split(' ')
+                hosts[info[0]] = {'hostname': info[1], 'aliases': info[2:]}
+        return hosts
 
 class SystemCronJobsView(BaseView):
     def __init__(self):
@@ -159,7 +233,15 @@ class SystemCronJobsView(BaseView):
 
     def get(self, request):
         print('s')
-        return ('cron_jobs.html', {'crontabs': CronTabs(), 'locations': get_cron_locations()})
+        return ('cron_jobs.html', {'crontabs': CronTabs(), 'locations': self.get_cron_locations()})
+
+    @memorize(320)
+    def get_cron_locations(self):
+        locs = []
+        for thing, loc in crontabs.KNOWN_LOCATIONS:
+            if os.path.isfile(loc):
+                locs.append(loc)
+        return locs
 
     def post(self, request):
         action = request.form['action']
@@ -192,93 +274,10 @@ class SystemCronJobsView(BaseView):
             return obj
         return ('system.SystemCronJobsView')
 
-@memorize(320)
-def get_cron_locations():
-    locs = []
-    for thing, loc in crontabs.KNOWN_LOCATIONS:
-        if os.path.isfile(loc):
-            locs.append(loc)
-    return locs
-
-@memorize(60)
-def get_user_info():
-    user_info = {'groups': {}, 'users': {}}
-    with open("/etc/group", "r") as f:
-        for line in f.readlines():
-            info = line.replace('\n', ' ').replace('\r', '').split(':')
-            user_info['groups'][info[2]] = {'name': info[0], 'passwd': info[1], 'users': info[3]}
-    with open("/etc/passwd", "r") as f:
-        for line in f.readlines():
-            info = line.replace('\n', ' ').replace('\r', '').split(':')
-            user_info['users'][info[2]] = {'name': info[0], 'passwd': info[1],
-                                            'group_id': info[3], 'info': info[4],
-                                            'home': info[5], 'shell': info[6]}
-    return user_info
-
 @memorize(120)
 def get_cpu_count():
     cpu_count = psutil.cpu_count(logical=False)
     return (cpu_count, psutil.cpu_count(logical=True) - cpu_count)
-
-@memorize(30)
-def get_processes(show=False, sort=None):
-    process_list = []
-    for proc in psutil.process_iter():
-        if not show and ('rcuob/' in proc.name() or
-                        'rcuos/' in proc.name() or
-                        'scsi_' in proc.name() or
-                        'xfs-' in proc.name() or
-                        'xfs_' in proc.name() or
-                        'kworker/' in proc.name()):
-            continue
-        try:
-            process = proc.as_dict(attrs=['pid', 'name', 'cwd', 'exe', 'username', 'nice',
-                                            'num_threads', 'cpu_percent', 'cpu_affinity',
-                                            'memory_full_info', 'memory_percent'])
-            # process['net_connections'] = proc.connections(kind='all')
-            process_list.append(process)
-        except:
-            continue
-
-    if sort is not None:
-        process_list = sorted(process_list, key=sort, reverse=True)
-
-    return process_list
-
-@memorize(30)
-def get_file_systems():
-    systems = psutil.disk_partitions()
-
-    for i in range(0, len(systems)):
-        system = systems[i]
-
-        system_options = {}
-        for option in system.opts.split(','):
-            option_local = prism.helpers.locale_('system', 'mount.options.' + option)
-            if option != option_local:
-                system_options[option] = option_local
-            else:
-                system_options[option] = prism.helpers.locale_('system', 'mount.options.unknown')
-
-        systems[i] = {'device': system.device, 'mount_point': system.mountpoint,
-                        'fs_type': system.fstype, 'options': system_options,
-                        'usage': psutil.disk_usage(system.mountpoint)}
-
-    return systems
-
-@memorize(30)
-def get_networks():
-    return psutil.net_io_counters(pernic=True)
-
-@memorize(5)
-def get_hosts():
-    hosts = {}
-    with open('/etc/hosts') as f:
-        for line in f.readlines():
-            line = line.replace('\n', ' ').replace('\r', '')
-            info = ' '.join(line.split()).split(' ')
-            hosts[info[0]] = {'hostname': info[1], 'aliases': info[2:]}
-    return hosts
 
 def parse_cron_widget(request, crontab_obj, cron_id=-1):
     editing = cron_id != -1
