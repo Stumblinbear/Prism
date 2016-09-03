@@ -9,30 +9,48 @@
   </div>
 {% else %}
 	<style>
-		#sortable { list-style-type: none; margin: 0; padding: 0; width: 100%; }
+		.plugin-hidden { opacity: .65 }
 		.plugin-content { pointer-events: none }
 	</style>
 	<div id="sortable" class="row">
 		{% for widget_id, widget, widget_config in widgets %}
-			<div class="plugin col-md-{{ 3 * widget.size }}" data-widget="{{ widget_id }}">
-				<div class="box box-solid">
+			<div class="col-md-{{ 3 * widget.size }} plugin {% if not widget_config.shown %}plugin-hidden{% endif %}" data-widget="{{ widget_id }}">
+				<!--<div class="box box-solid">
 					<div class="box-header with-border">
 						<div class="pull-right">
 							<input type="checkbox" class="shown" data-widget="{{ widget_id }}" {% if widget_config.shown %}checked{% endif %} />
 						</div>
 					</div>
 					<div class="box-body no-padding plugin-content">
-						<br />
+						<br />-->
+					<div class="plugin-content">
 						{{ widget.do_render() }}
 					</div>
-				</div>
+					<!--</div>
+				</div>-->
 			</div>
 		{% endfor %}
 	</div>
 	<script>
 		$(function() {
-			$(".shown").change(function() {
-				$.post(window.location.pathname, { action: (this.checked ? "show" : "hide"), id: $(this).data("widget") });
+			var lastMouseUp = 0, lastMouseDown = 0;
+			$('.plugin').bind('mouseup mousedown', function(e) {
+					if(e.which != 1)
+						return;
+
+			    var ms = new Date().getTime();
+			    e.type == 'mousedown' ? lastMouseDown = ms : lastMouseUp = ms;
+
+			    if(e.type != 'mousedown' && (Math.abs(lastMouseUp - lastMouseDown) < 300)) {
+						let isHidden = $(this).hasClass('plugin-hidden');
+
+						if(isHidden)
+							$(this).removeClass('plugin-hidden')
+						else
+							$(this).addClass('plugin-hidden')
+
+						$.post(window.location.pathname, { action: (isHidden ? "show" : "hide"), id: $(this).data("widget") });
+					}
 			});
 
 			$("#sortable").sortable({
@@ -47,8 +65,6 @@
 						var ord = $(el).data("widget");
 						data += ord + "=" + $(el).index() + ",";
 					});
-
-					console.log(data);
 
 					$.post(window.location.pathname, { action: "order", data: data });
 				}
