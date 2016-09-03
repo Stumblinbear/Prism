@@ -33,7 +33,7 @@ class RestartView(BaseView):
     def post(self, request):
         action = request.form['action']
         if action == '0':
-            threading.Timer(1, prism.restart).start()
+            threading.Timer(.5, prism.restart).start()
             prism.settings.PRISM_CONFIG.save()
             return '0'
         else:
