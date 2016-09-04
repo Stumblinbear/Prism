@@ -85,7 +85,11 @@
 									</div>
 									<div class="clearfix"></div>
 									<hr />
-									<a href="{{ url_for('system.SystemProcessView', process_id=proc.pid) }}"><button class="btn btn-info">{{ "processes.list.info.button.advanced" | locale }}</button></a>
+									{% if not proc.access_denied %}
+										<a href="{{ url_for('system.SystemProcessView', process_id=proc.pid) }}"><button class="btn btn-info">{{ "processes.list.info.button.advanced" | locale }}</button></a>
+									{% else %}
+										<button class="btn btn-info" disabled data-toggle="tooltip" data-placement="top" title="{{ "processes.list.info.button.advanced.access_denied" | locale }}">{{ "processes.list.info.button.advanced" | locale }}</button>
+									{% endif %}
 									{% if proc.pid != panel_pid %}
 										<form class="pull-right" method="POST">
 											<input type="hidden" name="id" value="{{ proc.pid }}" />

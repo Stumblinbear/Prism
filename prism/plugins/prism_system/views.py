@@ -107,7 +107,11 @@ class SystemProcessesView(BaseView):
                 process = proc.as_dict(attrs=['pid', 'name', 'cwd', 'exe', 'username', 'nice',
                                                 'num_threads', 'cpu_percent', 'cpu_affinity',
                                                 'memory_full_info', 'memory_percent'])
-                # process['net_connections'] = proc.connections(kind='all')
+                try:
+                    process['net_connections'] = proc.connections(kind='all')
+                    process['access_denied'] = False
+                except:
+                    process['access_denied'] = True
                 process_list.append(process)
             except:
                 continue

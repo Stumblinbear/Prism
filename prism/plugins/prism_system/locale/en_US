@@ -47,6 +47,7 @@ process.info.usage.cpu=CPU Usage
 process.info.usage.memory=Memory Usage
 processes.list.info.core_affinity=Core Affinity
 processes.list.info.button.advanced=Advanced
+processes.list.info.button.advanced.access_denied=Access Denied
 
 process.button.terminate=Terminate
 process.button.terminate.info=Safely stop the process.
