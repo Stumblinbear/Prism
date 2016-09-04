@@ -48,6 +48,8 @@ def site_map():
 
 @flask_app.context_processor
 def inject_things():
+	prism.settings.ping_version()
+
 	title = None
 
 	checked_menu = current_menu.active_item
