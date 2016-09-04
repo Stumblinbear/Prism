@@ -1,4 +1,5 @@
 import flask
+import jinja2
 
 import prism
 from prism.memorize import memorize
@@ -51,7 +52,8 @@ class View(object):
 		self.view_type = view_type
 		self.content = []
 
-	def add(self, view):
+	def add(self, view, size=0):
+		view.size = size
 		self.content.append(view)
 		return self
 
@@ -63,12 +65,21 @@ class ViewObject(object):
 	def __init__(self):
 		self.children = []
 
-	def add(self, child):
+	def add(self, child, size=0):
+		child.size = size
 		self.children.append(child)
 		return self
 
 	def render(self):
 		pass
+
+class ViewHTML(ViewObject):
+	def __init__(self, html):
+		ViewObject.__init__(self)
+		self.html = html
+
+	def render(self):
+		return jinja2.Markup(self.html)
 
 class ViewRow(ViewObject):
 	def __init__(self):

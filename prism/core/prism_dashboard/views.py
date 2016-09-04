@@ -4,7 +4,7 @@ import prism
 import prism.settings
 import prism.helpers
 
-from prism.api.view import BaseView, subroute, View, ViewBox, ViewTable
+from prism.api.view import BaseView, subroute, View, ViewRow, ViewBox, ViewHTML, ViewTable
 
 
 class DashboardView(BaseView):
@@ -92,14 +92,19 @@ class UpdateView(BaseView):
     @subroute('/<name>')
     def get(self, request, name=None):
         view = View()
+        row = ViewRow()
 
         if name is None:
-            box = ViewBox(title='updates.dev.commits.header', icon='archive', padding=False)
-            box.add(ViewTable(
-                            ['updates.dev.commits.hash', 'updates.dev.commits.changes'],
-                            [('<a href="%s" target="_blank">%s</a>' % (change[2], change[0]), change[1]) for change in prism.settings.PRISM_VERSIONING['dev_changes']]
+            box1 = ViewBox(title='updates.info.header', icon='info')
+            box1.add(ViewHTML('This is information on the development of Prism. These changes have not yet been released to the public.'))
+            row.add(box1, size=4)
+
+            box2 = ViewBox(title='updates.dev.commits.header', icon='archive', padding=False)
+            box2.add(ViewTable(
+                            ['updates.commits.date', 'updates.commits.hash', 'updates.commits.changes'],
+                            [('<span class="text-muted">%s</span>' % prism.helpers.timesince(change[3]), '<a href="%s" target="_blank">%s</a>' % (change[2], change[0]), change[1]) for change in prism.settings.PRISM_VERSIONING['dev_changes']]
                         ))
-            view.add(box)
+            row.add(box2)
         else:
             release = None
 
@@ -111,8 +116,21 @@ class UpdateView(BaseView):
             if release is None:
                 return ('dashboard.UpdateView')
 
-            box = ViewBox(title='updates.commits.header', icon='archive', padding=False)
-            box.add(ViewTable(content=[(change,) for change in release['changes']]))
-            view.add(box)
+            box1 = ViewBox(title='updates.info.header', icon='info', padding=False)
+            box1.add(ViewTable(
+                            content=[
+                                    ('updates.info.date', '<span class="text-muted">%s</span>' % prism.helpers.timesince(release['date'])),
+                                    ('updates.info.version', release['name'])
+                                ]
+                        ))
+            row.add(box1, size=4)
 
+            box2 = ViewBox(title='updates.commits.header', icon='archive', padding=False)
+            box2.add(ViewTable(
+                            ['updates.commits.date', 'updates.commits.hash', 'updates.commits.changes'],
+                            [('<span class="text-muted">%s</span>' % prism.helpers.timesince(change[3]), '<a href="%s" target="_blank">%s</a>' % (change[2], change[0]), change[1]) for change in release['changes']]
+                        ))
+            row.add(box2)
+
+        view.add(row)
         return view

@@ -1,7 +1,18 @@
 <div class="row">
   {% set size = ((12 / (view.children | length)) | round | int) %}
+  {% set current_size = 0 %}
 	{% for child in children %}
-    <div class="col-md-{{ size }}">
+    {% set child_size = size %}
+    {% if child.size != 0 %}
+      {% set child_size = child.size %}
+    {% endif %}
+    {% if loop.index == (children | length) %}
+      {% if current_size + child_size < 12 %}
+        {% set child_size = 12 - current_size %}
+      {% endif %}
+    {% endif %}
+    {% set current_size = current_size + child_size %}
+    <div class="col-md-{{ child_size }}">
       {{ child.render() | safe }}
     </div>
   {% endfor %}

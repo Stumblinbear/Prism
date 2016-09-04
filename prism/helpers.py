@@ -117,6 +117,11 @@ def ctime(s):
 def timesince(dt, past_="ago", future_="from now", default="just now"):
 	if isinstance(dt, int) or isinstance(dt, float):
 		dt = datetime.strptime(ctime(dt), '%a %b %d %H:%M:%S %Y')
+	elif isinstance(dt, str):
+		dt = ' '.join(dt.split('T'))
+		if dt.endswith('Z'):
+			dt = dt[:-1]
+		dt = datetime.strptime(dt, '%Y-%m-%d %H:%M:%S')
 
 	now = datetime.utcnow()
 	if now > dt:

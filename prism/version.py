@@ -71,19 +71,29 @@ def get_new_versions(version):
             return True, None, None, None
 
         tags = github_api_call('tags')
+        releases = github_api_call('releases')
         recent_releases = []
 
         for i in range(0, 2 if len(tags) > 2 else len(tags)):
-            release_name, release_hash = tags[i]['name'], tags[i]['commit']['sha']
+            release_info = None
+            for release in releases:
+                if release['tag_name'] == tags[i]['name']:
+                    release_info = release
+                    break
+
+            if release_info is None:
+                continue
+
+            release_name, release_hash, release_date = tags[i]['name'], tags[i]['commit']['sha'], release_info['published_at']
             recent_releases.append({
                         'name': release_name,
                         'hash': release_hash,
+                        'date': release_date,
                         'changes': get_version_changes(release_hash, None if i == len(tags) - 1 else tags[i + 1]['commit']['sha'])
                     })
         dev_changes = get_dev_changes(recent_releases[0]['hash'])
         return False, dev_changes, recent_releases, len(tags)
     except Exception as e:
-        print(e)
         return False, None, None, None
 
 def get_dev_changes(end_hash):
@@ -97,7 +107,7 @@ def get_dev_changes(end_hash):
             for commit in all_commits:
                 if commit['sha'] == end_hash:
                     return changes
-                changes.append((commit['sha'][:6], commit['commit']['message'], commit['html_url']))
+                changes.append((commit['sha'][:6], commit['commit']['message'], commit['html_url'], commit['commit']['author']['date']))
 
             if len(all_commits) != 0:
                 break
@@ -106,7 +116,6 @@ def get_dev_changes(end_hash):
 
         return changes
     except Exception as e:
-        print(e)
         return None
 
 def get_version_changes(start_hash, end_hash):
@@ -120,12 +129,12 @@ def get_version_changes(start_hash, end_hash):
             for commit in all_commits:
                 if changes is None:
                     if commit['sha'] == start_hash:
-                        changes = [commit['commit']['message']]
+                        changes = [(commit['sha'][:6], commit['commit']['message'], commit['html_url'], commit['commit']['author']['date'])]
                 else:
                     if commit['sha'] == end_hash:
                         return changes
 
-                    changes.append(commit['commit']['message'])
+                    changes.append((commit['sha'][:6], commit['commit']['message'], commit['html_url'], commit['commit']['author']['date']))
 
             if len(all_commits) != 0:
                 break
