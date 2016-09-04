@@ -97,7 +97,7 @@ class UpdateView(BaseView):
         if name is None:
             box1 = BoxElement(title='updates.info.header', icon='info')
             box1.add(HTMLElement().add(LocaleElement('updates.info.dev')))
-            row.add(box1, size=4)
+            row.add(box1, size=3)
 
             box2 = BoxElement(title='updates.dev.commits.header', icon='archive', padding=False)
             box2.add(TableElement(
@@ -123,7 +123,7 @@ class UpdateView(BaseView):
                                     ('updates.info.date', '<span class="text-muted">%s</span>' % prism.helpers.timesince(release['date']))
                                 ]
                         ))
-            row.add(box1, size=4)
+            row.add(box1, size=3)
 
             box2 = BoxElement(title='updates.commits.header', icon='archive', padding=False)
             box2.add(TableElement(
