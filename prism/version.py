@@ -22,6 +22,7 @@ def get_git_version(abbrev=4, cwd=None):
     try:
         p = Popen(['git', '--git-dir=%s' % GIT_REPO,
                    'fetch', '--tags'])
+        stdout, _stderr = p.communicate()
         p = Popen(['git', '--git-dir=%s' % GIT_REPO,
                    'describe', '--abbrev=%d' % abbrev, '--tags'],
                   stdout=PIPE, stderr=PIPE)
