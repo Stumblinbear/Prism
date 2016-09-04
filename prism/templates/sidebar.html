@@ -7,17 +7,45 @@
 	<div class="tab-pane active" id="control-sidebar-home-tab">
 		<h3 class="control-sidebar-heading">{{ "prism:sidebar.updates" | locale }}</h3>
 		<ul class="control-sidebar-menu">
-			<li>
-				<a href="javascript::;">
-					<i class="menu-icon fa fa-arrow-up bg-red"></i>
-					<div class="menu-info">
-						<h4 class="control-sidebar-subheading">Prism Update <small>Security</small></h4>
-						<p>ALPHA 0.3.7</p>
-					</div>
-				</a>
-			</li>
+			{% if versioning.recent_releases == None %}
+				<li>
+					<a href="#">
+						<i class="menu-icon fa fa-exclamation bg-red"></i>
+						<div class="menu-info">
+							<h4 class="control-sidebar-subheading">Unable to fetch</h4>
+							<p>Was I rate limited?</p>
+						</div>
+					</a>
+				</li>
+			{% else %}
+				{% for release in versioning.recent_releases %}
+					{% if version == release.name %}
+						{% if loop.index == 1 %}
+							<li>
+								<a href="#">
+									<i class="menu-icon fa fa-thumbs-up bg-blue"></i>
+									<div class="menu-info">
+										<h4 class="control-sidebar-subheading">Up to date!</h4>
+										<p>{{ version }}</p>
+									</div>
+								</a>
+							</li>
+						{% endif %}
+						{% break %}
+					{% endif %}
+					<li>
+						<a href="#">
+							<i class="menu-icon fa fa-arrow-up bg-red"></i>
+							<div class="menu-info">
+								<h4 class="control-sidebar-subheading">Prism Update</h4>
+								<p>{{ release.name }}</p>
+							</div>
+						</a>
+					</li>
+				{% endfor %}
+			{% endif %}
 		</ul>
-		<h3 class="control-sidebar-heading">{{ "prism:sidebar.news" | locale }}</h3>
+		<!--<h3 class="control-sidebar-heading">{{ "prism:sidebar.news" | locale }}</h3>
 		<ul class="control-sidebar-menu">
 			<li>
 				<a href="javascript::;">
@@ -28,7 +56,7 @@
 					</div>
 				</a>
 			</li>
-		</ul>
+		</ul>-->
 	</div>
 	<div class="tab-pane" id="control-sidebar-settings-tab">
 		<div class="form-group">
