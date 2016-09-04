@@ -21,6 +21,8 @@ REPO_LOCATION = 'Stumblinbear/Prism'
 def get_git_version(abbrev=4, cwd=None):
     try:
         p = Popen(['git', '--git-dir=%s' % GIT_REPO,
+                   'fetch', '--tags'])
+        p = Popen(['git', '--git-dir=%s' % GIT_REPO,
                    'describe', '--abbrev=%d' % abbrev, '--tags'],
                   stdout=PIPE, stderr=PIPE)
         stdout, _stderr = p.communicate()
