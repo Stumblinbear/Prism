@@ -328,8 +328,8 @@ class PluginManager:
 
 				endpoint_id = '%s' % view_class.__name__
 
-				if view.menu is not None:
-					with flask_app().app_context():
+				with flask_app().app_context():
+					if view.menu is not None:
 						# Generate the parent menu item
 						if 'parent' in view.menu:
 							if '.' not in view.menu['parent']['id']:
@@ -352,7 +352,13 @@ class PluginManager:
 										view.title,
 										view.menu['order'],
 										icon=view.menu['icon'])
-					prism.output('Registered menu item for /%s: %s' % (blueprint_name + view.endpoint, view.menu['id']))
+						prism.output('Registered menu item for /%s: %s' % (blueprint_name + view.endpoint, view.menu['id']))
+					else:
+						# Generate a hidden menu item so titles show correctly
+						item = current_menu.submenu(generate_random_string(12))
+						item.register(blueprint_name + '.' + endpoint_id,
+										view.title,
+										hidden=True)
 
 				# Find all methods in the view class
 				for func_name in [method for method in dir(view) if callable(getattr(view, method))]:

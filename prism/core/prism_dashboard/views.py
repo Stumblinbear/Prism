@@ -87,7 +87,7 @@ class PluginInstallView(BaseView):
 
 class UpdateView(BaseView):
     def __init__(self):
-        BaseView.__init__(self, endpoint='/updates', title='Update')
+        BaseView.__init__(self, endpoint='/updates', title='View Update')
 
     @subroute('/<name>')
     def get(self, request, name=None):
@@ -119,8 +119,8 @@ class UpdateView(BaseView):
             box1 = ViewBox(title='updates.info.header', icon='info', padding=False)
             box1.add(ViewTable(
                             content=[
-                                    ('updates.info.date', '<span class="text-muted">%s</span>' % prism.helpers.timesince(release['date'])),
-                                    ('updates.info.version', release['name'])
+                                    ('updates.info.version', release['name']),
+                                    ('updates.info.date', '<span class="text-muted">%s</span>' % prism.helpers.timesince(release['date']))
                                 ]
                         ))
             row.add(box1, size=4)
