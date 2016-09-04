@@ -74,7 +74,7 @@ class ViewElement(object):
 		pass
 
 class HTMLElement(ViewElement):
-	def __init__(self, html=None):
+	def __init__(self, html=''):
 		ViewElement.__init__(self)
 		self.html = html
 
