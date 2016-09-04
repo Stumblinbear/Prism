@@ -183,6 +183,7 @@ class PluginManager:
 
 				plugin_info = JSONConfig(base_folder, 'plugin.json', auto_save=False)
 				plugin_info['_id'] = plugin_id
+				plugin_info['id'] = plugin_info['_id'].split('_', 1)[1]
 				plugin_info['_is_core'] = is_core
 				plugin_info['_is_satisfied'] = True
 				plugin_info['_is_enabled'] = False
@@ -261,7 +262,7 @@ class PluginManager:
 		poof('Loading %s additional plugin(s)' % len(plugins_additional))
 		# Start plugins if they're set to be enabled.
 		for plugin_info in plugins_additional:
-			if not self.is_enabled(plugin_info['_id']):
+			if not self.is_enabled(plugin_info['id']):
 				self._insert_dummy_plugin(plugin_info)
 				continue
 

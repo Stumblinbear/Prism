@@ -35,7 +35,7 @@ class BasePlugin(object):
 
 	@property
 	def plugin_id(self):
-		return self._info['_id'].split('_', 1)[1]
+		return self._info['id']
 
 	@property
 	def version(self):
