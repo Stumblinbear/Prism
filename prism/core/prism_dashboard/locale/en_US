@@ -9,6 +9,8 @@ updates.info.header=Version Info
 updates.info.date=Release Date
 updates.info.version=Version
 
+updates.info.dev=This is information on the development of Prism. These changes have not yet been released to the public.
+
 updates.dev.commits.header=Development Commits
 updates.commits.header=Version Commits
 

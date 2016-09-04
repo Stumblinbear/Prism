@@ -61,7 +61,7 @@ class View(object):
 	def render(self):
 		return flask.render_template('views/%s.html' % self.view_type, content=self.content)
 
-class ViewObject(object):
+class ViewElement(object):
 	def __init__(self):
 		self.children = []
 
@@ -73,45 +73,54 @@ class ViewObject(object):
 	def render(self):
 		pass
 
-class ViewHTML(ViewObject):
-	def __init__(self, html):
-		ViewObject.__init__(self)
+class HTMLElement(ViewElement):
+	def __init__(self, html=None):
+		ViewElement.__init__(self)
 		self.html = html
 
 	def render(self):
-		return jinja2.Markup(self.html)
+		return flask.render_template('views/elements/html.html', view=self, children=self.children)
 
-class ViewRow(ViewObject):
-	def __init__(self):
-		ViewObject.__init__(self)
+class LocaleElement(ViewElement):
+	def __init__(self, locale):
+		ViewElement.__init__(self)
+		self.locale = locale
 
 	def render(self):
-		return flask.render_template('views/object/row.html', view=self, children=self.children)
+		import prism.helpers
+		return prism.helpers.locale(self.locale)
 
-class ViewBox(ViewObject):
+class RowElement(ViewElement):
+	def __init__(self):
+		ViewElement.__init__(self)
+
+	def render(self):
+		return flask.render_template('views/elements/row.html', view=self, children=self.children)
+
+class BoxElement(ViewElement):
 	def __init__(self, title=None, icon=None, padding=True):
-		ViewObject.__init__(self)
+		ViewElement.__init__(self)
 		self.title = title
 		self.icon = icon
 		self.padding = padding
 
 	def render(self):
-		return flask.render_template('views/object/box.html', view=self, children=self.children)
+		return flask.render_template('views/elements/box.html', view=self, children=self.children)
 
-class ViewTable(ViewObject):
+class TableElement(ViewElement):
 	def __init__(self, headers=None, content=None):
-		ViewObject.__init__(self)
+		ViewElement.__init__(self)
 		self.headers = headers
 		self.content = content
 
 	def render(self):
-		return flask.render_template('views/object/table.html', view=self, children=self.children)
+		return flask.render_template('views/elements/table.html', view=self, children=self.children)
 
-class ViewTableExtended(ViewObject):
+class TableExtendedElement(ViewElement):
 	def __init__(self, headers=None, content=None):
-		ViewObject.__init__(self)
+		ViewElement.__init__(self)
 		self.headers = headers
 		self.content = content
 
 	def render(self):
-		return flask.render_template('views/object/table_extended.html', view=self, children=self.children)
+		return flask.render_template('views/elements/table_extended.html', view=self, children=self.children)

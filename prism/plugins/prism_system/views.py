@@ -9,7 +9,7 @@ import psutil
 import prism.helpers
 import prism.settings
 from prism.memorize import memorize
-from prism.api.view import BaseView, subroute, View, ViewRow, ViewBox, ViewTable, ViewTableExtended
+from prism.api.view import BaseView, subroute, View, RowElement, BoxElement, TableElement, TableExtendedElement
 
 
 class SystemGeneralInfoView(BaseView):
@@ -29,16 +29,16 @@ class SystemUsersView(BaseView):
     def get(self, request):
         user_info = self.get_user_info()
         view = View()
-        row = ViewRow()
+        row = RowElement()
 
-        row1box = ViewBox(title='users.list.header', icon='user', padding=False)
-        row1box.add(ViewTableExtended(
+        row1box = BoxElement(title='users.list.header', icon='user', padding=False)
+        row1box.add(TableExtendedElement(
                             ['users.list.id', 'users.list.group', 'users.list.username'],
                             [(
                                 user_id,
                                 user_info['groups'][user['group_id']]['name'] if user_info['groups'][user['group_id']]['name'] != user['name'] else '',
                                 user['name'],
-                                ViewTable(content=[('user.info', user['info']),
+                                TableElement(content=[('user.info', user['info']),
                                             ('user.home', user['home']),
                                             ('user.shell', user['shell'])
                                         ])
@@ -46,8 +46,8 @@ class SystemUsersView(BaseView):
                     ))
         row.add(row1box)
 
-        row2box = ViewBox(title='groups.list.header', icon='users', padding=False)
-        row2box.add(ViewTable(
+        row2box = BoxElement(title='groups.list.header', icon='users', padding=False)
+        row2box.add(TableElement(
                         ['groups.list.id', 'groups.list.name', 'groups.list.users'],
                         [(group_id, group['name'], group['users']) for group_id, group in user_info['groups'].items()]
                     ))
@@ -203,8 +203,8 @@ class SystemNetworkMonitorView(BaseView):
     def get(self, request):
         view = View()
 
-        box = ViewBox(title='networks.list.header', icon='exchange', padding=False)
-        box.add(ViewTable(
+        box = BoxElement(title='networks.list.header', icon='exchange', padding=False)
+        box.add(TableElement(
                     ['networks.list.id', 'networks.list.total.sent', 'networks.list.total.received'],
                     [(network_id, prism.helpers.convert_bytes(network.bytes_sent), prism.helpers.convert_bytes(network.bytes_recv)) for network_id, network in self.get_networks().items()]
                 ))
@@ -225,8 +225,8 @@ class SystemHostsView(BaseView):
     def get(self, request):
         view = View()
 
-        box = ViewBox(title='hosts.list.header', icon='cubes', padding=False)
-        box.add(ViewTable(
+        box = BoxElement(title='hosts.list.header', icon='cubes', padding=False)
+        box.add(TableElement(
                     ['hosts.list.address', 'hosts.list.host', 'hosts.list.aliases'],
                     [(address, host['hostname'], ', '.join(host['aliases'])) for address, host in self.get_hosts().items()]
                 ))

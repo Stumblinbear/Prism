@@ -10,7 +10,7 @@ from prism.memorize import memorize
 
 from prism_dashboard import Widget
 
-from prism.api.view import View, ViewRow, ViewBox, ViewTable, ViewTableExtended
+from prism.api.view import View, RowElement, BoxElement, TableElement
 
 
 class UsageCPUWidget(Widget):
@@ -82,16 +82,21 @@ class InfoWidget(Widget):
 		Widget.__init__(self, 'info', size=2)
 
 	def render(self):
-		return View('none').add(ViewBox(title='widget.info.header', icon='server', padding=False
-                                ).add(ViewTable(
-                                    content=[
-											('widget.info.os', '%s %s (%s)' % (platform.system(), platform.release(), platform.architecture()[0])),
-											('widget.info.hostname', platform.node()),
-											('widget.info.ipaddress', prism.settings.PRISM_CONFIG['host']),
-											('widget.info.uptime', self.get_uptime())
-										]
-                                ))
-                            )
+		view = View('none')
+
+		box = BoxElement(title='widget.info.header', icon='server', padding=False)
+		table = TableElement(
+								content=[
+										('widget.info.os', '%s %s (%s)' % (platform.system(), platform.release(), platform.architecture()[0])),
+										('widget.info.hostname', platform.node()),
+										('widget.info.ipaddress', prism.settings.PRISM_CONFIG['host']),
+										('widget.info.uptime', self.get_uptime())
+									]
+							)
+		box.add(table)
+		view.add(box)
+
+		return view
 
 	@memorize(5)
 	def get_uptime(self):
@@ -108,16 +113,21 @@ class HardwareWidget(Widget):
 		Widget.__init__(self, 'hardware', size=2)
 
 	def render(self):
-		return View('none').add(ViewBox(title='widget.hardware.header', icon='circle-o', padding=False
-                                ).add(ViewTable(
-                                    content=[
-											('widget.hardware.processor', platform.processor()),
-											('widget.hardware.disk', prism.helpers.convert_bytes(self.get_total_disk())),
-											('widget.hardware.memory', prism.helpers.convert_bytes(self.get_total_memory())),
-											('widget.hardware.swap', prism.helpers.convert_bytes(self.get_total_swap()))
-										]
-                                ))
-                            )
+		view = View('none')
+
+		box = BoxElement(title='widget.hardware.header', icon='circle-o', padding=False)
+		table = TableElement(
+								content=[
+										('widget.hardware.processor', platform.processor()),
+										('widget.hardware.disk', prism.helpers.convert_bytes(self.get_total_disk())),
+										('widget.hardware.memory', prism.helpers.convert_bytes(self.get_total_memory())),
+										('widget.hardware.swap', prism.helpers.convert_bytes(self.get_total_swap()))
+									]
+							)
+		box.add(table)
+		view.add(box)
+
+		return view
 
 	@memorize(60)
 	def get_total_disk(self):

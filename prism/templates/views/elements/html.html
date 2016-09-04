@@ -1,0 +1,4 @@
+{{ view.html }}
+{% for child in children %}
+  {{ child.render() | safe }}
+{% endfor %}

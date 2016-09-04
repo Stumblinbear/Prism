@@ -4,7 +4,7 @@ import prism
 import prism.settings
 import prism.helpers
 
-from prism.api.view import BaseView, subroute, View, ViewRow, ViewBox, ViewHTML, ViewTable
+from prism.api.view import BaseView, subroute, View, RowElement, BoxElement, HTMLElement, LocaleElement, TableElement
 
 
 class DashboardView(BaseView):
@@ -92,15 +92,15 @@ class UpdateView(BaseView):
     @subroute('/<name>')
     def get(self, request, name=None):
         view = View()
-        row = ViewRow()
+        row = RowElement()
 
         if name is None:
-            box1 = ViewBox(title='updates.info.header', icon='info')
-            box1.add(ViewHTML('This is information on the development of Prism. These changes have not yet been released to the public.'))
+            box1 = BoxElement(title='updates.info.header', icon='info')
+            box1.add(HTMLElement().add(LocaleElement('updates.info.dev')))
             row.add(box1, size=4)
 
-            box2 = ViewBox(title='updates.dev.commits.header', icon='archive', padding=False)
-            box2.add(ViewTable(
+            box2 = BoxElement(title='updates.dev.commits.header', icon='archive', padding=False)
+            box2.add(TableElement(
                             ['updates.commits.date', 'updates.commits.hash', 'updates.commits.changes'],
                             [('<span class="text-muted">%s</span>' % prism.helpers.timesince(change[3]), '<a href="%s" target="_blank">%s</a>' % (change[2], change[0]), change[1]) for change in prism.settings.PRISM_VERSIONING['dev_changes']]
                         ))
@@ -116,8 +116,8 @@ class UpdateView(BaseView):
             if release is None:
                 return ('dashboard.UpdateView')
 
-            box1 = ViewBox(title='updates.info.header', icon='info', padding=False)
-            box1.add(ViewTable(
+            box1 = BoxElement(title='updates.info.header', icon='info', padding=False)
+            box1.add(TableElement(
                             content=[
                                     ('updates.info.version', release['name']),
                                     ('updates.info.date', '<span class="text-muted">%s</span>' % prism.helpers.timesince(release['date']))
@@ -125,8 +125,8 @@ class UpdateView(BaseView):
                         ))
             row.add(box1, size=4)
 
-            box2 = ViewBox(title='updates.commits.header', icon='archive', padding=False)
-            box2.add(ViewTable(
+            box2 = BoxElement(title='updates.commits.header', icon='archive', padding=False)
+            box2.add(TableElement(
                             ['updates.commits.date', 'updates.commits.hash', 'updates.commits.changes'],
                             [('<span class="text-muted">%s</span>' % prism.helpers.timesince(change[3]), '<a href="%s" target="_blank">%s</a>' % (change[2], change[0]), change[1]) for change in release['changes']]
                         ))
