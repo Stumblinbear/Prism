@@ -11,7 +11,7 @@
       <tr>
         {% for column in row %}
           {% set local = (column | locale) %}
-          <td>{% if column != local %}<b>{{ local }}</b>{% else %}{{ local }}{% endif %}</td>
+          <td>{% if column != local %}<b>{{ local }}</b>{% else %}{{ column | safe }}{% endif %}</td>
         {% endfor %}
       </tr>
     {% endfor %}

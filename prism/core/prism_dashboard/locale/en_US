@@ -3,3 +3,9 @@ dashboard.widgets.edit.done=Return Home
 
 dashboard.widgets.no.header=No widgets
 dashboard.widgets.no.body=You do not have any plugins installed that add widgets.
+
+updates.dev.commits.header=Development Commits
+updates.dev.commits.hash=Commit Hash
+updates.dev.commits.changes=Changes
+
+updates.commits.header=Version Commits

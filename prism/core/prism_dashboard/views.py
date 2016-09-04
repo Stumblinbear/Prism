@@ -4,7 +4,7 @@ import prism
 import prism.settings
 import prism.helpers
 
-from prism.api.view import BaseView, subroute
+from prism.api.view import BaseView, subroute, View, ViewBox, ViewTable
 
 
 class DashboardView(BaseView):
@@ -84,3 +84,35 @@ class PluginInstallView(BaseView):
 
     def get(self, request):
         return ('plugins/install.html')
+
+class UpdateView(BaseView):
+    def __init__(self):
+        BaseView.__init__(self, endpoint='/updates', title='Update')
+
+    @subroute('/<name>')
+    def get(self, request, name=None):
+        view = View()
+
+        if name is None:
+            box = ViewBox(title='updates.dev.commits.header', icon='archive', padding=False)
+            box.add(ViewTable(
+                            ['updates.dev.commits.hash', 'updates.dev.commits.changes'],
+                            [('<a href="%s" target="_blank">%s</a>' % (change[2], change[0]), change[1]) for change in prism.settings.PRISM_VERSIONING['dev_changes']]
+                        ))
+            view.add(box)
+        else:
+            release = None
+
+            for recent in prism.settings.PRISM_VERSIONING['recent_releases']:
+                if recent['name'] == name:
+                    release = recent
+                    break
+
+            if release is None:
+                return ('dashboard.UpdateView')
+
+            box = ViewBox(title='updates.commits.header', icon='archive', padding=False)
+            box.add(ViewTable(content=[(change,) for change in release['changes']]))
+            view.add(box)
+
+        return view

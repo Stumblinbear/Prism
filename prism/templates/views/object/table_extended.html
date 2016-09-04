@@ -14,7 +14,8 @@
           {% if loop.index == (row | length) %}
             {% continue %}
           {% endif %}
-          <td>{{ column }}</td>
+          {% set local = (column | locale) %}
+          <td>{% if column != local %}<b>{{ local }}</b>{% else %}{{ column | safe }}{% endif %}</td>
         {% endfor %}
       </tr>
       {% if row[(row | length) - 1] != None %}

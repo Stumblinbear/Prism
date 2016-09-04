@@ -5,7 +5,7 @@
 </ul>
 <div class="tab-content">
 	<div class="tab-pane active" id="control-sidebar-home-tab">
-		<h3 class="control-sidebar-heading">{{ "prism:sidebar.updates" | locale }}</h3>
+		<h3 class="control-sidebar-heading">{{ "prism:sidebar.updates" | locale }} <small><a href="{{ url_for('dashboard.UpdateView') }}">(dev)</a></small></h3>
 		<ul class="control-sidebar-menu">
 			{% if versioning.recent_releases == None %}
 				<li>
@@ -22,11 +22,11 @@
 					{% if version == release.name %}
 						{% if loop.index == 1 %}
 							<li>
-								<a href="#">
+								<a href="{{ url_for('dashboard.UpdateView', name=release.name) }}">
 									<i class="menu-icon fa fa-thumbs-up bg-blue"></i>
 									<div class="menu-info">
 										<h4 class="control-sidebar-subheading">Up to date!</h4>
-										<p>{{ version }}</p>
+										<p>{{ release.name }}</p>
 									</div>
 								</a>
 							</li>
@@ -34,7 +34,7 @@
 						{% break %}
 					{% endif %}
 					<li>
-						<a href="#">
+						<a href="{{ url_for('dashboard.UpdateView', name=release.name) }}">
 							<i class="menu-icon fa fa-arrow-up bg-red"></i>
 							<div class="menu-info">
 								<h4 class="control-sidebar-subheading">Prism Update</h4>

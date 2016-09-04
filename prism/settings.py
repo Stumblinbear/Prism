@@ -70,51 +70,8 @@ def init(pid):
 	prism.output('Currently running in %s' % PRISM_PATH)
 	prism.output('')
 
-	prism.poof('Collecting version info...')
-
 	PRISM_VERSIONING = JSONConfig(path=os.path.join(TMP_PATH, 'VERSIONING-INFO'))
-
-	should_check = True
-	if 'last_check' in PRISM_VERSIONING:
-		should_check = ((datetime.now() - datetime.strptime(PRISM_VERSIONING['last_check'], "%Y-%m-%d %H:%M:%S")).seconds >= 60 * 60 * 2)
-
-	if should_check:
-		rate_limited, dev_changes, recent_releases, num_releases = get_new_versions(prism.__version__)
-
-		if rate_limited:
-			prism.output('Rate limited. Version info not checked.')
-
-			# If no values made yet, apply some defaults
-			if 'dev_changes' not in PRISM_VERSIONING:
-				PRISM_VERSIONING['dev_changes'] = []
-			if 'recent_releases' not in PRISM_VERSIONING:
-				PRISM_VERSIONING['recent_releases'] = []
-			if 'num_releases' not in PRISM_VERSIONING:
-				PRISM_VERSIONING['num_releases'] = 0
-		else:
-			# Reset and reapply cached versioning info
-			PRISM_VERSIONING['dev_changes'] = []
-			PRISM_VERSIONING['recent_releases'] = []
-			PRISM_VERSIONING['num_releases'] = 0
-
-			if 'dev_changes' is not None:
-				PRISM_VERSIONING['dev_changes'] = dev_changes
-			if 'recent_releases' is not None:
-				PRISM_VERSIONING['recent_releases'] = recent_releases
-			if 'num_releases' is not None:
-				PRISM_VERSIONING['num_releases'] = num_releases
-
-			if 'dev_changes' is not None or 'recent_releases' is not None or 'num_releases' is not None:
-				PRISM_VERSIONING['last_check'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-	if len(PRISM_VERSIONING['dev_changes']) > 0:
-		prism.output('%s development commit(s) since the latest version.' % len(PRISM_VERSIONING['dev_changes']))
-	if len(PRISM_VERSIONING['recent_releases']) != 0:
-		prism.poof('Current version: %s' % prism.__version__)
-		if prism.__version__ != PRISM_VERSIONING['recent_releases'][0]['name']:
-			prism.output('Your version is out of date. Latest version is %s' % PRISM_VERSIONING['recent_releases'][0]['name'])
-		prism.paaf()
-	prism.paaf()
+	ping_version(True)
 	prism.output('')
 
 	# Load Prism's config
@@ -236,3 +193,52 @@ def generate_certificate():
 		rm prism.*;
 	""".format(PRISM_PATH, PRISM_CONFIG['host'], CONFIG_FOLDER)
 	subprocess.call(script, shell=True)
+
+def ping_version(output=False):
+	global PRISM_VERSIONING
+
+	should_check = True
+	if 'last_check' in PRISM_VERSIONING:
+		should_check = ((datetime.now() - datetime.strptime(PRISM_VERSIONING['last_check'], "%Y-%m-%d %H:%M:%S")).seconds >= 60 * 60 * 2)
+
+	if output or should_check:
+		prism.poof('Collecting version info...')
+
+	if should_check:
+		rate_limited, dev_changes, recent_releases, num_releases = get_new_versions(prism.__version__)
+
+		if rate_limited:
+			prism.output('Rate limited. Version info not checked.')
+
+			# If no values made yet, apply some defaults
+			if 'dev_changes' not in PRISM_VERSIONING:
+				PRISM_VERSIONING['dev_changes'] = []
+			if 'recent_releases' not in PRISM_VERSIONING:
+				PRISM_VERSIONING['recent_releases'] = []
+			if 'num_releases' not in PRISM_VERSIONING:
+				PRISM_VERSIONING['num_releases'] = 0
+		else:
+			# Reset and reapply cached versioning info
+			PRISM_VERSIONING['dev_changes'] = []
+			PRISM_VERSIONING['recent_releases'] = []
+			PRISM_VERSIONING['num_releases'] = 0
+
+			if 'dev_changes' is not None:
+				PRISM_VERSIONING['dev_changes'] = dev_changes
+			if 'recent_releases' is not None:
+				PRISM_VERSIONING['recent_releases'] = recent_releases
+			if 'num_releases' is not None:
+				PRISM_VERSIONING['num_releases'] = num_releases
+
+			if 'dev_changes' is not None or 'recent_releases' is not None or 'num_releases' is not None:
+				PRISM_VERSIONING['last_check'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+	if output or should_check:
+		if len(PRISM_VERSIONING['dev_changes']) > 0:
+			prism.output('%s development commit(s) since the latest version.' % len(PRISM_VERSIONING['dev_changes']))
+		if len(PRISM_VERSIONING['recent_releases']) != 0:
+			prism.poof('Current version: %s' % prism.__version__)
+			if prism.__version__ != PRISM_VERSIONING['recent_releases'][0]['name']:
+				prism.output('Your version is out of date. Latest version is %s' % PRISM_VERSIONING['recent_releases'][0]['name'])
+			prism.paaf()
+		prism.paaf()
