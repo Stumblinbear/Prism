@@ -16,7 +16,7 @@ Prism is an in-development linux server control panel.
 Installation
 ------------
 
-Download or clone the repo to your linux server and start the panel using ``bin/prism-panel`. Then follow the on-screen prompt. *You must be using Python 3.*
+Download or clone the repo to your linux server and start the panel using ``bin/prism-panel``. Then follow the on-screen prompt. *You must be using Python 3.*
 
 
 Dependencies
