@@ -102,35 +102,36 @@
       title: "",
       text: "Are you sure you wish to run the command: <code>{{ terminal.command }}</code>?",
       type: "warning",
-      html: true,
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
       confirmButtonText: "Yes",
       cancelButtonText: "No",
-      closeOnConfirm: false,
       showLoaderOnConfirm: true,
-      closeOnCancel: true
-    }, function(isConfirm) {
-      if(isConfirm) {
+      preConfirm: function() {
+        return new Promise(function(resolve, reject) {
+          $.post("/core/terminal/stream/{{ terminal.terminal_id }}", {"in": 1})
+          .done(function() {
+            resolve();
+          });
+        });
+      }
+    }).then(function(result) {
         $.post("/core/terminal/stream/{{ terminal.terminal_id }}", {"in": 1})
         .done(function() {
-          swal.close();
-
           setTimeout(function() {
             receive_output();
             $("#shell-input").show();
           }, 1000);
         });
-      }else{
-        $.post("/core/terminal/stream/{{ terminal.terminal_id }}", {"in": 0})
-        .done(function() {
-      	  {% if terminal.return_url != None %}
-            window.location = "{{ url_for(terminal.return_url) }}"
-          {% else %}
-            window.location = "{{ url_for("dashboard.home") }}"
-          {% endif %}
-        });
-      }
+    }, function(dismiss) {
+      $.post("/core/terminal/stream/{{ terminal.terminal_id }}", {"in": 0})
+      .done(function() {
+        {% if terminal.return_url != None %}
+          window.location = "{{ url_for(terminal.return_url) }}"
+        {% else %}
+          window.location = "{{ url_for('dashboard.DashboardView') }}"
+        {% endif %}
+      });
     });
   });
 </script>

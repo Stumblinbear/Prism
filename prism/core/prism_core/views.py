@@ -56,7 +56,6 @@ class TerminalView(BaseView):
                             }
                     )
         else:
-            print(terminal_id)
             terminal = self.get_terminal(terminal_id)
             if isinstance(terminal, tuple):
                 return terminal
@@ -119,11 +118,11 @@ class TerminalView(BaseView):
                 terminal.init()
             else:
                 del self.terminals[terminal.terminal_id]
-            return 0
+            return '0'
 
         if user_input != '':
             terminal.input(user_input)
-        return 0
+        return '0'
 
     def get_terminal(self, terminal_id):
         if terminal_id is None:

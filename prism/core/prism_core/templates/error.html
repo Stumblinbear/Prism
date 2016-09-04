@@ -50,9 +50,9 @@
 												{% if 'command' in fix %}
 													<p>
 														{% if not error.url_return %}
-														<a href="{{ url_for('core.command', command=fix['command'], restart=True) }}">
+														<a href="{{ url_for('core.TerminalView:command', command=fix['command'], restart=True) }}">
 														{% else %}
-														<a href="{{ url_for('core.command', command=fix['command'], restart=True, return_url=error.url_return) }}">
+														<a href="{{ url_for('core.TerminalView:command', command=fix['command'], restart=True, return_url=error.url_return) }}">
 														{% endif %}
 															<button type="button" id="btn-fix" class="btn btn-info btn-sm">Attempt Fix #{{ loop.index }}</button>
 														</a>
