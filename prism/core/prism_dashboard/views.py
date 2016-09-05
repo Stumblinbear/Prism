@@ -9,8 +9,9 @@ from prism.api.view import BaseView, subroute, View, RowElement, BoxElement, HTM
 
 class DashboardView(BaseView):
     def __init__(self):
-        BaseView.__init__(self, endpoint='/home', title='Dashboard',
-                                menu={'id': 'dashboard', 'icon': 'home', 'order': 0})
+        BaseView.__init__(self, endpoint='/home', title='Home',
+                                menu={'id': 'dashboard.home', 'icon': 'home', 'order': 0,
+                                        'parent': {'id': 'dashboard', 'text': 'Dashboard', 'icon': 'dashboard', 'order': 0}})
 
     def get(self, request):
         return ('dashboard.html', {'widgets': prism.get_plugin('dashboard').get_widgets()})
@@ -42,11 +43,19 @@ class DashboardView(BaseView):
         prism_dashboard.save_widgets()
         return '1'
 
+class UserListView(BaseView):
+    def __init__(self):
+        BaseView.__init__(self, endpoint='/users/list', title='User Management',
+                                menu={'id': 'dashboard.users', 'icon': 'users', 'order': 1})
+
+    def get(self, request):
+        return ('users/list.html', {'users': prism.login.User.query.all(), 'permissions': prism.plugin_manager().possible_permissions})
+
 class PluginListView(BaseView):
     def __init__(self):
         BaseView.__init__(self, endpoint='/plugins/list', title='Installed Plugins',
-                                menu={'id': 'plugins.list', 'icon': 'square', 'order': 0,
-                                        'parent': {'id': 'plugins', 'text': 'Plugins', 'icon': 'cubes', 'order': 1}})
+                                menu={'id': 'dashboard.plugins.list', 'icon': 'square', 'order': 0,
+                                        'parent': {'id': 'dashboard.plugins', 'text': 'Plugins', 'icon': 'cubes', 'order': 2}})
 
     def get(self, request):
         return ('plugins/list.html', {'plugins': prism.plugin_manager().get_sorted_plugins()})
@@ -80,7 +89,7 @@ class PluginListView(BaseView):
 class PluginInstallView(BaseView):
     def __init__(self):
         BaseView.__init__(self, endpoint='/plugins/install', title='Install Plugins',
-                                menu={'id': 'plugins.install', 'icon': 'cube', 'order': 1})
+                                menu={'id': 'dashboard.plugins.install', 'icon': 'cube', 'order': 1})
 
     def get(self, request):
         return ('plugins/install.html')

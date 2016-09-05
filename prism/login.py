@@ -19,15 +19,27 @@ class User(db.Model):
 
 	username = db.Column(db.String, primary_key=True)
 	password = db.Column(db.String)
+	name = db.Column(db.String)
 	permissions = db.Column(db.String)
 
-	def __init__(self, username, password, permissions):
+	def __init__(self, username, password, name, permissions):
 		self.username = username
 		self.password = password
+		self.name = name
 		self.permissions = permissions
 
 	def get_id(self):
 		return self.username
+
+	def has_permission(self, permission):
+		return self.permissions == '*' or permission in self.permissions.split(',')
+
+	def add_permission(self, permission):
+		if self.permissions != '*':
+			permissions = self.permissions.split(',')
+			if permission not in permissions:
+				permissions.append(permission)
+			self.permissions = permissions
 
 	def is_authenticated(self):
 		return True
@@ -45,8 +57,8 @@ class LoginForm(Form):
 	username = StringField('Username', validators=[validators.Required()])
 	password = PasswordField('Password', validators=[validators.Required()])
 
-def create_user(username, password, permissions=[]):
-	db.session.add(User(username, sha256_crypt.encrypt(password), ','.join(permissions)))
+def create_user(username, password, name, permissions=[]):
+	db.session.add(User(username, sha256_crypt.encrypt(password), name, ','.join(permissions)))
 	db.session.commit()
 
 def user():

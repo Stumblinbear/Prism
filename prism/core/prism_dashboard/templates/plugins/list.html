@@ -1,10 +1,9 @@
 {% extends 'panel.html' %}
-{% block title %}Installed Plugins{% endblock %}
 {% block content %}
 <div class="panel-group" id="plugins" role="tablist" aria-multiselectable="true">
 	{% for plugin in plugins %}
 		<div class="panel panel-{% if not plugin.is_satisfied %}danger{% elif not plugin.is_enabled %}warning{% else %}default{% endif %}">
-			<div class="panel-heading" role="tab" id="header-{{ plugin.plugin_id }}">
+			<div class="panel-heading" role="tab">
 				<h4 class="panel-title">
 					{% if '.' not in plugin.plugin_icon %}
 						<i class="fa fa-{{ plugin.plugin_icon }}"></i>
@@ -136,6 +135,6 @@
 				});
 			});
 		});
-	})
+	});
 </script>
 {% endblock %}

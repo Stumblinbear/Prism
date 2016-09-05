@@ -84,6 +84,8 @@ class PluginManager:
 		# Holds the list of enabled plugins
 		self.enabled_plugins = config.get('enabled_plugins', [])
 
+		self.possible_permissions = {}
+
 	def init(self):
 		poof('Searching')
 		self._search_plugins(settings.CORE_PLUGINS_PATH, True)
@@ -290,6 +292,8 @@ class PluginManager:
 		plugin.config.save()
 
 		if len(plugin._module_views) > 0:
+			self.possible_permissions[plugin.plugin_id] = {}
+
 			blueprint_name = plugin._endpoint
 
 			# Create the plugin blueprint in flask
@@ -300,6 +304,8 @@ class PluginManager:
 			# Go through each of the module's views and add them to flask
 			for view_class in plugin._module_views:
 				view = view_class()
+
+				self.possible_permissions[plugin.plugin_id][str(view_class.__name__)] = view.title
 
 				endpoint_id = '%s' % view_class.__name__
 
@@ -439,6 +445,10 @@ class PluginManager:
 		return func_wrapper
 
 def handle_render(plugin_id, obj, *args, **kwargs):
+	import prism.login
+	if not prism.login.user().has_permission(plugin_id + '.' + str(obj.__self__.__class__.__name__)):
+		return flask.redirect('dashboard.DashboardView')
+
 	hold_previous = flask.g.current_plugin
 	flask.g.current_plugin = plugin_id
 	obj = obj(*args, **kwargs)
