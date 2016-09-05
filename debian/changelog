@@ -1,0 +1,131 @@
+prism (0.0.2-alpha) UNRELEASED; urgency=medium
+
+  [ Stumblinbear ]
+  * Initial commit
+  * Redid plugin system
+  * Removed old plugin files
+  * Removed unneeded @route
+  * Made Dash editor a subset of /home
+  * Removed debug line
+  * Updated references to dash home
+  * Fixed a bug in magical defaults
+  * Simplified @memorize, work on system plugin
+  * Updated dashboard widget syste
+  * Fixed a bug in dependencies
+  * Fixed widget bug
+  * Updated installed plugins page
+  * Fixed widget render in system info
+  * Fixed .gitignore
+  * Updated error screen
+  * Updated how plugins are loaded
+  * Derp
+  * *Magical whooshing noises*
+  * Added localization
+  * Added "locale" filter to templates
+  * Added locale fallback text
+  * A bit of refactoring
+  * Added python 3 check
+  * Updated requirements
+  * Finished up localization
+  * Updated template
+  * Pretty-fied the sidebar
+  * Added version
+  * Updated gitignore
+  * Small fixes
+  * Removed all files that are in the .gitignore
+  * Beep
+  * Updated js dependencies
+  * Derp
+  * Added python module check
+  * Updated dependency handling and added terminal
+  * Reworked plugin system
+  * Work on updated widget system
+  * Updated to cloudflare cdn
+  * Updated widget system
+
+  [ Alexander Lenz ]
+  * Renamed/Moved/Fixed bin scripts.
+  * Fix some locale formatting.
+  * locale/en_US: remove extra escapes.
+  * Create basic config file on first start.
+  * is_package_installed: fix dpkg command.
+  * plugin list: fix dangling link.
+
+  [ Stumblinbear ]
+  * Fixed jQuery version
+  * Updated .gitignore
+  * Fixed restart bug
+
+  [ Alexander Lenz ]
+  * JSONConfig: add a dict like get method.
+
+  [ Stumblinbear ]
+  * Fixed a widget bug
+
+  [ Alexander Lenz ]
+  * Remove commited patch file.
+
+  [ Stumblinbear ]
+  * Fixed own stupidity
+  * Fixed enabled plugins bug
+  * Fixed terminal bug
+  * Fixed dashboard link
+  * Added settings button
+  * Fixed processes view
+  * Fixed cdn link
+  * Added plugin static files
+  * Fixed discrepancies between plugin ids
+  * Work on settings
+  * Fixed plugin statics
+  * Updated plugin init
+  * Fixed static route
+  * Work on page generator
+  * Removed unneeded jinja strip
+  * Updated system
+  * Formatting bug
+  * Fixed extended table
+  * Added mount options to system locale
+  * Moved functions into view
+  * Removed debug
+  * Updated system widgets
+  * Tabbbbb
+  * Settings work
+  * Fixed locale
+  * Accidentally removed knob
+  * Fixed restart default route
+  * Derp
+  * Fixed chart
+  * Updated widget editor
+  * Restart page update
+  * Formatting. So you can actually see what's happening
+  * Updated .gitignore and versioning
+  * Reenabled debug mode
+  * Committed version
+  * Fabulous version checking
+  * Added versioning page
+  * Version page update
+  * Added version ping
+  * Fixed title bug when no menu item was made
+  * Fixed core terminal
+  * Altered element system
+  * Resized info box
+  * Updated version
+  * Version updater bug
+  * Derp
+  * Wow. I am not good at this.
+  * Make it wait
+  * Fixed default html
+  * Added access denied
+  * readme
+  * Updated depends
+  * Derp
+  * Updated README
+  * Docs?
+  * what
+  * what what
+  * Fixed plugin loading bug
+
+  [ Alexander Lenz ]
+
+ -- Stumblinbear <stumblinbear@gmail.com>  Mon, 05 Sep 2016 16:22:18 +0200
+
