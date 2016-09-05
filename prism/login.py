@@ -17,7 +17,8 @@ login_manager.init_app(flask_app)
 class User(db.Model):
 	__tablename__ = 'user'
 
-	username = db.Column(db.String, primary_key=True)
+	user_id = db.Column(db.Integer, primary_key=True)
+	username = db.Column(db.String, unique=True)
 	password = db.Column(db.String)
 	name = db.Column(db.String)
 	permissions = db.Column(db.String)
@@ -29,7 +30,7 @@ class User(db.Model):
 		self.permissions = permissions
 
 	def get_id(self):
-		return self.username
+		return self.user_id
 
 	def has_permission(self, permission):
 		return self.permissions == '*' or permission in self.permissions.split(',')
@@ -83,7 +84,7 @@ def login():
 
 	form = LoginForm(request.form)
 	if request.method == 'POST' and form.validate():
-		user = User.query.get(form.username.data)
+		user = User.query.filter_by(username=form.username.data).first()
 		if user:
 			if sha256_crypt.verify(form.password.data, user.password):
 				flask_login.login_user(user, remember=True)
@@ -108,8 +109,8 @@ def logout():
 	return flask.redirect(flask.url_for('login'))
 
 @login_manager.user_loader
-def load_user(username):
-	return User.query.get(username)
+def load_user(user_id):
+	return User.query.get(user_id)
 
 @login_manager.unauthorized_handler
 def unauthorized_handler():

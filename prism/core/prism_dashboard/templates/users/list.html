@@ -15,7 +15,7 @@
 			</div>
 			<div id="user-{{ user.username }}" class="panel-collapse collapse" role="tabpanel">
 				<form class="panel-body">
-					<input type="hidden" name="username" value="{{ user.username }}">
+					<input type="hidden" name="username" value="{{ user.user_id }}">
 					<div class="col-md-6">
 						<div class="form-group">
 					    <label for="name">Name</label>
@@ -36,8 +36,9 @@
 							{% for view_id, view_title in views.items() %}
 								<div class="row">
 									<div class="col-xs-8">{{ view_title }} <small>({{ view_id }})</small></div>
-									<div class="col-xs-2 text-center"><i class="fa fa-square" data-user="{{ user.username }}" data-plugin="{{ plugin_id }}" data-view="{{ view_id }}" data-action="enable"></i></div>
-									<div class="col-xs-2 text-center"><i class="fa fa-square-o" data-user="{{ user.username }}" data-plugin="{{ plugin_id }}" data-view="{{ view_id }}" data-action="disable"></i></div>
+									{% set has_perm = user.has_permission(plugin_id + '.' + view_id) %}
+									<div class="col-xs-2 text-center"><i class="fa fa-square{% if not has_perm %}-o{% endif %}" data-user="{{ user.username }}" data-plugin="{{ plugin_id }}" data-view="{{ view_id }}" data-action="enable"></i></div>
+									<div class="col-xs-2 text-center"><i class="fa fa-square{% if has_perm %}-o{% endif %}" data-user="{{ user.username }}" data-plugin="{{ plugin_id }}" data-view="{{ view_id }}" data-action="disable"></i></div>
 								</div>
 							{% endfor %}
 							{% if loop.index != (permissions | length) %}
