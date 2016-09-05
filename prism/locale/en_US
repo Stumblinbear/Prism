@@ -21,8 +21,7 @@ start.done=All done! I'll write this to the config file and send you on your way
 
 start.missing.secret=Your secret appears to be absent from your config! Don't worry, I'll generate one for you, just be mindful not to remove it in the future...
 start.missing.host=You don't have a host set in your config. Please tell me one, or nothing will work! ;-;
-start.missing.username=You seem to have disappeared from the config! Who are you again?
-start.missing.password=You uhh... You don\'t have a password. Please set it before you continue.
+start.missing.login=You don't seem to have any users in the database! Please send me a username and password now.
 
 
 login.welcome=Welcome to **Prism**

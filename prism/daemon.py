@@ -32,6 +32,9 @@ class Daemon:
 		self.jinja_options()
 		self.init_flask_plugins()
 		self.init_prism()
+
+		prism.settings.post_init()
+
 		self.start_http()
 
 		return 0

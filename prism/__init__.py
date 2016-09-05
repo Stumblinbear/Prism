@@ -14,6 +14,7 @@ from subprocess import PIPE
 import flask
 from flask import Blueprint
 from flask_menu import current_menu
+from flask_sqlalchemy import SQLAlchemy
 import jinja2
 
 from prism.config import JSONConfig
@@ -33,6 +34,8 @@ def init(flask_app, config):
 
 	import prism.login
 	import prism.views
+
+	PRISM_STATE.database.create_all()
 
 def get():
 	return PRISM_STATE
@@ -56,6 +59,10 @@ class Prism:
 
 		self._plugin_manager = None
 
+		self._flask_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///%s' % os.path.join(prism.settings.CONFIG_FOLDER, 'prism.db')
+		self._flask_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+		self._database = SQLAlchemy(self._flask_app)
+
 	def flask_app(self):
 		""" Returns the flask application instance """
 		return self._flask_app
@@ -66,41 +73,8 @@ class Prism:
 		return self._plugin_manager
 
 	@property
-	# User functions
-	def user(self):
-		""" Returns the user object if they're logged in, otherwise None """
-		from flask import g
-		if hasattr(g, 'user'):
-			return g.user
-		return None
-
-	@property
-	def is_logged_in(self):
-		""" Returns true if the user is logged in """
-		from flask import g
-		if hasattr(g, 'user'):
-			return g.user is not None and g.user.is_authenticated
-		return False
-
-	# Returns true if login was successful
-	def attempt_login(self, username, password):
-		""" Attempt to log the user in if the username and password are correct """
-		if self.config['username'] != username:
-			return False
-		if not crypt_verify(password, self.config['password']):
-			return False
-		return True
-
-	# Log the user out
-	def do_logout(self):
-		""" Log the current user out """
-		import flask_login
-		flask_login.logout_user()
-
-		from flask import g
-		g.user = None
-
-		return flask.redirect(flask.url_for('login'))
+	def database(self):
+		return self._database
 
 class PluginManager:
 	def __init__(self, config):
@@ -600,17 +574,3 @@ def get_general_os():
 		return 'bsd'
 	else:
 		return 'debian'
-
-# Wow. This is so perfect. /s
-def is_crypted(string):
-	return len(string) == 77
-
-def crypt_string(string):
-	""" Encrypt a string using SHA256 """
-	from passlib.hash import sha256_crypt
-	return sha256_crypt.encrypt(string)
-
-def crypt_verify(string, hash):
-	""" Verify that a string and an encryped hash are the same """
-	from passlib.hash import sha256_crypt
-	return sha256_crypt.verify(string, hash)

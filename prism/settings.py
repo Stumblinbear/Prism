@@ -20,13 +20,9 @@ PLUGINS_PATH = None
 CONFIG_FOLDER_PLUGINS = None
 
 CONFIG_FOLDER = None
-CONFIG_FILE = None
 PRISM_CONFIG = {
-		'first_run': True,
 		'secret_key': None,
 		'host': None,
-		'username': 'admin',
-		'password': 'admin',
 		'enabled': [],
 		'locale': 'en_US',
 		'enabled_plugins': []
@@ -49,8 +45,8 @@ def import_folder(path):
 		sys.path.append(path)
 
 def init(pid):
-	global PANEL_PID, PRISM_PATH, TMP_PATH, PRISM_VERSIONING, CORE_PLUGINS_PATH, PLUGINS_PATH, \
-			CONFIG_FOLDER_PLUGINS, CONFIG_FOLDER, CONFIG_FILE, PRISM_CONFIG, PRISM_LOCALE
+	global PANEL_PID, PRISM_PATH, TMP_PATH, PRISM_VERSIONING, CORE_PLUGINS_PATH, \
+			PLUGINS_PATH, CONFIG_FOLDER_PLUGINS, CONFIG_FOLDER, PRISM_CONFIG, PRISM_LOCALE
 
 	PANEL_PID = pid
 	PRISM_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -78,7 +74,7 @@ def init(pid):
 	CONFIG_FOLDER = os.path.join(PRISM_PATH, 'config')
 	if not os.path.exists(CONFIG_FOLDER):
 		os.makedirs(CONFIG_FOLDER)
-	CONFIG_FILE = os.path.join(CONFIG_FOLDER, 'config.json')
+	config_file = os.path.join(CONFIG_FOLDER, 'config.json')
 
 	CONFIG_FOLDER_PLUGINS = os.path.join(CONFIG_FOLDER, 'plugins')
 	if not os.path.exists(CONFIG_FOLDER_PLUGINS):
@@ -89,7 +85,7 @@ def init(pid):
 	# Generate default config values if the file doesn't exist
 	# Also, prompt and generate a few of the config values that
 	# must be done on first run.
-	if not os.path.exists(CONFIG_FILE):
+	if not os.path.exists(config_file):
 		# I have no idea what came over me when making this section,
 		# but it's fabulous and I loved every second of it. I hope
 		# I never have to change it. xD
@@ -123,8 +119,8 @@ def init(pid):
 		# Username and Password prompt
 		prism.output('')
 		prism.output(PRISM_LOCALE['start.login.username'])
-		PRISM_CONFIG['username'], used_default = prism.get_input(PRISM_LOCALE['start.login.username.prompt'], default='admin')
-		PRISM_CONFIG['password'], used_default = prism.get_input(PRISM_LOCALE['start.login.password.prompt'], default='password')
+		username, used_default = prism.get_input(PRISM_LOCALE['start.login.username.prompt'], default='admin')
+		password, used_default = prism.get_input(PRISM_LOCALE['start.login.password.prompt'], default='password')
 		if used_default:
 			prism.output(PRISM_LOCALE['start.login.password.default.1'])
 			time.sleep(2)
@@ -133,15 +129,17 @@ def init(pid):
 			prism.output(PRISM_LOCALE['start.login.password.default.3'])
 			prism.output('')
 
+		prism_login.create_user(username, password, ['*'])
+
 		prism.output('')
 		prism.output(PRISM_LOCALE['start.done'])
-		conf = JSONConfig(path=CONFIG_FILE)
+		conf = JSONConfig(path=config_file)
 		for key, value in PRISM_CONFIG.items():
 			conf[key] = value
 		PRISM_CONFIG = conf
 	else:
 		# Load prism's config
-		PRISM_CONFIG = JSONConfig(path=CONFIG_FILE)
+		PRISM_CONFIG = JSONConfig(path=config_file)
 
 		if 'locale' not in PRISM_CONFIG:
 			PRISM_CONFIG['locale'] = 'en_US'
@@ -161,22 +159,15 @@ def init(pid):
 			PRISM_CONFIG['host'], used_default = prism.get_input(PRISM_LOCALE['start.host.prompt'], default=host)
 			prism.output('')
 
-		if 'username' not in PRISM_CONFIG:
-			prism.output(PRISM_LOCALE['start.missing.username'])
-			PRISM_CONFIG['username'], used_default = prism.get_input(PRISM_LOCALE['start.login.username.prompt'], default='admin')
-			prism.output('')
-
-		if 'password' not in PRISM_CONFIG:
-			prism.output(PRISM_LOCALE['start.missing.password'])
-			PRISM_CONFIG['password'], used_default = prism.get_input(PRISM_LOCALE['start.login.password.prompt'], default='password')
-			prism.output('')
-
-	# Detect if the password isn't md5'd. If not, hash it. This allows
-	# the user to reset their password at any time within the config.
-	if not prism.is_crypted(PRISM_CONFIG['password']):
-		PRISM_CONFIG['password'] = prism.crypt_string(PRISM_CONFIG['password'])
-
-	#PRISM_CONFIG.save()
+def post_init():
+	import prism.login as prism_login
+	if prism_login.User.query.count() == 0:
+		prism.output('')
+		prism.output(PRISM_LOCALE['start.missing.login'])
+		username, used_default = prism.get_input(PRISM_LOCALE['start.login.username.prompt'], default='admin')
+		password, used_default = prism.get_input(PRISM_LOCALE['start.login.password.prompt'], default='password')
+		prism.output('')
+		prism_login.create_user(username, password, ['*'])
 
 def generate_certificate():
 	import subprocess
