@@ -25,8 +25,9 @@ Dependencies
 * Python 3
 * pyOpenSSL >= 16.0.0
 * passlib >= 1.6.5
-* tinydb >= 3.2.1
 * psutil >= 4.3.0
+* SQLAlchemy >= 1.1.0
 * flask >= 0.11.1
+* Flask-SQLAlchemy >= 2.1
 * flask_login >= 0.3.2
 * flask_menu >= 0.5.0
