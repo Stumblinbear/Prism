@@ -55,6 +55,8 @@ class DashboardPlugin(BasePlugin):
 		self.config.save()
 
 class Widget(object):
+	_check_permissions = False
+
 	def __init__(self, widget_id, size=4):
 		self.widget_id = widget_id
 		self.size = size

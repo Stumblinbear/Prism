@@ -446,8 +446,12 @@ class PluginManager:
 
 def handle_render(plugin_id, obj, *args, **kwargs):
 	import prism.login
-	if not prism.login.user().has_permission(plugin_id + '.' + str(obj.__self__.__class__.__name__)):
-		return flask.redirect('dashboard.DashboardView')
+	check_perm = True
+	if hasattr(obj.__self__.__class__, '_check_permissions'):
+		check_perm = obj.__self__.__class__._check_permissions
+	if check_perm:
+		if not prism.login.user().has_permission(plugin_id + '.' + str(obj.__self__.__class__.__name__)):
+			return flask.abort(403)
 
 	hold_previous = flask.g.current_plugin
 	flask.g.current_plugin = plugin_id

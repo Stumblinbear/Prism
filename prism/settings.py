@@ -129,7 +129,7 @@ def init(pid):
 			prism.output(PRISM_LOCALE['start.login.password.default.3'])
 			prism.output('')
 
-		prism_login.create_user(username, password, username.capitalize(), ['*'])
+		prism_login.create_user(username, password, username.capitalize(), 'Main Administrator', ['*'])
 
 		prism.output('')
 		prism.output(PRISM_LOCALE['start.done'])
@@ -167,7 +167,7 @@ def post_init():
 		username, used_default = prism.get_input(PRISM_LOCALE['start.login.username.prompt'], default='admin')
 		password, used_default = prism.get_input(PRISM_LOCALE['start.login.password.prompt'], default='password')
 		prism.output('')
-		prism_login.create_user(username, password, username.capitalize(), ['*'])
+		prism_login.create_user(username, password, username.capitalize(), 'Main Administrator', ['*'])
 
 def generate_certificate():
 	import subprocess

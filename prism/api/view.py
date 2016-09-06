@@ -5,6 +5,8 @@ import prism
 from prism.memorize import memorize
 
 class BaseView(object):
+	_check_permissions = True
+
 	def __init__(self, endpoint, title=None, menu=None):
 		assert endpoint.startswith('/'), 'Endpoint does not begin with a /! Offender: %s' % endpoint
 		assert '<' not in endpoint, 'Endpoint should not contain arguments. Offender: %s' % endpoint

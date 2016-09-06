@@ -11,6 +11,10 @@
 		<ul class="sidebar-menu">
 			{% for item in current_menu.children recursive %}
 				{% if not item.hidden %}
+					{% set has_perm = me.has_permission(item._endpoint) %}
+					{% if not has_perm %}
+						{% continue %}
+					{% endif %}
 					{% if item.header %}<li class="header">{{ item.header }}</li>{% endif %}
 					<li{% if item.active %} class="active"{% endif %}>
 						<a href="{{ item.url }}"><i class="fa fa-{{ item.icon }}"></i> <span>{{ item.text }}</span></a>

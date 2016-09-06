@@ -26,5 +26,6 @@ user.list.actions=Actions
 
 
 user.edit.name.label=Change Name
+user.edit.info.label=Set Info
 user.edit.username.label=Change Username
 user.edit.password.label=New Password

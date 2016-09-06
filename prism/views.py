@@ -6,6 +6,7 @@ from flask_menu import current_menu
 import jinja2
 
 import prism
+import prism.login
 import prism.settings
 import prism.helpers
 
@@ -30,7 +31,7 @@ def inject_things():
 	if title == 'Menu item not initialised':
 		title = None
 
-	return dict(title=title, version=prism.__version__, versioning=prism.settings.PRISM_VERSIONING)
+	return dict(title=title, me=prism.login.user(), version=prism.__version__, versioning=prism.settings.PRISM_VERSIONING)
 
 @flask_app.route("/site-map")
 def site_map():
@@ -63,6 +64,10 @@ def plugin_static(plugin_id, static_file):
 
 	static_dir = os.path.join(static_dir, 'static')
 	return flask.send_from_directory(static_dir, static_file)
+
+@flask_app.errorhandler(403)
+def page_not_found(e):
+	return flask.render_template('other/403.html'), 403
 
 @flask_app.errorhandler(404)
 def page_not_found(e):

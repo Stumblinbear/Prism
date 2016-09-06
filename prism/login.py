@@ -21,18 +21,25 @@ class User(db.Model):
 	username = db.Column(db.String, unique=True)
 	password = db.Column(db.String)
 	name = db.Column(db.String)
+	info = db.Column(db.String)
 	permissions = db.Column(db.String)
 
-	def __init__(self, username, password, name, permissions):
+	def __init__(self, username, password, name, info, permissions):
 		self.username = username
 		self.password = password
 		self.name = name
+		self.info = info
 		self.permissions = permissions
 
 	def get_id(self):
 		return self.user_id
 
 	def has_permission(self, permission):
+		if '.' in permission:
+			# Temp fix for top level nav
+			permission_tmp = permission.split('.', 1)
+			if permission_tmp[0] == permission_tmp[1]:
+				return True
 		return self.permissions == '*' or permission in self.permissions.split(',')
 
 	def add_permission(self, permission):
@@ -51,6 +58,18 @@ class User(db.Model):
 	def is_anonymous(self):
 		return False
 
+	def update(self, username, password, name, info, permissions=''):
+		if username:
+			self.username = username
+		if password:
+			self.password = sha256_crypt.encrypt(password)
+		if info:
+			self.info = info
+		if name:
+			self.name = name
+		self.permissions = permissions
+		db.session.commit()
+
 	def __repr__(self):
 		return '<User %r>' % self.username
 
@@ -58,8 +77,14 @@ class LoginForm(Form):
 	username = StringField('Username', validators=[validators.Required()])
 	password = PasswordField('Password', validators=[validators.Required()])
 
-def create_user(username, password, name, permissions=[]):
-	db.session.add(User(username, sha256_crypt.encrypt(password), name, ','.join(permissions)))
+def create_user(username, password, name, info='', permissions=[]):
+	if not username or not password or not name:
+		flask.flash('Unable to create new user.', 'error')
+		return
+	if prism.login.User.query.filter_by(username=username).first() != None:
+		flask.flash('A user with that username already exists.', 'error')
+		return
+	db.session.add(User(username, sha256_crypt.encrypt(password), name, info, ','.join(permissions)))
 	db.session.commit()
 
 def user():
@@ -99,7 +124,7 @@ def revalidate_login():
 
 	if (flask.request.endpoint and
 		not flask.request.endpoint.startswith('static') and
-		not getattr(flask_app.view_functions[flask.request.endpoint], 'is_public', False) and
+		not getattr(flask_app.view_functions[flask.request.endpoint] if flask.request.endpoint in flask_app.view_functions else None, 'is_public', False) and
 		not is_logged_in()):
 		return flask.redirect(flask.url_for('login'))
 

@@ -35,6 +35,27 @@
 									<li class="footer"><a href="#">View all</a></li>
 								</ul>
 							</li>-->
+			        <li class="dropdown user user-menu">
+			          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+			            <span class="hidden-xs">{{ me.name }}</span>
+			          </a>
+			          <ul class="dropdown-menu">
+			            <li class="user-header" style="height:85px">
+			              <p>
+			                {{ me.name }}
+			                <small>{{ me.info }}</small>
+			              </p>
+			            </li>
+			            <li class="user-footer">
+			              <div class="pull-left">
+			                <a href="{{ url_for('dashboard.UserMeView') }}" class="btn btn-default btn-flat">{{ "prism:me.option.profile" | locale }}</a>
+			              </div>
+			              <div class="pull-right">
+			                <a href="/logout" class="btn btn-default btn-flat">{{ "prism:me.option.logout" | locale }}</a>
+			              </div>
+			            </li>
+			          </ul>
+			        </li>
 							<li>
 								<a href="#" data-toggle="control-sidebar"><i class="fa fa-gears"></i></a>
 							</li>
@@ -58,5 +79,25 @@
 			{% include 'sidebar.html' %}
 		</div>
 		{% include 'footer.html' %}
+		{% with messages = get_flashed_messages(with_categories=true) %}
+			{% if messages %}
+				<script type="text/javascript">
+					$(function() {
+						toastr.options = { "positionClass": "toast-bottom-right" };
+						{% for category, message in messages %}
+							{% if category == 'error' %}
+								toastr.error("{{ message }}");
+							{% elif category == 'warning' %}
+								toastr.warning("{{ message }}");
+							{% elif category == 'success' %}
+								toastr.success("{{ message }}");
+							{% else %}
+								toastr.info("{{ message }}");
+							{% endif %}
+						{% endfor %}
+					});
+				</script>
+			{% endif %}
+		{% endwith %}
 	</body>
 </html>

@@ -46,7 +46,7 @@ class DashboardView(BaseView):
 
 class UserListView(BaseView):
     def __init__(self):
-        BaseView.__init__(self, endpoint='/users/', title='User Management',
+        BaseView.__init__(self, endpoint='/users/list', title='User Management',
                                 menu={'id': 'dashboard.users', 'icon': 'users', 'order': 1})
 
     def get(self, request):
@@ -55,6 +55,7 @@ class UserListView(BaseView):
 
         box1 = BoxElement(title='Create New', icon='user')
         form = FormElement().add(InputElement('Name', 'name')) \
+                            .add(InputElement('Info', 'info')) \
                             .add(InputElement('Username', 'username')) \
                             .add(InputElement('Password', 'password', input_type='password')) \
                             .add(ButtonElement('Create User', button_type='primary'))
@@ -72,6 +73,7 @@ class UserListView(BaseView):
         return view
 
     def post(self, request):
+        prism.login.create_user(request.form['username'], request.form['password'], request.form['name'], request.form['info'])
         return ('dashboard.UserListView')
 
 class UserEditView(BaseView):
@@ -84,7 +86,7 @@ class UserEditView(BaseView):
 
     @subroute('/<user_id>')
     def post(self, request, user_id):
-        print(request.form)
+        prism.login.User.query.get(user_id).update(request.form['username'], request.form['password'], request.form['name'], request.form['info'], request.form['permissions'])
         return ('dashboard.UserEditView', {'user_id': user_id})
 
 class UserMeView(BaseView):
@@ -92,7 +94,7 @@ class UserMeView(BaseView):
         BaseView.__init__(self, endpoint='/users/me', title='Me')
 
     def get(self, request):
-        return ('users/me.html', {'me': prism.login.user()})
+        return ('users/me.html')
 
 class PluginListView(BaseView):
     def __init__(self):
