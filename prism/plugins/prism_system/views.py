@@ -278,7 +278,7 @@ class SystemCronJobsView(BaseView):
             return ('system.cron_jobs')
         else:
             tabfile = request.form['tabfile']
-            obj = parse_cron_widget(CronTab(tabfile=tabfile))
+            obj = parse_cron_widget(request, CronTab(tabfile=tabfile))
             if obj is not None:
                 return obj
 
@@ -291,7 +291,7 @@ class SystemCronJobsView(BaseView):
 
     @subroute('/edit/<int:crontab_id>/<int:cron_id>')
     def edit_post(self, request, crontab_id, cron_id):
-        obj = parse_cron_widget(CronTabs()[crontab_id - 1], cron_id)
+        obj = parse_cron_widget(request, CronTabs()[crontab_id - 1], cron_id)
         if obj is not None:
             return obj
         return ('system.SystemCronJobsView')
