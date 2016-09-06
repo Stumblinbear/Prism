@@ -4,7 +4,8 @@ import prism
 import prism.settings
 import prism.helpers
 
-from prism.api.view import BaseView, subroute, View, RowElement, BoxElement, HTMLElement, LocaleElement, TableElement
+from prism.api.view import BaseView, subroute, View, RowElement, BoxElement, HTMLElement, LocaleElement, TableElement, \
+                            FormElement, InputElement, ButtonElement
 
 
 class DashboardView(BaseView):
@@ -45,11 +46,48 @@ class DashboardView(BaseView):
 
 class UserListView(BaseView):
     def __init__(self):
-        BaseView.__init__(self, endpoint='/users/list', title='User Management',
+        BaseView.__init__(self, endpoint='/users/', title='User Management',
                                 menu={'id': 'dashboard.users', 'icon': 'users', 'order': 1})
 
     def get(self, request):
-        return ('users/list.html', {'users': prism.login.User.query.all(), 'permissions': prism.plugin_manager().possible_permissions})
+        view = View()
+        row = RowElement()
+
+        box1 = BoxElement(title='Create New', icon='user')
+        form = FormElement().add(InputElement('Name', 'name')) \
+                            .add(InputElement('Username', 'username')) \
+                            .add(InputElement('Password', 'password', input_type='password')) \
+                            .add(ButtonElement('Create User', button_type='primary'))
+        box1.add(form)
+        row.add(box1, size=4)
+
+        box2 = BoxElement(title='user.list.header', icon='users', padding=False)
+        box2.add(TableElement(
+                        ['user.list.name', 'user.list.username', 'user.list.actions'],
+                        [(user.name, user.username, '<a href="/dashboard/users/edit/%s"><button class="btn btn-primary btn-sm">Edit User</button></a>' % user.user_id) for user in prism.login.User.query.all()]
+                    ))
+        row.add(box2)
+
+        view.add(row)
+        return view
+
+    def post(self, request):
+        return ('dashboard.UserListView')
+
+class UserEditView(BaseView):
+    def __init__(self):
+        BaseView.__init__(self, endpoint='/users/edit', title='User Editor')
+
+    @subroute('/<user_id>')
+    def get(self, request, user_id):
+        return ('users/edit.html', {'user': prism.login.User.query.get(user_id), 'permissions': prism.plugin_manager().possible_permissions})
+
+class UserMeView(BaseView):
+    def __init__(self):
+        BaseView.__init__(self, endpoint='/users/me', title='Me')
+
+    def get(self, request):
+        return ('users/me.html', {'me': prism.login.user()})
 
 class PluginListView(BaseView):
     def __init__(self):

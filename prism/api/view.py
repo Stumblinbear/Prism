@@ -124,3 +124,35 @@ class TableExtendedElement(ViewElement):
 
 	def render(self):
 		return flask.render_template('views/elements/table_extended.html', view=self, children=self.children)
+
+class FormElement(ViewElement):
+	def __init__(self, inline=False):
+		ViewElement.__init__(self)
+		self.inline = inline
+
+	def render(self):
+		return flask.render_template('views/elements/form/form.html', view=self, children=self.children)
+
+class InputElement(ViewElement):
+	def __init__(self, label, name, input_type='text', placeholder='', help_text=None):
+		ViewElement.__init__(self)
+		self.label = label
+		self.name = name
+		self.input_type = input_type
+		self.placeholder = placeholder
+		self.help_text = help_text
+
+		self.unique_id = prism.generate_random_string(6)
+
+	def render(self):
+		return flask.render_template('views/elements/form/input.html', view=self, children=self.children, unique_id=self.unique_id, label=self.label, name=self.name, input_type=self.input_type, placeholder=self.placeholder)
+
+class ButtonElement(ViewElement):
+	def __init__(self, text='Submit', name='', is_submit=True, button_type='default'):
+		ViewElement.__init__(self)
+		self.text = text
+		self.is_submit = is_submit
+		self.button_type = button_type
+
+	def render(self):
+		return flask.render_template('views/elements/form/button.html', view=self, children=self.children, text=self.text, is_submit=self.is_submit, button_type=self.button_type)

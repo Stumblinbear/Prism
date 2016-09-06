@@ -1,0 +1,10 @@
+<div class="form-group">
+  <label for="{{ unique_id }}">{{ label }}</label>
+  <input type="{{ input_type }}" class="form-control" id="{{ unique_id }}" name="{{ name }}" placeholder="{{ placeholder }}">
+  {% if help_text != None %}
+    <p class="help-block">{{ help_text }}</p>
+  {% endif %}
+	{% for child in children %}
+	  {{ child.render() | safe }}
+	{% endfor %}
+</div>

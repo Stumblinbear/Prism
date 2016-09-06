@@ -1,0 +1,117 @@
+{% extends 'panel.html' %}
+{% block content %}
+<style>
+	*[data-plugin] { cursor: pointer }
+</style>
+<div class="panel panel-default">
+	<div class="panel-heading" role="tab">
+		<h4 class="panel-title">{{ user.name }} <small>({{ user.username }})</small></h4>
+	</div>
+	<form class="panel-body">
+		<input type="hidden" name="username" value="{{ user.user_id }}">
+		<div class="col-md-6">
+			<div class="form-group">
+		    <label for="name">{{ "user.edit.name.label" | locale }}</label>
+		    <input type="text" id="name" class="form-control" name="name" value="{{ user.name }}">
+		  </div>
+			<div class="form-group">
+		    <label for="username">{{ "user.edit.username.label" | locale }}</label>
+		    <input type="text" id="username" class="form-control" name="username" value="{{ user.username }}">
+		  </div>
+			<div class="form-group">
+		    <label for="password">{{ "user.edit.password.label" | locale }}</label>
+		    <input type="password" id="password" class="form-control" name="password" value="gryhjrgdfs">
+		  </div>
+			<hr />
+			<div class="form-group">
+		    <label for="password" class="col-sm-3">{{ "user.edit.terminal.certificate.label" | locale }}</label>
+				<div class="col-sm-8 col-sm-offset-1">
+					<button type="button" id="generate_cert" class="form-control btn btn-info" data-user="{{ user.user_id }}">{{ "user.edit.terminal.certificate.button" | locale }}</button>
+					<p class="help-block">{{ "user.edit.terminal.certificate.help" | locale }}</p>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			{% for plugin_id, views in permissions.items() %}
+				<div class="row">
+					<div class="col-xs-8"><h4>{{ plugin_id }}</h4></div>
+					<div class="col-xs-2 text-center"><b>Allow</b></div>
+					<div class="col-xs-2 text-center"><b>Deny</b></div>
+				</div>
+				{% for view_id, view_title in views.items() %}
+					<div class="row">
+						<div class="col-xs-8">{{ view_title }} <small>({{ view_id }})</small></div>
+						{% set has_perm = user.has_permission(plugin_id + '.' + view_id) %}
+						<div class="col-xs-2 text-center"><i class="fa fa-square{% if not has_perm %}-o{% endif %}" data-user="{{ user.user_id }}" data-plugin="{{ plugin_id }}" data-view="{{ view_id }}" data-action="enable"></i></div>
+						<div class="col-xs-2 text-center"><i class="fa fa-square{% if has_perm %}-o{% endif %}" data-user="{{ user.user_id }}" data-plugin="{{ plugin_id }}" data-view="{{ view_id }}" data-action="disable"></i></div>
+					</div>
+				{% endfor %}
+				{% if loop.index != (permissions | length) %}
+					<hr />
+				{% endif %}
+			{% endfor %}
+		</div>
+		<div class="col-md-12">
+			<hr />
+			<input type="submit" class="btn btn-primary" name="action" value="Save" />
+			{% if user.user_id != 1 %}
+				<input type="submit" class="btn btn-danger pull-right" name="action" value="Delete User" />
+			{% endif %}
+		</div>
+	</form>
+</div>
+<script type="text/javascript">
+	$(function() {
+		all_plugins = {}
+		user_permissions = {}
+
+		$("*[data-view]").each(function() {
+			plugin_id = $(this).data("plugin");
+			if(plugin_id == "*")
+				return;
+			if(all_plugins[plugin_id] == undefined)
+				all_plugins[plugin_id] = []
+
+			plugin_view = $(this).data("view");
+			if(plugin_view == "*")
+				return;
+
+			user_id = $(this).data("user");
+			if(user_permissions[user_id] == undefined)
+				user_permissions[user_id] = []
+			if($(this).hasClass("fa-square"))
+				user_permissions[user_id].push(plugin_id + "." + plugin_view);
+
+			all_plugins[plugin_id].push(plugin_view)
+		});
+
+		$("*[data-plugin]").click(function(e) {
+			e.stopPropagation();
+
+			user_id = $(this).data("user");
+			plugin_id = $(this).data("plugin");
+			plugin_view = $(this).data("view");
+			action = $(this).data("action");
+
+			perm = plugin_id + "." + plugin_view;
+
+			if(action == "enable" && user_permissions[user_id].indexOf(perm) == -1)
+				user_permissions[user_id].push(perm);
+			else if(action == "disable")
+				user_permissions[user_id].splice(user_permissions[user_id].indexOf(perm), 1);
+
+			$("*[data-user=" + user_id + "][data-view=" + plugin_view + "][data-action=disable]").removeClass(action == "disable" ? "fa-square-o" : "fa-square");
+			$("*[data-user=" + user_id + "][data-view=" + plugin_view + "][data-action=disable]").addClass(action == "enable" ? "fa-square-o" : "fa-square");
+			$("*[data-user=" + user_id + "][data-view=" + plugin_view + "][data-action=enable]").removeClass(action == "enable" ? "fa-square-o" : "fa-square");
+			$("*[data-user=" + user_id + "][data-view=" + plugin_view + "][data-action=enable]").addClass(action == "disable" ? "fa-square-o" : "fa-square");
+
+			console.log(user_permissions[user_id].join(","));
+
+			/*$.post(window.location.pathname, { action: "get_settings", id: plugin_id }, function(data) {
+				inputs = "";
+
+			});*/
+		});
+	});
+</script>
+{% endblock %}

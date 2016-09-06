@@ -1,0 +1,5 @@
+<form{% if inline %} class="form-inline"{% endif %} method="POST">
+	{% for child in children %}
+    {{ child.render() | safe }}
+  {% endfor %}
+</form>

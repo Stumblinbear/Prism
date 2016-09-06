@@ -17,3 +17,18 @@ updates.commits.header=Version Commits
 updates.commits.date=Date
 updates.commits.hash=Commit Hash
 updates.commits.changes=Changes
+
+
+user.list.header=User List
+user.list.name=Name
+user.list.username=Username
+user.list.actions=Actions
+
+
+user.edit.name.label=Change Name
+user.edit.username.label=Change Username
+user.edit.password.label=New Password
+
+user.edit.terminal.certificate.label=Terminal
+user.edit.terminal.certificate.button=Generate Certificate
+user.edit.terminal.certificate.help=This will generate a certificate for this account to use the in-browser terminal.
