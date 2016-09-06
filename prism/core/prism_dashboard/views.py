@@ -82,6 +82,11 @@ class UserEditView(BaseView):
     def get(self, request, user_id):
         return ('users/edit.html', {'user': prism.login.User.query.get(user_id), 'permissions': prism.plugin_manager().possible_permissions})
 
+    @subroute('/<user_id>')
+    def post(self, request, user_id):
+        print(request.form)
+        return ('dashboard.UserEditView', {'user_id': user_id})
+
 class UserMeView(BaseView):
     def __init__(self):
         BaseView.__init__(self, endpoint='/users/me', title='Me')

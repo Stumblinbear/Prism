@@ -28,7 +28,3 @@ user.list.actions=Actions
 user.edit.name.label=Change Name
 user.edit.username.label=Change Username
 user.edit.password.label=New Password
-
-user.edit.terminal.certificate.label=Terminal
-user.edit.terminal.certificate.button=Generate Certificate
-user.edit.terminal.certificate.help=This will generate a certificate for this account to use the in-browser terminal.
