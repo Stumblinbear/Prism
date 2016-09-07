@@ -12,6 +12,9 @@ Prism
 
 Prism is an in-development linux server control panel.
 
+.. image:: http://storage2.static.itmages.com/i/16/0907/h_1473259327_6794757_70c40888cb.png
+    :target: https://dl.dropboxusercontent.com/u/62975075/ShareX/2016/09/2016-09-04_15-32-55.mp4
+
 
 Installation
 ------------
