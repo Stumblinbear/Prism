@@ -22,6 +22,12 @@ Installation
 Download or clone the repo to your linux server and start the panel using ``bin/prism-panel``. Then follow the on-screen prompt. *You must be using Python 3.*
 
 
+Plugin Dev
+------------
+
+Take a look at some of the included plugins for an idea on how to use the plugin system!
+
+
 Dependencies
 ------------
 
