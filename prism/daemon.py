@@ -97,8 +97,8 @@ class Daemon:
 				prism.paaf()
 
 			# Finally, start Prism under a self-signed SSL connection
-			self.flask_app.run(host='0.0.0.0', port=9000, debug=True,
+			self.flask_app.run(host='0.0.0.0', port=9000, debug=prism.settings.is_dev(),
 							ssl_context=(ssl_crt, ssl_key))
 		else:
 			prism.output('Warning: Prism is starting under an insecure connection!')
-			self.flask_app.run(host='0.0.0.0', port=9000, debug=True)
+			self.flask_app.run(host='0.0.0.0', port=9000, debug=prism.settings.is_dev())

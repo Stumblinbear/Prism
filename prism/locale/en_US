@@ -10,6 +10,9 @@ start.secret.prompt=Secret Key
 start.secret.generate=Hmm. Okay, I'll try... *thinks for a moment* How about {secret_key}? Yeah, that'll do. Why couldn't you do that? It's kinda fun!
 start.secret.done=Oooo, {secret_key}}? That's a very nice secret. I'll try not to tell anyone. *winks*
 
+start.dev_mode=Okay last thing, (Don't worry, I'm as bored as you) are you a programmer whom is looking to help develop Prism?
+start.dev_mode.prompt=Dev Mode
+
 start.login.username=Hey there, I need to set up your Administrator account. Please send me a username and password, now!
 start.login.username.prompt=Username
 start.login.password.prompt=Password

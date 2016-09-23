@@ -20,6 +20,7 @@ CONFIG_FOLDER_PLUGINS = None
 
 CONFIG_FOLDER = None
 PRISM_CONFIG = {
+		'dev_mode': False,
 		'secret_key': None,
 		'host': None,
 		'enabled': [],
@@ -28,6 +29,9 @@ PRISM_CONFIG = {
 	}
 
 PRISM_LOCALE = None
+
+def is_dev():
+	return 'dev_mode' in PRISM_CONFIG and PRISM_CONFIG['dev_mode']
 
 def import_folders(path):
 	# Snippet to import libraries.
@@ -115,8 +119,15 @@ def init(pid):
 
 		PRISM_CONFIG['secret_key'] = secret_key
 
+		# Dev check
+		prism.output('')
+		prism.output(PRISM_LOCALE['start.dev_mode'])
+		PRISM_CONFIG['dev_mode'] = prism.get_yesno(PRISM_LOCALE['start.dev_mode.prompt'])
+
 		prism.output('')
 		prism.output(PRISM_LOCALE['start.done'])
+		prism.output('')
+
 		conf = JSONConfig(path=config_file)
 		for key, value in PRISM_CONFIG.items():
 			conf[key] = value
@@ -151,14 +162,16 @@ def post_init():
 		# Username and Password prompt
 		prism.output(PRISM_LOCALE['start.login.username'])
 		username, used_default = prism.get_input(PRISM_LOCALE['start.login.username.prompt'], default='admin')
-		password, used_default = prism.get_input(PRISM_LOCALE['start.login.password.prompt'], default='password')
+		password, used_default = prism.get_password(PRISM_LOCALE['start.login.password.prompt'], default='password')
+
 		if used_default:
+			prism.output('')
+
 			prism.output(PRISM_LOCALE['start.login.password.default.1'])
 			time.sleep(2)
 			prism.output(PRISM_LOCALE['start.login.password.default.2'])
 			time.sleep(5)
 			prism.output(PRISM_LOCALE['start.login.password.default.3'])
-			prism.output('')
 
 		prism.output('')
 		prism_login.create_user(username, password, username.capitalize(), 'Main Administrator', ['*'])

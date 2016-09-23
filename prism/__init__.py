@@ -333,7 +333,8 @@ class PluginManager:
 										view.title,
 										view.menu['order'],
 										icon=view.menu['icon'])
-						prism.output('Registered menu item for /%s: %s' % (blueprint_name + view.endpoint, view.menu['id']))
+						if prism.settings.is_dev():
+							prism.output('Registered menu item for /%s: %s' % (blueprint_name + view.endpoint, view.menu['id']))
 					else:
 						# Generate a hidden menu item so titles show correctly
 						item = current_menu.submenu(generate_random_string(12))
@@ -423,7 +424,8 @@ class PluginManager:
 								except:
 									pass
 
-						prism.output('Registered page /%s: %s %s' % (blueprint_name + view.endpoint + route['endpoint'], blueprint_name + '.' + endpoint_id, route['http_methods']))
+						if prism.settings.is_dev():
+							prism.output('Registered page /%s: %s %s' % (blueprint_name + view.endpoint + route['endpoint'], blueprint_name + '.' + endpoint_id, route['http_methods']))
 
 						plugin._blueprint.add_url_rule(view.endpoint + route['endpoint'],
 														endpoint=endpoint_id,
@@ -548,6 +550,30 @@ def get_input(string, default=None, allow_empty=True):
 	if not user_input:
 		return (default, True)
 	return (user_input, False)
+
+def get_password(string, default=None, allow_empty=True):
+	import getpass
+	""" Gets input from the user in the shell """
+	if default:
+		string = string + '[' + default + ']'
+
+	while True:
+		user_input = getpass.getpass('::| %s: ' % string)
+		if user_input or allow_empty:
+			break
+	if not user_input:
+		return (default, True)
+	return (user_input, False)
+
+def get_yesno(string):
+	ret = None
+	while ret is None:
+		user_input = input('::| %s [y/n]: ' % string)
+		if user_input == "yes" or user_input == "y":
+			ret = True
+		elif user_input == "no" or user_input == "n":
+			ret = False
+	return ret
 
 def generate_random_string(length):
 	""" Returns a string of random characters of size "length" """
