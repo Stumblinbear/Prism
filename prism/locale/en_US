@@ -10,7 +10,7 @@ start.secret.prompt=Secret Key
 start.secret.generate=Hmm. Okay, I'll try... *thinks for a moment* How about {secret_key}? Yeah, that'll do. Why couldn't you do that? It's kinda fun!
 start.secret.done=Oooo, {secret_key}}? That's a very nice secret. I'll try not to tell anyone. *winks*
 
-start.login.username=Okay, next. (Don't worry, I'm as bored as you...) It says here I need to ask you for a username and password. So?
+start.login.username=Hey there, I need to set up your Administrator account. Please send me a username and password, now!
 start.login.username.prompt=Username
 start.login.password.prompt=Password
 start.login.password.default.1=You've done this before, haven't you? :3
@@ -21,7 +21,6 @@ start.done=All done! I'll write this to the config file and send you on your way
 
 start.missing.secret=Your secret appears to be absent from your config! Don't worry, I'll generate one for you, just be mindful not to remove it in the future...
 start.missing.host=You don't have a host set in your config. Please tell me one, or nothing will work! ;-;
-start.missing.login=You don't seem to have any users in the database! Please send me a username and password now.
 
 
 login.welcome=Welcome to **Prism**

@@ -8,7 +8,6 @@ import prism
 from .version import get_new_versions
 from .config import JSONConfig, LocaleConfig
 
-
 PANEL_PID = None
 PRISM_PATH = None
 TMP_PATH = None
@@ -116,21 +115,6 @@ def init(pid):
 
 		PRISM_CONFIG['secret_key'] = secret_key
 
-		# Username and Password prompt
-		prism.output('')
-		prism.output(PRISM_LOCALE['start.login.username'])
-		username, used_default = prism.get_input(PRISM_LOCALE['start.login.username.prompt'], default='admin')
-		password, used_default = prism.get_input(PRISM_LOCALE['start.login.password.prompt'], default='password')
-		if used_default:
-			prism.output(PRISM_LOCALE['start.login.password.default.1'])
-			time.sleep(2)
-			prism.output(PRISM_LOCALE['start.login.password.default.2'])
-			time.sleep(5)
-			prism.output(PRISM_LOCALE['start.login.password.default.3'])
-			prism.output('')
-
-		prism_login.create_user(username, password, username.capitalize(), 'Main Administrator', ['*'])
-
 		prism.output('')
 		prism.output(PRISM_LOCALE['start.done'])
 		conf = JSONConfig(path=config_file)
@@ -163,15 +147,26 @@ def post_init():
 	import prism.login as prism_login
 	if prism_login.User.query.count() == 0:
 		prism.output('')
-		prism.output(PRISM_LOCALE['start.missing.login'])
+
+		# Username and Password prompt
+		prism.output(PRISM_LOCALE['start.login.username'])
 		username, used_default = prism.get_input(PRISM_LOCALE['start.login.username.prompt'], default='admin')
 		password, used_default = prism.get_input(PRISM_LOCALE['start.login.password.prompt'], default='password')
+		if used_default:
+			prism.output(PRISM_LOCALE['start.login.password.default.1'])
+			time.sleep(2)
+			prism.output(PRISM_LOCALE['start.login.password.default.2'])
+			time.sleep(5)
+			prism.output(PRISM_LOCALE['start.login.password.default.3'])
+			prism.output('')
+
 		prism.output('')
 		prism_login.create_user(username, password, username.capitalize(), 'Main Administrator', ['*'])
 
 def generate_certificate():
 	import subprocess
 
+	prism.output('')
 	script = """
 		cd {0}/tmp;
 		openssl genrsa -des3 -out prism.key -passout pass:1234 2048;
@@ -184,6 +179,7 @@ def generate_certificate():
 		rm prism.*;
 	""".format(PRISM_PATH, PRISM_CONFIG['host'], CONFIG_FOLDER)
 	subprocess.call(script, shell=True)
+	prism.output('')
 
 def ping_version(output=False):
 	global PRISM_VERSIONING

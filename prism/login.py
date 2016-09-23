@@ -81,7 +81,7 @@ def create_user(username, password, name, info='', permissions=[]):
 	if not username or not password or not name:
 		flask.flash('Unable to create new user.', 'error')
 		return
-	if prism.login.User.query.filter_by(username=username).first() != None:
+	if prism.login.User.query.filter_by(username=username).first() is not None:
 		flask.flash('A user with that username already exists.', 'error')
 		return
 	db.session.add(User(username, sha256_crypt.encrypt(password), name, info, ','.join(permissions)))
