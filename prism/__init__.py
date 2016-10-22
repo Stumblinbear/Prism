@@ -288,6 +288,13 @@ class PluginManager:
 			3. Loads the plugin's endpoints into flask
 		"""
 		poof('Starting %s v%s' % (plugin.name, plugin.version))
+
+		def get_wrapper(plugin):
+			def func():
+				return plugin
+			return func
+		setattr(plugin.__class__, 'get', get_wrapper(plugin))
+
 		plugin.init(PRISM_STATE)
 		plugin.config.save()
 
@@ -435,6 +442,8 @@ class PluginManager:
 
 			flask_app().register_blueprint(plugin._blueprint, url_prefix='/' +
 																blueprint_name.replace('.', '/'))
+
+		plugin.post_init(PRISM_STATE)
 
 		paaf()
 
@@ -589,8 +598,8 @@ def is_package_installed(pkg):
 						'pkg_info | grep %s' % pkg)
 	return (len(output) > 0)
 
-def get_os_command(redhat, debian=None, bsd=None):
-	if debian is None and bsd is None:
+def get_os_command(redhat, debian=None, ubuntu=None):
+	if debian is None and ubuntu is None:
 		return redhat
 
 	os = get_general_os()
@@ -599,18 +608,18 @@ def get_os_command(redhat, debian=None, bsd=None):
 	elif os == 'debian':
 		return debian
 	else:
-		return bsd
+		return ubuntu
 
-def os_command(redhat, debian=None, bsd=None):
+def os_command(redhat, debian=None, ubuntu=None):
 	""" Runs a command based on the OS currently in use """
-	return subprocess.Popen(get_os_command(redhat, debian, bsd), shell=True, stdout=PIPE).stdout.read()
+	return subprocess.Popen(get_os_command(redhat, debian, ubuntu), shell=True, stdout=PIPE).stdout.read()
 
 # Returns if the OS is a Debian, Red Hat, or BSD derivative
 def get_general_os():
 	""" Gets a simple name of the current linux operating system """
 	if any(word in platform.platform() for word in ("redhat", "centos", "fedora")):
 		return 'redhat'
-	elif any(word in platform.platform() for word in ("freebsd", "openbsd")):
-		return 'bsd'
+	elif any(word in platform.platform() for word in ("ubuntu")):
+		return 'ubuntu'
 	else:
 		return 'debian'
