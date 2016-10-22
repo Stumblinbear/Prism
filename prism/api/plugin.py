@@ -92,6 +92,10 @@ class BasePlugin(object):
 	def init(self, prism_state):
 		pass
 
+	# Called after the plugin's blueprint and menu items are registered'.
+	def post_init(self, prism_state):
+		pass
+
 class Settings(object):
 	""" Used by plugins to allow user settings """
 	def __init__(self, plugin):
