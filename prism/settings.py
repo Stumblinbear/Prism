@@ -234,9 +234,13 @@ def ping_version(output=False):
 				PRISM_VERSIONING['last_check'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 	if output or should_check:
-		if len(PRISM_VERSIONING['dev_changes']) > 0:
+		if PRISM_VERSIONING['dev_changes'] is None:
+			prism.output('Failed to check development version.')
+		elif len(PRISM_VERSIONING['dev_changes']) > 0:
 			prism.output('%s development commit(s) since the latest version.' % len(PRISM_VERSIONING['dev_changes']))
-		if len(PRISM_VERSIONING['recent_releases']) != 0:
+		if PRISM_VERSIONING['recent_releases'] is None:
+			prism.output('Failed to check for latest version.')
+		elif len(PRISM_VERSIONING['recent_releases']) != 0:
 			prism.poof('Current version: %s' % prism.__version__)
 			if prism.__version__ != PRISM_VERSIONING['recent_releases'][0]['name']:
 				prism.output('Your version is out of date. Latest version is %s' % PRISM_VERSIONING['recent_releases'][0]['name'])
