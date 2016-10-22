@@ -1,0 +1,35 @@
+{% extends 'panel.html' %}
+{% block title %}{% endblock %}
+{% block content %}
+<h2 class="text-center">Select a Configuration</h2>
+<div class="row">
+  {% for config in default_configs %}
+    <div class="col-md-3">
+      <div class="box box-primary">
+        <form method="POST">
+          <div class="box-body box-primary">
+            <center>
+              <img class="img-responsive" style="max-height:125px" src="/static/plugin/jack/{{ config.type_id }}.png" />
+            </center>
+            <hr />
+            <div class="text-muted text-center">
+              {{ config.description }}
+            </div>
+            <hr />
+            <input type="hidden" name="site_type" value="{{ config.type_id }}" />
+            {% for option in config.options %}
+              <div class="form-group">
+                <label for="{{ option[0] }}">{{ option[1] }}</label>
+                <input type="text" id="{{ option[0] }}" class="form-control" name="{{ option[0] }}" placeholder="{{ option[2] }}" />
+              </div>
+            {% endfor %}
+          </div>
+          <div class="box-footer">
+            <button class="btn btn-primary btn-block"{% if config.disabled %} disabled{% endif %}>Create</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends 'view/base.html' %}
+{% block title_right %}<small>Reverse Proxy</small>{% endblock %}
+{% block config_content %}
+<div class="form-group">
+  <label for="proxy_to">Proxy To</label>
+  <input type="text" id="proxy_to" class="form-control" name="proxy_to" placeholder="http://example.com/" value="{{ config.nginx.server.locations[0].keys[0].value }}" />
+</div>
+{% endblock %}

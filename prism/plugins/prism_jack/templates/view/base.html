@@ -1,0 +1,108 @@
+{% extends 'panel.html' %}
+{% block title %}Site: {{ config.site_id }}{% endblock %}
+{% block content %}
+<div class="row">
+	<div class="col-md-7 col-md-offset-1">
+		<div class="nav-tabs-custom">
+			<ul class="nav nav-tabs">
+				<li class="active"><a href="#general" data-toggle="tab">General</a></li>
+				{% block config_tab_list %}{% endblock %}
+				<li><a href="#sql" data-toggle="tab">SQL</a></li>
+			</ul>
+			<div class="tab-content">
+				<div class="tab-pane active" id="general">
+					<form id="baseform" method="POST">
+						<div class="form-group">
+							<label for="site_id">Site ID</label>
+							<input type="text" id="site_id" class="form-control" name="site_id" value="{{ config.site_id }}" disabled/>
+						</div>
+						<div class="form-group">
+							<label for="url_endpoint">URL Endpoint</label>
+							<input type="text" id="url_endpoint" class="form-control" name="url_endpoint" placeholder="example.com" value="{{ config.nginx.server.filter(name='server_name')[0].value }}" />
+						</div>
+						{% block config_content %}{% endblock %}
+						<hr />
+						<div class="form-group">
+							<button type="submit" name="update" class="btn btn-primary pull-right">Submit</button>
+							<button type="submit" id="delete" name="delete" class="btn btn-danger">Delete</button>
+						</div>
+						<script type="text/javascript">
+							$(function() {
+								var confirm = true;
+								$('#delete').click(function(e) {
+									if(!confirm)
+										return true;
+									e.preventDefault();
+
+									swal({
+										title: 'Are you sure?',
+										text: "This action cannot be undone.",
+										type: 'warning',
+										showCancelButton: true,
+										confirmButtonColor: '#3085d6',
+										cancelButtonColor: '#d33',
+										confirmButtonText: 'Yes, I\'m sure.'
+									}).then(function() {
+										confirm = false;
+										$('#delete').click();
+									});
+								});
+							});
+						</script>
+					</form>
+				</div>
+				{% block config_tab_panes %}{% endblock %}
+				<div class="tab-pane" id="sql">
+
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-3">
+		<div class="box box-info">
+			<div class="box-header">
+				<h3 class="box-title">Site Status</h3>
+			</div>
+			<div id="status_body" class="box-body text-center">
+
+			</div>
+			<div id="status_overlay" class="overlay">
+				<i class="fa fa-refresh fa-spin"></i>
+			</div>
+			<script type="text/javascript">
+				$(function() {
+					$.ajax({
+						timeout: 5000,
+						type: 'GET',
+						dataType: 'jsonp',
+						url: 'http://{{ config.nginx.server.filter(name='server_name')[0].value }}',
+						cache: false,
+						error: function(XMLHttpRequest, textStatus, errorThrown) {
+							if(errorThrown == "timeout")
+								$('#status_body').html('<i class="fa fa-4 fa-times"></i>');
+						},
+						complete: function(data) {
+							$('#status_overlay').remove();
+							console.log(data);
+						},
+						statusCode: {
+							404: function() {
+								$('#status_body').html('<i class="fa fa-5x fa-exclamation-triangle text-warning"></i><hr /><h3>Received a 404 error!</h3>');
+							},
+							0: function() {
+								$('#status_body').html('<i class="fa fa-5x fa-thumbs-down text-danger"></i><hr /><h3>Your site is not online!</h3>');
+							},
+							500: function() {
+								$('#status_body').html('<i class="fa fa-5x fa-exclamation-triangle text-warning"></i><hr /><h3>Received an Internal Server Error!</h3>');
+							},
+							200: function() {
+								$('#status_body').html('<i class="fa fa-5x fa-thumbs-up text-success"></i><hr /><h3>Your site is online!</h3>');
+							}
+						}
+					});
+				});
+			</script>
+		</div>
+	</div>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{
+    "version": [ 1, 0, 0, "indev" ],
+
+    "icon": "plug",
+    "name": "Jack",
+    "description": "Manage your web server.",
+
+    "dependencies": {
+        "binary": [
+            "nginx",
+            "php-fpm"
+        ],
+        "module": [
+            "python-nginx",
+            "gunicorn"
+        ]
+    }
+}
