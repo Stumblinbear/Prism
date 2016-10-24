@@ -4,7 +4,7 @@
 <h2 class="text-center">Select a Configuration</h2>
 <div class="row">
   {% for config in default_configs %}
-    <div class="col-md-3">
+    <div class="col-md-4 col-lg-3">
       <div class="box box-primary">
         <form method="POST">
           <div class="box-body box-primary">
@@ -19,7 +19,7 @@
             <input type="hidden" name="site_type" value="{{ config.type_id }}" />
             {% for option in config.options %}
               <div class="form-group">
-                <label for="{{ option[0] }}">{{ option[1] }}</label>
+                <center><label for="{{ option[0] }}">{{ option[1] }}</label></center>
                 <input type="text" id="{{ option[0] }}" class="form-control" name="{{ option[0] }}" placeholder="{{ option[2] }}" />
               </div>
             {% endfor %}
