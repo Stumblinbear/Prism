@@ -92,7 +92,7 @@ class PluginManager:
 		self._search_plugins(settings.PLUGINS_PATH, False)
 		paaf()
 
-		self._sort_dependencies()
+		self._verify_dependencies()
 
 		poof('Loading')
 		self._load_plugins()
@@ -181,15 +181,21 @@ class PluginManager:
 
 				self.available_plugins[plugin_id] = plugin_info
 
-	def _sort_dependencies(self):
+	def _verify_dependencies(self):
 		# These will always be initialized.
-		poof('Sorting dependencies')
-		installed_packages = pip.get_installed_distributions()
-		installed_packages_list = sorted([i.key for i in installed_packages])
+		poof('Verifying dependencies')
+		installed_packages_list = sorted([i.key for i in pip.get_installed_distributions()])
 		for plugin_id, plugin_info in self.available_plugins.items():
 			if not plugin_info['_is_core']:
 				if 'dependencies' not in plugin_info:
 					continue
+
+				if 'plugin' in plugin_info['dependencies']:
+					for depend_name in plugin_info['dependencies']['plugin']:
+						installed = 'prism_' + depend_name in self.available_plugins
+						if not installed:
+							plugin_info['_is_satisfied'] = False
+						plugin_info['_dependencies'].append(('plugin', depend_name, installed))
 
 				if 'binary' in plugin_info['dependencies']:
 					for depend_name in plugin_info['dependencies']['binary']:
@@ -234,6 +240,25 @@ class PluginManager:
 
 			plugins_loaded.append(plugin)
 		paaf()
+
+		output('Sorting dependencies')
+		sorted_plugins = []
+		while plugins_additional:
+			for plugin in plugins_additional:
+				ready_add = True
+				if 'dependencies' in plugin and 'plugin' in plugin['dependencies']:
+					for dependency in plugin['dependencies']['plugin']:
+						found = False
+						for ready_plugin in sorted_plugins:
+							if ready_plugin['id'] == dependency:
+								found = True
+								break
+						if not found:
+							ready_add = False
+				if ready_add:
+					sorted_plugins.append(plugin)
+					plugins_additional.remove(plugin)
+		plugins_additional = sorted_plugins
 
 		poof('Loading %s additional plugin(s)' % len(plugins_additional))
 		# Start plugins if they're set to be enabled.
@@ -511,21 +536,6 @@ def get_url_for(url, **args):
 		return flask.url_for(url, **args)
 	except:
 		return None
-
-def restart():
-	""" Safely restart prism """
-	import psutil
-	import logging
-
-	try:
-		p = psutil.Process(os.getpid())
-		for handler in p.get_open_files() + p.connections():
-			os.close(handler.fd)
-	except Exception as e:
-		logging.error(e)
-
-	python = sys.executable
-	os.execl(python, python, *sys.argv)
 
 def command(cmd):
 	""" Runs a shell command and returns the output """
