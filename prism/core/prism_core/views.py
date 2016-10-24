@@ -33,11 +33,29 @@ class RestartView(BaseView):
     def post(self, request):
         action = request.form['action']
         if action == '0':
-            threading.Timer(.5, prism.restart).start()
             prism.settings.PRISM_CONFIG.save()
+            flask.request.environ.get('werkzeug.server.shutdown')()
+            threading.Timer(.5, self.restart).start()
             return '0'
         else:
             return '1'
+
+    def restart(self):
+        """ Safely restart prism """
+        import os
+        import sys
+        import psutil
+        import logging
+
+        try:
+            p = psutil.Process(os.getpid())
+            for handler in p.get_open_files() + p.connections():
+                os.close(handler.fd)
+        except Exception as e:
+            logging.error(e)
+
+        python = sys.executable
+        os.execl(python, python, *sys.argv)
 
 class TerminalView(BaseView):
     def __init__(self):
