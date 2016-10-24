@@ -1,5 +1,7 @@
 import flask
 import jinja2
+
+import prism
 from prism.api.plugin import BasePlugin
 
 from .views import *
