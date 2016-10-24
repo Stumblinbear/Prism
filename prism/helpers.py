@@ -51,6 +51,10 @@ def convert_bytes_format(size, format):
 def convert_bytes(size):
 	return convert_bytes_format(size, True)
 
+@flask_app.template_filter()
+def hide_none(size):
+	return size if size is not None else ''
+
 class HTMLFragmentTranslator(HTMLTranslator):
 	def __init__(self, document):
 		HTMLTranslator.__init__(self, document)
