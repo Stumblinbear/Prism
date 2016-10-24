@@ -2,7 +2,11 @@
 {% block title_right %}<small>Reverse Proxy</small>{% endblock %}
 {% block config_content %}
 <div class="form-group">
+  <label for="url_endpoint">URL Endpoint</label>
+  <input type="text" id="url_endpoint" class="form-control" name="url_endpoint" placeholder="example.com" value="{{ config.url_endpoint | hide_none }}" />
+</div>
+<div class="form-group">
   <label for="proxy_to">Proxy To</label>
-  <input type="text" id="proxy_to" class="form-control" name="proxy_to" placeholder="http://example.com/" value="{{ config.nginx.server.locations[0].keys[0].value }}" />
+  <input type="text" id="proxy_to" class="form-control" name="proxy_to" placeholder="http://example.com/" value="{{ config.locations['/'].proxy_pass | hide_none }}" />
 </div>
 {% endblock %}

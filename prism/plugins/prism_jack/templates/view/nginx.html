@@ -1,5 +1,8 @@
 {% extends 'view/base.html' %}
 {% block title_right %}<small>Nginx</small>{% endblock %}
 {% block config_content %}
-
+<div class="form-group">
+  <label for="url_endpoint">URL Endpoint</label>
+  <input type="text" id="url_endpoint" class="form-control" name="url_endpoint" placeholder="example.com" value="{{ config.url_endpoint | hide_none }}" />
+</div>
 {% endblock %}
