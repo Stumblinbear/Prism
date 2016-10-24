@@ -42,6 +42,10 @@ class JSONConfig(object):
             with open(self.path, 'w') as file:
                 json.dump(config, file, indent=4, sort_keys=True)
 
+    def delete(self):
+        if os.path.exists(self.path):
+            os.remove(self.path)
+
     def get(self, key, default=None):
         if key not in self.__dict__:
             return default
