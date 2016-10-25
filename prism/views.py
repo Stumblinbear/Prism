@@ -56,16 +56,7 @@ def plugin_static(plugin_id, static_file):
 	plugin = prism.get_plugin(plugin_id)
 	if plugin is None:
 		return 'Unknown plugin: %s' % plugin_id
-
-	plugin_id = 'prism_' + plugin_id
-
-	if plugin.is_core:
-		static_dir = os.path.join(prism.settings.CORE_PLUGINS_PATH, plugin_id)
-	else:
-		static_dir = os.path.join(prism.settings.PLUGINS_PATH, plugin_id)
-
-	static_dir = os.path.join(static_dir, 'static')
-	return flask.send_from_directory(static_dir, static_file)
+	return flask.send_from_directory(plugin.static_folder, static_file)
 
 @flask_app.errorhandler(403)
 def permission_denied(e):

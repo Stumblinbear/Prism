@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import nginx
 from flask import request
 from flask_menu import current_menu
@@ -45,6 +46,10 @@ class NginxManager:
         self.config_location = self._jack_plugin.config('nginx-site-loc', '/etc/nginx/conf.d/')
         # The location that we store website files and logs
         self.site_files_location = self._jack_plugin.config('site-files-loc', '/var/www/')
+        # Copy over the defalt folder to the site file location folder
+        self.sites_default = os.path.join(self.site_files_location, 'default')
+        if not os.path.exists(self.sites_default):
+            shutil.copytree(os.path.join(self._jack_plugin.plugin_folder, 'default'), self.sites_default)
 
         # Load all the json configs located in jack's sites folder
         self.configs = {}
@@ -52,14 +57,14 @@ class NginxManager:
             for i, file_name in enumerate(os.listdir(self.config_folder)):
                 site_config = JSONConfig(self.config_folder, file_name)
                 self.configs[file_name[:-5]] = site_config
-                self.create_menu_item(item, site_config['id'], site_config['uuid'], i + 1)
+                self.create_menu_item(site_config['id'], site_config['uuid'], i + 1)
 
         # On startup, replace all the nginx configurations with the json configs
         self.rebuild_sites()
 
-    def create_menu_item(self, item, site_id, uuid, order):
+    def create_menu_item(self, site_id, uuid, order):
         """ Creates the site's menu item """
-        def site_overview_construct():
+        def site_overview_construct(site_uuid):
             """ Generates a function which wraps the menu item's argument variable """
             def wrapper():
                 return {'site_uuid': site_uuid}
@@ -89,7 +94,7 @@ class NginxManager:
 
         self.configs[site_config['uuid']] = site_config
 
-        self.create_menu_item(item, site_config['id'], site_config['uuid'], len(self.configs))
+        self.create_menu_item(site_config['id'], site_config['uuid'], len(self.configs))
 
         return site_config
 
@@ -103,7 +108,7 @@ class NginxManager:
         # Remove the jack configuration file
         os.remove(os.path.join(self.config_location, site_uuid + '.conf'))
         # Remove the site folder
-        os.remove(os.path.join(self.site_files_location, uuid))
+        os.remove(os.path.join(self.site_files_location, site_uuid))
 
         # Gets the default configuration the site used
         # and runs its delete method for cleanup
@@ -115,6 +120,10 @@ class NginxManager:
 
     def rebuild_sites(self):
         """ Turns jack's site json files into useable nginx configuration files """
+
+        # Make sure nginx can access the default folder
+        prism.os_command('chown -R nginx:nginx %s' % self.sites_default)
+
         for uuid, config in self.configs.items():
             maintenance_mode = 'maintenance' in config and config['maintenance']
 
@@ -137,6 +146,9 @@ class NginxManager:
             root_folder = os.path.join(site_folder, 'public_html')
             if not os.path.exists(root_folder):
                 os.makedirs(root_folder)
+
+            # Make sure nginx can access the folder
+            prism.os_command('chown -R nginx:nginx %s' % site_folder)
 
             # Sets the root and logs to the site's folder
             server_block.add(nginx.Key('root', root_folder))
@@ -162,18 +174,15 @@ class NginxManager:
                     server_block.add(nginx.Location(path, *location_items))
 
             # Error page blocks
-            jack_static = os.path.join(self._jack_plugin.data_folder, 'static/')
+            server_block.add(nginx.Key('error_page', '400 /error/400.html'))
+            server_block.add(nginx.Key('error_page', '403 /error/403.html'))
             server_block.add(nginx.Key('error_page', '404 /error/404.html'))
-            server_block.add(nginx.Location('= /error/404.html',
-                        nginx.Key('root', jack_static),
-                        nginx.Key('internal', '')))
+            server_block.add(nginx.Key('error_page', '408 /error/408.html'))
             server_block.add(nginx.Key('error_page', '500 /error/500.html'))
-            server_block.add(nginx.Location('= /error/500.html',
-                        nginx.Key('root', jack_static),
-                        nginx.Key('internal', '')))
+            server_block.add(nginx.Key('error_page', '502 /error/502.html'))
             server_block.add(nginx.Key('error_page', '503 /error/503.html'))
-            server_block.add(nginx.Location('= /error/503.html',
-                        nginx.Key('root', jack_static),
+            server_block.add(nginx.Location('^~ /error/',
+                        nginx.Key('root', self.sites_default),
                         nginx.Key('internal', '')))
 
             nginx_config.add(server_block)

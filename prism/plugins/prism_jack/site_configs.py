@@ -32,9 +32,6 @@ class ReverseProxyConfig(SiteTypeConfig):
                             'proxy_temp_file_write_size': '64k'
                         }
 
-    def delete(self, site_config):
-        pass
-
     def post(self, request, site_config):
         if not request.form['hostname']:
             return 'Must specify a hostname.'
@@ -43,23 +40,31 @@ class ReverseProxyConfig(SiteTypeConfig):
         site_config['hostname'] = request.form['hostname']
         site_config['locations']['/']['proxy_pass'] = request.form['proxy_to']
 
-class AdvancedConfig(SiteTypeConfig):
-    def __init__(self):
-        SiteTypeConfig.__init__(self, 'nginx', 'Advanced', 'Gives complete access to all configuration items.')
-
     def delete(self, site_config):
         pass
 
+class AdvancedConfig(SiteTypeConfig):
+    def __init__(self):
+        SiteTypeConfig.__init__(self, 'nginx', 'Advanced', 'Gives complete access to all configuration items.', [('hostname', 'Hostname', 'example.com')])
+
+    def generate(self, site_config, site_id, hostname):
+        site_config['hostname'] = hostname
+        site_config['index'] = 'index.html'
+
     def post(self, request, site_config):
         site_config['hostname'] = request.form['hostname']
+        site_config['hostname'] = hostname
+
+    def delete(self, site_config):
+        pass
 
 class DirectConfig(SiteTypeConfig):
     def __init__(self):
         SiteTypeConfig.__init__(self, 'direct', 'Direct Configuration', 'No hand-holding. Gives direct access to configuration files.')
         self.disabled = True
 
-    def delete(self, site_config):
+    def post(self, request, site_config):
         pass
 
-    def post(self, request, site_config):
+    def delete(self, site_config):
         pass

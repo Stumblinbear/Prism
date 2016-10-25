@@ -1,0 +1,17 @@
+<html>
+  <head>
+    <title>502: Bad Gateway</title>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" />
+    <style>
+      body { font-family: Verdana, Geneva, sans-serif; background-color: #EEE; } h1 { margin: -10px 0 0; text-align: right; font-size: 4em; } i.fa { float: left; margin-top: -5px; color: #AAA; transform: translateY(50%); } small { display: block; color: #777; font-size: 40%; font-weight: normal; } hr { height: 0; border: 0; border-top: 1px solid rgba(0, 0, 0, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.3); } p { margin: 35px 0; color: #555; font-size: .9em; font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif; } [role="button"] { display: block; padding: 10px 20px; color: #FFF; text-align: center; text-decoration: none; background-color: #CC3333; cursor: pointer; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; } [role="button"]:hover { background-color: #AA2222; } @media (min-width: 600px) { #container { position: absolute; top: 50%; left: 50%; width: 560px; margin: 0 auto; padding: 20px; box-shadow: 0 0 3px #888; transform: translateX(-50%) translateY(-60%); } }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <h1><i class="fa fa-bolt"></i> 502<small>Bad Gateway</small></h1>
+      <hr />
+      <p>The server returned an invalid or incomplete reponse.</p>
+      <a href="#" onclick="javascript:if(document.referrer == ''){window.location='/'}else{window.history.go(-1)}" role="button">Return</a>
+    </div>
+  </body>
+</html>

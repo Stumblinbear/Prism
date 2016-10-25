@@ -88,6 +88,10 @@ class BasePlugin(object):
 		return os.path.join(prism.settings.PLUGINS_PATH if not self.is_core else prism.settings.CORE_PLUGINS_PATH,
 								self._info['_id'])
 
+	@property
+	def static_folder(self):
+		return os.path.join(self.plugin_folder, 'static')
+
 	# Called when the plugin is enabled.
 	def init(self, prism_state):
 		pass
