@@ -8,16 +8,17 @@ import prism
 from .version import get_new_versions
 from .config import JSONConfig, LocaleConfig
 
+# The process ID of the panel
 PANEL_PID = None
+# The path to prism's base folder
 PRISM_PATH = None
+# The path to the tmp directory in prism's base folder
 TMP_PATH = None
 
+# Holds information regarding the current and dev versions
 PRISM_VERSIONING = None
 
-CORE_PLUGINS_PATH = None
-PLUGINS_PATH = None
-CONFIG_FOLDER_PLUGINS = None
-
+# Prism's own config information
 CONFIG_FOLDER = None
 PRISM_CONFIG = {
 		'dev_mode': False,
@@ -28,6 +29,12 @@ PRISM_CONFIG = {
 		'enabled_plugins': []
 	}
 
+# Plugin path information
+CORE_PLUGINS_PATH = None
+PLUGINS_PATH = None
+CONFIG_FOLDER_PLUGINS = None
+
+# The current locale selected
 PRISM_LOCALE = None
 
 def is_dev():

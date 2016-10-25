@@ -1,0 +1,16 @@
+{
+    "version": [ 1, 0, 0, "indev" ],
+
+    "icon": "wheelchair",
+    "name": "Jack PHP Config",
+    "description": "Adds default PHP configuration to Jack.",
+
+    "dependencies": {
+        "plugin": [
+            "jack"
+        ],
+        "binary": [
+            "php-fpm"
+        ]
+    }
+}

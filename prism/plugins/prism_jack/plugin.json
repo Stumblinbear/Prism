@@ -7,12 +7,10 @@
 
     "dependencies": {
         "binary": [
-            "nginx",
-            "php-fpm"
+            "nginx"
         ],
         "module": [
-            "python-nginx",
-            "gunicorn"
+            "python-nginx"
         ]
     }
 }

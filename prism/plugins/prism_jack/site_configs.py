@@ -2,60 +2,14 @@ import nginx
 
 import prism
 
-from . import JackPlugin
+from . import SiteTypeConfig
 
-class DefaultConfig:
-    def __init__(self, type_id, description, options=[]):
-        self.disabled = False
-        self.type_id = type_id
-        self.description = description
-
-        self.options = [('site_id', 'Site ID')] + options
-
-    def generate(self, site_config, site_id):
-        pass
-
-    def delete(self, site_config):
-        pass
-
-class PHPConfig(DefaultConfig):
+class ReverseProxyConfig(SiteTypeConfig):
     def __init__(self):
-        DefaultConfig.__init__(self, 'php', 'Use this option if you wish to set up a website created using PHP.', [('url_endpoint', 'URL Endpoint', 'example.com')])
-        self.disabled = True
+        SiteTypeConfig.__init__(self, 'reverseproxy', 'Reverse Proxy', 'Set up a website as a reverse proxy.', [('hostname', 'Hostname', 'example.com'), ('proxy_to', 'Proxy To', 'http://example.com/')])
 
-    def generate(self, site_config, site_id, url_endpoint):
-        if not request.form['url_endpoint']:
-            return 'Must specify a URL endpoint.'
-        site_config['url_endpoint'] = request.form['url_endpoint']
-
-    def delete(self, site_config):
-        pass
-
-    def post(self, request, site_config):
-        pass
-
-class GUnicornConfig(DefaultConfig):
-    def __init__(self):
-        DefaultConfig.__init__(self, 'gunicorn', 'Use this option if you wish to set up a website created using Python scripts.', [('url_endpoint', 'URL Endpoint', 'example.com')])
-        self.disabled = True
-
-    def generate(self, site_config, site_id, url_endpoint):
-        if not request.form['url_endpoint']:
-            return 'Must specify a URL endpoint.'
-        site_config['url_endpoint'] = request.form['url_endpoint']
-
-    def delete(self, site_config):
-        pass
-
-    def post(self, request, site_config):
-        pass
-
-class ReverseProxyConfig(DefaultConfig):
-    def __init__(self):
-        DefaultConfig.__init__(self, 'reverseproxy', 'Set up a website as a reverse proxy.', [('url_endpoint', 'URL Endpoint', 'example.com'), ('proxy_to', 'Proxy To', 'http://example.com/')])
-
-    def generate(self, site_config, site_id, url_endpoint, proxy_to):
-        site_config['url_endpoint'] = url_endpoint
+    def generate(self, site_config, site_id, hostname, proxy_to):
+        site_config['hostname'] = hostname
         site_config['locations']['/'] = {
                             'proxy_pass': proxy_to,
                             'proxy_redirect': 'off',
@@ -82,16 +36,27 @@ class ReverseProxyConfig(DefaultConfig):
         pass
 
     def post(self, request, site_config):
-        if not request.form['url_endpoint']:
-            return 'Must specify a URL endpoint.'
+        if not request.form['hostname']:
+            return 'Must specify a hostname.'
         if not request.form['proxy_to']:
             return 'Must specify a site or IP to Proxy To.'
-        site_config['url_endpoint'] = request.form['url_endpoint']
+        site_config['hostname'] = request.form['hostname']
         site_config['locations']['/']['proxy_pass'] = request.form['proxy_to']
 
-class AdvancedConfig(DefaultConfig):
+class AdvancedConfig(SiteTypeConfig):
     def __init__(self):
-        DefaultConfig.__init__(self, 'nginx', 'Gives complete access to all configuration items.')
+        SiteTypeConfig.__init__(self, 'nginx', 'Advanced', 'Gives complete access to all configuration items.')
+
+    def delete(self, site_config):
+        pass
+
+    def post(self, request, site_config):
+        site_config['hostname'] = request.form['hostname']
+
+class DirectConfig(SiteTypeConfig):
+    def __init__(self):
+        SiteTypeConfig.__init__(self, 'direct', 'Direct Configuration', 'No hand-holding. Gives direct access to configuration files.')
+        self.disabled = True
 
     def delete(self, site_config):
         pass

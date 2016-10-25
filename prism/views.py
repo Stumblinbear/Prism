@@ -15,6 +15,8 @@ flask_app = prism.flask_app()
 
 @flask_app.context_processor
 def inject_things():
+	""" Adds the site title, the logged in user, and the version
+	to each site for use by the base template """
 	prism.settings.ping_version()
 
 	title = None
@@ -66,7 +68,7 @@ def plugin_static(plugin_id, static_file):
 	return flask.send_from_directory(static_dir, static_file)
 
 @flask_app.errorhandler(403)
-def page_not_found(e):
+def permission_denied(e):
 	return flask.render_template('other/403.html'), 403
 
 @flask_app.errorhandler(404)

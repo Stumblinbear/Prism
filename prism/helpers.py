@@ -53,6 +53,7 @@ def convert_bytes(size):
 
 @flask_app.template_filter()
 def hide_none(size):
+	""" A filter to hide the value if it is python's 'None' value """
 	return size if size is not None else ''
 
 class HTMLFragmentTranslator(HTMLTranslator):
@@ -70,7 +71,8 @@ html_fragment_writer = Writer()
 html_fragment_writer.translator_class = HTMLFragmentTranslator
 
 def locale_(plugin_id, s):
-	# Search the plugin that's rendering the template for the requested locale
+	""" Search the plugin that's rendering the template
+	for the requested locale """
 	if plugin_id == 'prism':
 		ns = prism.settings.PRISM_LOCALE[s]
 	else:
@@ -95,10 +97,10 @@ def locale_(plugin_id, s):
 
 @flask_app.template_filter()
 def locale(s):
+	""" Used for localization """
 	if not isinstance(s, str):
 		return repr(s)
 
-	""" Used for localization """
 	plugin_id = flask.g.current_plugin
 	if plugin_id is None:
 		plugin_id = 'prism'

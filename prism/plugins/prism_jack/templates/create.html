@@ -2,34 +2,38 @@
 {% block title %}{% endblock %}
 {% block content %}
 <h2 class="text-center">Select a Configuration</h2>
-<div class="row">
-  {% for config in default_configs %}
-    <div class="col-md-4 col-lg-3">
-      <div class="box box-primary">
-        <form method="POST">
-          <div class="box-body box-primary">
-            <center>
-              <img class="img-responsive" style="max-height:125px" src="/static/plugin/jack/{{ config.type_id }}.png" />
-            </center>
-            <hr />
-            <div class="text-muted text-center">
-              {{ config.description }}
-            </div>
-            <hr />
-            <input type="hidden" name="site_type" value="{{ config.type_id }}" />
-            {% for option in config.options %}
-              <div class="form-group">
-                <center><label for="{{ option[0] }}">{{ option[1] }}</label></center>
-                <input type="text" id="{{ option[0] }}" class="form-control" name="{{ option[0] }}" placeholder="{{ option[2] }}" />
+<hr />
+{% for config in default_configs %}
+  <div class="row">
+    <div class="col-md-8 col-md-offset-2">
+      <div class="box box-default">
+        <form class="form-horizontal" method="POST">
+          <div class="box-body">
+            <div class="row">
+              <div class="col-md-3">
+                <center><img class="img-responsive" src="/static/plugin/jack/{{ config.type_id }}.png" /></center>
               </div>
-            {% endfor %}
-          </div>
-          <div class="box-footer">
-            <button class="btn btn-primary btn-block"{% if config.disabled %} disabled{% endif %}>Create</button>
+              <div class="col-md-9">
+                <h2>{{ config.title }}</h2>
+                <p class="lead">
+                  {{ config.description }}
+                </p>
+                <input type="hidden" name="site_type" value="{{ config.type_id }}" />
+                {% for option in config.options %}
+                  <div class="form-group">
+                    <label class="col-sm-3" for="{{ option[0] }}">{{ option[1] }}</label>
+                    <div class="col-sm-9">
+                      <input type="text" id="{{ option[0] }}" class="form-control" name="{{ option[0] }}" placeholder="{{ option[2] }}" />
+                    </div>
+                  </div>
+                {% endfor %}
+                <button class="btn btn-primary btn-block"{% if config.disabled %} disabled{% endif %}>Create</button>
+              </div>
+            </div>
           </div>
         </form>
       </div>
     </div>
-  {% endfor %}
-</div>
+  </div>
+{% endfor %}
 {% endblock %}

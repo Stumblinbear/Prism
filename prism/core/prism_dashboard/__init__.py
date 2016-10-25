@@ -13,15 +13,14 @@ class DashboardPlugin(BasePlugin):
 		self._widgets = self.config('widgets', {})
 
 		# Search the plugins for Widget classes
-		for plugin_id, plugin in prism_state.plugin_manager.plugins.items():
-			for name, obj in prism_state.plugin_manager.get_classes(plugin._module, Widget):
-				widget = obj()
-				widget.plugin_id = plugin.plugin_id
-				widget.widget_id = plugin.plugin_id + '.' + widget.widget_id
-				self._available_widgets[widget.widget_id] = widget
+		for plugin_id, plugin, name, obj in prism_state.plugin_manager.find_classes(Widget):
+			widget = obj()
+			widget.plugin_id = plugin.plugin_id
+			widget.widget_id = plugin.plugin_id + '.' + widget.widget_id
+			self._available_widgets[widget.widget_id] = widget
 
-				if widget.widget_id not in self._widgets:
-					self._widgets[widget.widget_id] = {'shown': True, 'order': len(self._available_widgets)}
+			if widget.widget_id not in self._widgets:
+				self._widgets[widget.widget_id] = {'shown': True, 'order': len(self._available_widgets)}
 
 		prism.output('Registered %s widgets' % len(self._available_widgets))
 		prism.flask_app().jinja_env.globals["render_widget"] = self.render_widget

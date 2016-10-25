@@ -1,0 +1,19 @@
+{
+    "version": [ 1, 0, 0, "indev" ],
+
+    "icon": "location-arrow",
+    "name": "Jack GUnicorn Config",
+    "description": "Adds default GUnicorn configuration to Jack.",
+
+    "dependencies": {
+        "plugin": [
+            "jack"
+        ],
+        "binary": [
+            "php-fpm"
+        ],
+        "library": [
+            "gunicorn"
+        ]
+    }
+}

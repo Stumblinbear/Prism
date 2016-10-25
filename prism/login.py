@@ -139,5 +139,6 @@ def load_user(user_id):
 
 @login_manager.unauthorized_handler
 def unauthorized_handler():
-	""" When an unauthorized user attempts to go to a user-only page, send them back to the login page """
+	""" When an unauthorized user attempts to go to a user-only page,
+	send them back to the login page """
 	return redirect(url_for('login.login'))

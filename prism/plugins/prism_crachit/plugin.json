@@ -1,0 +1,7 @@
+{
+    "version": [ 1, 0, 0, "indev" ],
+
+    "icon": "archive",
+    "name": "Crachit",
+    "description": "Monitors your system's services and allows viewing log files."
+}
