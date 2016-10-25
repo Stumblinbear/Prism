@@ -99,15 +99,19 @@ class PluginManager:
 		paaf()
 
 	def get_sorted_plugins(self):
-		plugins = list()
+		sorted_keys = sorted(self.plugins, key=lambda x: x)
 
-		for plugin_id, plugin in self.plugins.items():
-			if plugin.is_core:
-				plugins.insert(0, plugin)
-			else:
-				plugins.append(plugin)
+		j = 0
+		for i, plugin_id in enumerate(sorted_keys):
+			if self.plugins[plugin_id].is_core:
+				sorted_keys.insert(j, sorted_keys.pop(i))
+				j += 1
 
-		return plugins
+		sorted_plugins = list()
+		for plugin_id in sorted_keys:
+			sorted_plugins.append(self.plugins[plugin_id])
+
+		return sorted_plugins
 
 	def get_plugin(self, plugin_id):
 		""" Get a plugin, loaded or not """
@@ -124,14 +128,17 @@ class PluginManager:
 		""" Returns true if the plugin's dependencies are satisfied """
 		return self.plugins[plugin_id].is_satisfied
 
+	def find_classes(self, the_class):
+		for plugin_id, plugin in self.plugins.items():
+			for name, obj in self.get_classes(plugin._module, the_class):
+				yield (plugin_id, plugin, name, obj)
+
 	def get_classes(self, module, search_class):
-		classes = list()
 		for name, obj in inspect.getmembers(module):
 			if inspect.isclass(obj):
 				# Search for the plugin's base class
 				if obj != search_class and issubclass(obj, search_class):
-					classes.append((name, obj))
-		return classes
+					yield (name, obj)
 
 	def _insert_dummy_plugin(self, plugin_info):
 		dummy = prism.api.plugin.BasePlugin()
