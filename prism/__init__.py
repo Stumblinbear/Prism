@@ -564,6 +564,12 @@ def output(string):
 		prefix = prefix + '|'
 	print('%s%s' % (prefix, string))
 
+def error(string):
+	prefix = '!!> '
+	for i in range(0, poofs):
+		prefix = prefix + '|'
+	print('%s%s' % (prefix, string))
+
 def get_input(string, default=None, allow_empty=True):
 	""" Gets input from the user in the shell """
 	if default:
