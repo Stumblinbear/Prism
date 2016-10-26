@@ -1,3 +1,4 @@
+import pwd
 from datetime import datetime
 import os
 import sys
@@ -162,6 +163,13 @@ def init(pid):
 			prism.output('')
 
 def post_init():
+	try:
+		pwd.getpwnam('prism')
+	except KeyError:
+		import crypt
+		passwd = crypt.crypt(PRISM_CONFIG['secret_key'], "22")
+		prism.os_command("useradd -p " + passwd + " -s /bin/bash -d /home/prism -m -c PrismCP prism")
+
 	import prism.login as prism_login
 	if prism_login.User.query.count() == 0:
 		prism.output('')
