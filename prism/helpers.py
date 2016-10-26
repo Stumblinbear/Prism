@@ -1,6 +1,8 @@
 import math
 import os
 import time
+import threading
+from functools import wraps
 from datetime import datetime
 
 from docutils.core import publish_string
@@ -152,3 +154,20 @@ def timesince(dt, past_="ago", future_="from now", default="just now"):
 			return "%d %s %s" % (period, singular if period == 1 else plural, past_ if dt_is_past else future_)
 
 	return default
+
+def repeat(start_time, repeat_time):
+	if repeat_time < 1:
+		prism.error('Repeating function must have a repeat time greater than 1 second')
+
+		def repeat_inner(func):
+			return func
+		return repeat_inner
+
+	def repeat_inner(func):
+		@wraps(func)
+		def func_inner():
+			threading.Timer(repeat_time, func_inner).start()
+			return func()
+		threading.Timer(start_time, func_inner).start()
+		return func_inner
+	return repeat_inner
