@@ -3,5 +3,11 @@
 
     "icon": "archive",
     "name": "Crachit",
-    "description": "Monitors your system's services and allows viewing log files."
+    "description": "Monitors your system's services and allows viewing log files.",
+
+    "dependencies": {
+        "module": [
+            "psutil"
+        ]
+    }
 }
