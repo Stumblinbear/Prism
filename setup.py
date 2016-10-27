@@ -1,8 +1,5 @@
 from setuptools import setup, find_packages
-from codecs import open
-from os import path
-
-print(list(filter(None, open('requirements.txt').read().splitlines())))
+import sys
 
 setup(
 	name='prism',
@@ -10,14 +7,10 @@ setup(
 	description='',
 	author='Stumblinbear',
 	author_email='stumblinbear@gmail.com',
-	url='https://github.com/pypa/sampleproject',
+	url='https://github.com/CodingForCookies/Prism',
 	license='MIT License',
-	
+
 	install_requires=list(filter(None, open('requirements.txt').read().splitlines())),
-	packages=find_packages(exclude=[ 'libs', 'tmp' ]),
-	#scripts=[ 'prism-panel' ],
-	data_files=[
-        #('/etc/prism', [ 'packaging/files/config.json' ]),
-        ('/etc/init.d', [ 'prism-panel' ])
-	]
+	packages=find_packages(exclude=['prism/tmp']),
+	data_files=[('/etc/init.d', ['etc/init.d/prism-panel'])]
 )
