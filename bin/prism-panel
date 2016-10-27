@@ -38,5 +38,5 @@ import prism.daemon
 
 if __name__ == "__main__":
     opts, args = getopt.getopt(sys.argv[1:], 'n')
-    daemon = prism.daemon.Daemon(should_bind='-n' not in opts)
+    daemon = prism.daemon.Daemon(should_bind=('-n', '') not in opts)
     sys.exit(daemon.start(opts))
