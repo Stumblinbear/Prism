@@ -1,4 +1,4 @@
-import psutil
+import os
 import prism
 from prism.helpers import repeat
 
@@ -7,9 +7,6 @@ from prism.api.plugin import BasePlugin
 
 class CrachitPlugin(BasePlugin):
     service_manager = None
-
-    def __init__(self):
-        BasePlugin.__init__(self)
 
     def register_monitor(self, service_name, monitor):
         CrachitPlugin.service_manager.register_monitor(service_name, monitor)
@@ -21,36 +18,55 @@ class CrachitPlugin(BasePlugin):
         CrachitPlugin.service_manager.ping_processes()
 
 class Service:
-    def __init__(self, service_name, options):
-        self.name = service_name
+    def __init__(self, service_name, options=None):
+        self.service_name = service_name
         self.options = options
 
         self.service_file = os.path.join('/usr/lib/systemd/system/', self.service_name + '.service')
-        if not os.path.exists(self.service_file):
-            self.save()
+        if self.options is not None:
+            if not os.path.exists(self.service_file):
+                self.save()
 
     def register_monitor(self, monitor):
         CrachitPlugin.service_manager.register_monitor(self.service_name, monitor)
 
     def save(self):
         file = open(self.service_file, 'w')
-        for category in options:
-            file.write('[%s]' % category)
-            for option, value in options:
-                file.write('%s=%s' % (option, value))
+        for category, options in self.options.items():
+            file.write('[%s]\n' % category)
+            for option, value in options.items():
+                file.write('%s=%s\n' % (option, value))
             file.write('\n')
         file.close()
 
     def delete(self):
-        os.remove(self.service_file)
+        if os.path.exists(self.service_file):
+            os.remove(self.service_file)
+
+    def enable(self):
+        return prism.os_command('systemctl enable %s' % self.service_name)
+
+    def start(self):
+        return prism.os_command('systemctl start %s' % self.service_name)
+
+    def restart(self):
+        return prism.os_command('systemctl restart %s' % self.service_name)
+
+    def stop(self):
+        return prism.os_command('systemctl stop %s' % self.service_name)
+
+    @property
+    def status(self):
+        if self.service_name in CrachitPlugin.service_manager.processes:
+            return 'online'
+        return 'offline'
 
 class ServiceManager:
     def __init__(self):
-        self.processes = {}
-        for proc in psutil.process_iter():
-            self.processes[proc.name()] = proc
-
+        self.processes = None
         self.monitors = {}
+
+        self.ping_processes()
 
     def register_monitor(self, service_name, monitor):
         if service_name not in self.monitors:
@@ -58,13 +74,20 @@ class ServiceManager:
         self.monitors[service_name].append(monitor)
 
     def ping_processes(self):
-        pinged_processes = {}
+        pinged_processes = []
 
-        for proc in psutil.process_iter():
-            pinged_processes[proc.name()] = proc
+        result, err = prism.os_command('systemctl | grep .service | grep running')
+        for proc in result.decode().split('\n')[:-1]:
+            proc = proc.split()
+            i = 1 if proc[0] == '●' else 0
+            pinged_processes.append('.'.join(proc[i].split('.')[:-1]))
 
-        new_processes = [x for x in pinged_processes.keys() if x not in self.processes.keys()]
-        dead_processes = [x for x in self.processes.keys() if x not in pinged_processes.keys()]
+        if not self.processes:
+            self.processes = pinged_processes
+            return
+
+        new_processes = [x for x in pinged_processes if x not in self.processes]
+        dead_processes = [x for x in self.processes if x not in pinged_processes]
 
         for process in new_processes:
             if process in self.monitors:
