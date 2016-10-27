@@ -251,6 +251,7 @@ class PluginManager:
 		output('Sorting dependencies')
 		sorted_plugins = []
 		while plugins_additional:
+			added_any = False
 			for plugin in plugins_additional:
 				ready_add = True
 				if 'dependencies' in plugin and 'plugin' in plugin['dependencies']:
@@ -263,8 +264,11 @@ class PluginManager:
 						if not found:
 							ready_add = False
 				if ready_add:
+					added_any = True
 					sorted_plugins.append(plugin)
 					plugins_additional.remove(plugin)
+			if not added_any:
+				break
 		plugins_additional = sorted_plugins
 
 		poof('Loading %s additional plugin(s)' % len(plugins_additional))
