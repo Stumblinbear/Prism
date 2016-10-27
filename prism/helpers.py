@@ -13,6 +13,19 @@ import jinja2
 import prism
 import prism.settings
 
+from prism.pyversions import PythonVersions
+
+
+# Initialize the class so it doesn't hang later
+prism.poof('Detecting python versions')
+pyversions = PythonVersions.get()
+
+prism.poof('Found %d version%s' % (len(pyversions.versions), 's' if len(pyversions.versions) != 1 else ''))
+for version in pyversions.versions:
+	prism.output(version)
+prism.paaf()
+prism.paaf()
+
 
 flask_app = prism.flask_app()
 
@@ -34,6 +47,10 @@ def include_static(name):
 	with open(desired_file) as f:
 		return jinja2.Markup(f.read())
 flask_app.jinja_env.globals["include_static"] = include_static
+
+def is_list(value):
+	return isinstance(value, list)
+flask_app.jinja_env.globals["is_list"] = is_list
 
 def convert_bytes_format(size, format):
 	""" Convert amount of bytes, size, to its easier to read representation """
@@ -166,8 +183,12 @@ def repeat(start_time, repeat_time):
 	def repeat_inner(func):
 		@wraps(func)
 		def func_inner():
-			threading.Timer(repeat_time, func_inner).start()
+			t = threading.Timer(repeat_time, func_inner)
+			t.daemon = True
+			t.start()
 			return func()
-		threading.Timer(start_time, func_inner).start()
+		t = threading.Timer(start_time, func_inner)
+		t.daemon = True
+		t.start()
 		return func_inner
 	return repeat_inner
