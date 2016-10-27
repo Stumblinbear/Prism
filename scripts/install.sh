@@ -100,7 +100,6 @@ poof 'Verifying dependencies'
   fi
 paaf
 
-cd /tmp
 TMP_DIR=$(mktemp -d)
 cd $TMP_DIR
 
@@ -119,11 +118,15 @@ poof 'Downloading Prism'
       ;;
     esac
 
-  wait 'Fetching' "curl -o prism.tar.gz ${RELEASE_LINK}"
-  wait "Extracting release: $(basename $RELEASE_LINK)" 'tar -zxf prism.tar.gz'
+  RELEASE_TAG=$(basename $RELEASE_LINK)
+
+  info ${RELEASE_LINK}
+
+  wait 'Fetching' "curl -LOk ${RELEASE_LINK}"
+  wait "Extracting release: ${RELEASE_TAG}" "tar -zxf ${RELEASE_TAG}"
 
   output 'Removing tar file'
-  rm -f prism.tar.gz
+  rm -f $RELEASE_TAG
 
   cd $(ls)
 paaf
@@ -131,12 +134,14 @@ paaf
 poof 'Actually installing, now'
   output 'Moving files'
   mkdir /opt/prism-panel &> /dev/null
-  mv -f bin /opt/prism-panel/ &> /dev/null
-  mv -f prism /opt/prism-panel/ &> /dev/null
-  mv -f prism-panel.service /lib/systemd/system/ &> /dev/null
-  mv -f LICENSE /opt/prism-panel/ &> /dev/null
-  mv -f requirements.txt /opt/prism-panel/ &> /dev/null
-  mv -f scripts/uninstall.sh /opt/prism-panel/uninstall.sh &> /dev/null
+
+  cp -rf bin /opt/prism-panel
+  cp -rf prism /opt/prism-panel/
+
+  mv -f prism-panel.service /lib/systemd/system/
+  mv -f LICENSE /opt/prism-panel/
+  mv -f requirements.txt /opt/prism-panel/
+  mv -f scripts/uninstall.sh /opt/prism-panel/uninstall.sh
 
   cd /opt/
   poof 'Setting up virtual environment'
@@ -176,9 +181,9 @@ output
 
 prompt 'You'\''re good to go! Starting Prism, now!'
 
-cd /opt/prism-panel/bin/
-source activate
-  python3 prism-panel -n
+cd /opt/prism-panel/
+source bin/activate
+  python3 bin/prism-panel -n
 deactivate
 
 { systemctl start prism-panel & } &> /dev/null
