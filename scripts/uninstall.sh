@@ -74,8 +74,8 @@ poof 'Removing files'
   output '/opt/prism-panel'
   rm -rf /opt/prism-panel
 
-  output '/etc/init.d/prism-panel'
-  rm -f /etc/init.d/prism-panel
+  output '/lib/systemd/system/prism-panel'
+  rm -f /lib/systemd/system/prism-panel
 paaf
 
 if $KEEP_CONFIG || $KEEP_PLUGINS; then

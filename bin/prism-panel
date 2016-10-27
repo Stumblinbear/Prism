@@ -30,11 +30,13 @@ if sys.version_info < (3, 0):
     sys.exit(1)
 
 import os
+import getopt
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import prism.daemon
 
 if __name__ == "__main__":
-    daemon = prism.daemon.Daemon()
-    sys.exit(daemon.start(sys.argv))
+    opts, args = getopt.getopt(sys.argv[1:], 'n')
+    daemon = prism.daemon.Daemon(should_bind='-n' not in opts)
+    sys.exit(daemon.start(opts))

@@ -195,11 +195,11 @@ def generate_certificate():
 	prism.output('')
 	script = """
 		cd {0}/tmp;
-		openssl genrsa -des3 -out prism.key -passout pass:1234 2048;
-		openssl req -new -key prism.key -out prism.csr -passin pass:1234 -subj /C=US/ST=NA/L=Nowhere/O=Prism\\ Inc/OU=IT/CN={1}/;
+		openssl genrsa -des3 -out prism.key -passout pass:1234 2048 &> /dev/null;
+		openssl req -new -key prism.key -out prism.csr -passin pass:1234 -subj /C=US/ST=NA/L=Nowhere/O=Prism\\ Inc/OU=IT/CN={1}/ &> /dev/null;
 		cp prism.key prism.key.org;
-		openssl rsa -in prism.key.org -out prism.key -passin pass:1234;
-		openssl x509 -req -days 365 -in prism.csr -signkey prism.key -out prism.crt -passin pass:1234;
+		openssl rsa -in prism.key.org -out prism.key -passin pass:1234 &> /dev/null;
+		openssl x509 -req -days 365 -in prism.csr -signkey prism.key -out prism.crt -passin pass:1234 &> /dev/null;
 		cat prism.key > {2}/prism-ssl.key;
 		cat prism.crt > {2}/prism-ssl.crt;
 		rm prism.*;

@@ -2,6 +2,11 @@
 
 # TODO: build-base libffi-dev python3-dev
 
+VERSION='latest'
+if ! [[ -z $1 ]]; then
+  VERSION=$1
+fi
+
 # Pretty functions. Because I can.
 poofs=0
 function poof { output ">${1}"; poofs=$((poofs+1)); }
@@ -40,8 +45,38 @@ if [ -d "/opt/prism-panel/bin/prism-panel" ]; then
   die 'Prism is already installed'
 fi
 
-if ! $(pip &> /dev/null); then
-  error 'Python pip is not installed'
+
+if ! $(python3 --version &> /dev/null); then
+  error 'Python3 not found.'
+  if $(apt-get --version &> /dev/null); then
+    wait 'Installing python3.4' 'apt-get -y install python3.4'
+  elif $(yum --version &> /dev/null); then
+    prompt 'There'"'"'s a python3 version available in the EPEL Repository. Use that one? '
+    read -p '[y/n] ' -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+      poof 'Installing python3'
+        wait 'Adding EPEL Repository' 'yum -y install epel-release'
+        wait 'Installing python3.4' 'yum -y install python34'
+        wait 'Downloading get-pip.py' 'curl -O https://bootstrap.pypa.io/get-pip.py'
+        wait 'Installing pip' '/usr/bin/python3.4 get-pip.py'
+        rm -f get-pip.py
+        wait 'Installing python34-devel' 'yum -y install python34-devel'
+        wait 'Installing libffi-devel' 'yum -y install libffi-devel'
+      paaf
+    else
+      die 'Unable to install python3.'
+    fi
+  else
+    die 'Unsupported package manager.'
+  fi
+  if ! $(python3 --version &> /dev/null); then
+    die 'Python3 failed to install.'
+  fi
+fi
+
+if ! $(pip3 &> /dev/null); then
+  error 'Python pip3 is not installed'
   exit 1
 fi
 
@@ -54,11 +89,11 @@ poof 'Verifying dependencies'
     die 'Tar is not installed'
   fi
 
-  if $(pip freeze | grep virtualenv &> /dev/null); then
+  if $(pip3 freeze | grep virtualenv &> /dev/null); then
     info 'Virtualenv is installed'
   else
-    wait 'Installing virtualenv' 'pip install virtualenv'
-    if ! $(pip freeze | grep virtualenv &> /dev/null); then
+    wait 'Installing virtualenv' 'pip3 install virtualenv'
+    if ! $(pip3 freeze | grep virtualenv &> /dev/null); then
       die 'Virtualenv install failed'
     fi
     good 'Virtualenv installed successfully'
@@ -70,8 +105,19 @@ TMP_DIR=$(mktemp -d)
 cd $TMP_DIR
 
 poof 'Downloading Prism'
-  output 'Searching for latest'
-  RELEASE_LINK=$(curl -s https://api.github.com/repos/CodingForCookies/Prism/releases/latest | grep 'tarball_url' | cut -d\" -f4)
+  output "Searching for ${VERSION}"
+
+  case "$VERSION" in
+    "latest")
+      RELEASE_LINK=$(curl -s https://api.github.com/repos/CodingForCookies/Prism/releases/latest | grep 'tarball_url' | cut -d\" -f4)
+      ;;
+    "current")
+      RELEASE_LINK='https://github.com/CodingForCookies/Prism/archive/master.tar.gz'
+      ;;
+    *)
+      die 'Unknown version type'
+      ;;
+    esac
 
   wait 'Fetching' "wget ${RELEASE_LINK}"
   RELEASE_TAG=$(ls)
@@ -98,7 +144,7 @@ poof 'Actually installing, now'
     wait 'Creating environment' 'virtualenv -p python3 prism-panel'
 
     cd prism-panel
-    poof 'Installing pip requirements'
+    poof 'Installing prism requirements'
       source bin/activate
       while read p; do
         if [[ -z "${p// }" ]]; then
@@ -106,11 +152,11 @@ poof 'Actually installing, now'
         fi
         DEPEND_NAME=$(echo $p | egrep -o '^[^<>=]+')
         poof "Verifying ${DEPEND_NAME}"
-          if $(pip freeze | grep -i ${DEPEND_NAME}= &> /dev/null); then
+          if $(pip3 freeze | grep -i ${DEPEND_NAME}= &> /dev/null); then
             info "${DEPEND_NAME} is installed"
           else
-            wait "Installing ${DEPEND_NAME}" "pip install ${p}"
-            if ! $(pip freeze | grep -i ${DEPEND_NAME}= &> /dev/null); then
+            wait "Installing ${DEPEND_NAME}" "pip3 install ${p}"
+            if ! $(pip3 freeze | grep -i ${DEPEND_NAME}= &> /dev/null); then
               die "${DEPEND_NAME} install failed"
             fi
             good "${DEPEND_NAME} installed successfully"
@@ -129,9 +175,10 @@ paaf
 
 output
 
-prompt 'You'\''re good to go! Would you like to start Prism, now? '
-read -p '[y/n] ' -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    good 'Attempting to start Prism'
-fi
+prompt 'You'\''re good to go! Starting Prism, now!'
+
+source bin/activate
+  python3 bin/prism-panel -n
+deactivate
+
+{ systemctl start prism-panel & } &> /dev/null

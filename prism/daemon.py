@@ -22,7 +22,10 @@ class ModifiedLoader(DispatchingJinjaLoader):
 			yield self.app, loader
 
 class Daemon:
-	def start(self, *args):
+	def __init__(self, should_bind=True):
+		self.should_bind = should_bind
+
+	def start(self, opts):
 		prism.output('----------=Prism=----------')
 		prism.settings.init(os.getpid())
 
@@ -96,9 +99,11 @@ class Daemon:
 
 				prism.paaf()
 
-			# Finally, start Prism under a self-signed SSL connection
-			self.flask_app.run(host='::', port=9000, threaded=True, debug=prism.settings.is_dev(),
-							ssl_context=(ssl_crt, ssl_key))
+			if not self.should_bind:
+				# Finally, start Prism under a self-signed SSL connection
+				self.flask_app.run(host='::', port=9000, threaded=True, debug=prism.settings.is_dev(),
+								ssl_context=(ssl_crt, ssl_key))
 		else:
-			prism.output('Warning: Prism is starting under an insecure connection!')
-			self.flask_app.run(host='::', port=9000, threaded=True, debug=prism.settings.is_dev())
+			if not self.should_bind:
+				prism.output('Warning: Prism is starting under an insecure connection!')
+				self.flask_app.run(host='::', port=9000, threaded=True, debug=prism.settings.is_dev())
