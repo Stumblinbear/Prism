@@ -20,7 +20,7 @@ Prism is an in-development linux server control panel.
 Installation
 ------------
 Option 1
-    ``curl -O https://git.io/vXTqn && sh install.sh; rm -f install.sh``
+    ``curl -O https://raw.githubusercontent.com/CodingForCookies/Prism/master/scripts/install.sh && sh install.sh; rm -f install.sh``
 Option 2
     Download scripts/install.sh and run it.
 Option 3
