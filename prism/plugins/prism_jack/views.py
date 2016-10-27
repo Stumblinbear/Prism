@@ -39,7 +39,10 @@ class JackCreateSiteView(BaseView):
 
         # Create the site using the NginxManager. This is also where the
         # generate function in the default config is called
-        site_config = JackPlugin.get().nginx.create_site(default_config, request.form['site_id'], options)
+        site_config, error = JackPlugin.get().nginx.create_site(default_config, request.form['site_id'], options)
+        if error:
+            flask.flash(error, 'error')
+            return ('jack.JackCreateSiteView')
         JackPlugin.get().nginx.rebuild_sites()
         return ('jack.JackSiteOverviewView', {'site_uuid': site_config['uuid']})
 
@@ -53,8 +56,9 @@ class JackSiteOverviewView(BaseView):
         if site_uuid is None or site_uuid not in JackPlugin.get().nginx.configs:
             flask.flash('A site with that ID doesn\'t exist!', 'error')
             return ('dashboard.DashboardView')
-        config = JackPlugin.get().nginx.configs[site_uuid]
-        return ('view/%s.html' % config['type'], {'config': config, 'tabs': JackPlugin.get().site_tabs})
+        site_config = JackPlugin.get().nginx.configs[site_uuid]
+        config_extras = JackPlugin.get().get_default_config(site_config['type']).get(site_config)
+        return ('%s.html' % site_config['type'], {'template_folder': '', 'config': site_config, 'tabs': JackPlugin.get().site_tabs, 'type': config_extras})
 
     @subroute('/<site_uuid>')
     def post(self, request, site_uuid):
@@ -70,7 +74,7 @@ class JackSiteOverviewView(BaseView):
         elif 'delete' in request.form:
             # Delete it. Duh.
             JackPlugin.get().nginx.delete_site(site_uuid)
-            return ('dashboard.DashboardView')
+            return ('jack.JackCreateSiteView')
         # If the first tab was submitted
         elif 'update' in request.form:
             if not request.form['hostname']:
@@ -78,10 +82,24 @@ class JackSiteOverviewView(BaseView):
             else:
                 # Call the post method in the site's default config
                 site_config = JackPlugin.get().nginx.configs[site_uuid]
-                error = JackPlugin.get().get_default_config(site_config['type']).post(request, site_config)
+                error = JackPlugin.get().get_default_config(site_config['type']).update(request, site_config)
             if error:
                 flask.flash(error, 'error')
             else:
                 # If all was sucessful, rebuild nginx's sites and reload
                 JackPlugin.get().nginx.rebuild_sites()
+        elif 'fix_permissions' in request.form:
+            site_folder = os.path.join(JackPlugin.get().site_files_location, site_uuid)
+            if not os.path.exists(site_folder):
+                flask.flash('Site folder doesn\t exist.', 'error')
+            else:
+                # Make sure nginx and groups can access the site folder
+                prism.os_command('chown -R nginx:nginx %s' % site_folder)
+                prism.os_command('chmod -R 0775 %s' % site_folder)
+                flask.flash('Site folder permissions fixed.', 'info')
+        else:
+            site_config = JackPlugin.get().nginx.configs[site_uuid]
+            error = JackPlugin.get().get_default_config(site_config['type']).post(request, site_config)
+            if error:
+                flask.flash(error, 'error')
         return ('jack.JackSiteOverviewView', {'site_uuid': site_uuid})

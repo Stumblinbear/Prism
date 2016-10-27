@@ -10,14 +10,18 @@ import prism.login
 import prism.settings
 import prism.helpers
 
+prism.paaf()
 
 flask_app = prism.flask_app()
+
+@prism.helpers.repeat(60, 60 * 60)
+def version_check():
+	prism.settings.ping_version()
 
 @flask_app.context_processor
 def inject_things():
 	""" Adds the site title, the logged in user, and the version
 	to each site for use by the base template """
-	prism.settings.ping_version()
 
 	title = None
 

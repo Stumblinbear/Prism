@@ -12,16 +12,23 @@ from prism.api.plugin import BasePlugin
 
 class JackPlugin(BasePlugin):
     def init(self, prism_state):
+        # The location that we store website files and logs
+        self.site_files_location = self.config('site-files-loc', '/var/www/')
+
         self.default_configs = []
         self.site_tabs = []
 
         # Search the plugins for DefaultConfig classes
         for plugin_id, plugin, name, obj in prism_state.plugin_manager.find_classes(SiteTypeConfig):
-            self.default_configs.append(obj())
+            cfg = obj()
+            cfg._plugin = plugin
+            self.default_configs.append(cfg)
 
         # Search the plugins for SiteTab classes
         for plugin_id, plugin, name, obj in prism_state.plugin_manager.find_classes(SiteTab):
-            self.site_tabs.append(obj())
+            tab = obj()
+            tab._plugin = plugin
+            self.site_tabs.append(tab)
 
         self.nginx = NginxManager(prism_state, self)
 
@@ -34,6 +41,9 @@ class JackPlugin(BasePlugin):
 # Manages Nginx sites and jack site configurations
 class NginxManager:
     def __init__(self, prism_state, jack_plugin):
+        # First things first, prism must be a member of the nginx group
+        prism.os_command('usermod -a -G nginx prism')
+
         self._jack_plugin = jack_plugin
 
         # The 'sites' folder within jack's config folder
@@ -44,12 +54,13 @@ class NginxManager:
 
         # The location that we should export the generated Nginx configurations
         self.config_location = self._jack_plugin.config('nginx-site-loc', '/etc/nginx/conf.d/')
-        # The location that we store website files and logs
-        self.site_files_location = self._jack_plugin.config('site-files-loc', '/var/www/')
         # Copy over the defalt folder to the site file location folder
-        self.sites_default = os.path.join(self.site_files_location, 'default')
+        self.sites_default = os.path.join(self._jack_plugin.site_files_location, 'default')
         if not os.path.exists(self.sites_default):
             shutil.copytree(os.path.join(self._jack_plugin.plugin_folder, 'default'), self.sites_default)
+            # Make sure nginx can access the default folder
+            prism.os_command('chown -R nginx:nginx %s' % self.sites_default)
+            prism.os_command('chmod -R 0775 %s' % self.sites_default)
 
         # Load all the json configs located in jack's sites folder
         self.configs = {}
@@ -78,8 +89,19 @@ class NginxManager:
 
     def create_site(self, default_config, site_id, options):
         """ Creates the site, generates the config, and adds it to the menu """
-        site_uuid = prism.generate_random_string(32)
+        site_uuid = prism.generate_random_string(6)
+        while site_uuid in self.configs:
+            site_uuid = prism.generate_random_string(6)
         site_config = JSONConfig(self.config_folder, site_uuid + '.json')
+
+        # Create the site folder
+        site_folder = os.path.join(self._jack_plugin.site_files_location, site_uuid)
+        if not os.path.exists(site_folder):
+            os.makedirs(site_folder)
+
+        # Make sure nginx and groups can access the site folder
+        prism.os_command('chown -R nginx:nginx %s' % site_folder)
+        prism.os_command('chmod -R 0775 %s' % site_folder)
 
         site_config['uuid'] = site_uuid
         site_config['id'] = site_id
@@ -89,40 +111,50 @@ class NginxManager:
         site_config['locations'] = {}
 
         # Let the default nginx configuration input their values
-        default_config.generate(site_config, *options)
+        error = default_config.generate(site_config, *options)
+        if error:
+            shutil.rmtree(site_folder)
+            return (None, error)
         site_config.save()
+
+        # ... Just in case the default config added something...
+        prism.os_command('chown -R nginx:nginx %s' % site_folder)
+        prism.os_command('chmod -R 0775 %s' % site_folder)
 
         self.configs[site_config['uuid']] = site_config
 
         self.create_menu_item(site_config['id'], site_config['uuid'], len(self.configs))
 
-        return site_config
+        return (site_config, None)
 
     def delete_site(self, site_uuid):
         """ Removes configs from nginx and jack, folders
         created for the site, and the menu item """
         del prism.flask_app().extensions['menu']._child_entries[self._jack_plugin._endpoint]._child_entries[site_uuid]
-        self.configs[site_uuid].delete()
-        del self.configs[site_uuid]
+        site_config = self.configs[site_uuid]
+
+        site_folder = os.path.join(self._jack_plugin.site_files_location, site_uuid)
 
         # Remove the jack configuration file
         os.remove(os.path.join(self.config_location, site_uuid + '.conf'))
+
         # Remove the site folder
-        os.remove(os.path.join(self.site_files_location, site_uuid))
+        if os.path.exists(site_folder):
+            shutil.rmtree(site_folder)
 
         # Gets the default configuration the site used
         # and runs its delete method for cleanup
         default_config = JackPlugin.get().get_default_config(site_config['type'])
         default_config.delete(site_config)
 
+        site_config.delete()
+        del self.configs[site_uuid]
+
         # Regen nginx configuration files
         self.rebuild_sites()
 
     def rebuild_sites(self):
         """ Turns jack's site json files into useable nginx configuration files """
-
-        # Make sure nginx can access the default folder
-        prism.os_command('chown -R nginx:nginx %s' % self.sites_default)
 
         for uuid, config in self.configs.items():
             maintenance_mode = 'maintenance' in config and config['maintenance']
@@ -142,18 +174,17 @@ class NginxManager:
             if 'hostname' in config:
                 server_block.add(nginx.Key('server_name', config['hostname']))
 
-            site_folder = os.path.join(self.site_files_location, uuid)
-            root_folder = os.path.join(site_folder, 'public_html')
-            if not os.path.exists(root_folder):
-                os.makedirs(root_folder)
-
-            # Make sure nginx can access the folder
-            prism.os_command('chown -R nginx:nginx %s' % site_folder)
+            site_folder = os.path.join(self._jack_plugin.site_files_location, uuid)
 
             # Sets the root and logs to the site's folder
-            server_block.add(nginx.Key('root', root_folder))
             server_block.add(nginx.Key('access_log', os.path.join(site_folder, 'access.log')))
             server_block.add(nginx.Key('error_log', os.path.join(site_folder, 'error.log')))
+
+            if 'root' in config:
+                root_folder = os.path.join(site_folder, config['root'])
+                if not os.path.exists(root_folder):
+                    os.makedirs(root_folder)
+                server_block.add(nginx.Key('root', root_folder))
 
             if 'index' in config:
                 server_block.add(nginx.Key('index', config['index']))
@@ -215,6 +246,14 @@ class SiteTypeConfig:
         """ This is run when the user deletes their site. Do some cleanup
         work if need be """
         pass
+
+    def post(self, request, site_config):
+        """ Called when the user sends a POST request from the site editor """
+        pass
+
+    def get(self, site_config):
+        """ Called when the user connects to the site editor """
+        return {}
 
 # Jack automatically searches for this class within pugin files
 # and adds them to all site's tabs

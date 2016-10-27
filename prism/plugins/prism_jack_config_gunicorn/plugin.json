@@ -7,13 +7,15 @@
 
     "dependencies": {
         "plugin": [
+            "crachit",
             "jack"
         ],
         "binary": [
             "php-fpm"
         ],
-        "library": [
-            "gunicorn"
+        "module": [
+            "gunicorn",
+            "virtualenv"
         ]
     }
 }

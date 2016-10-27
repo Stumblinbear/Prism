@@ -10,6 +10,7 @@
 				{% for tab in tabs %}
 					<li><a href="#{{ tab.uuid }}" data-toggle="tab">{{ tab.title }}</a></li>
 				{% endfor %}
+				<li class="pull-right"><form method="POST"><button type="submit" name="fix_permissions" class="btn btn-xs btn-warning">Fix Permissions</button></form></li>
 			</ul>
 			<div class="tab-content">
 				<div class="tab-pane active" id="general">
@@ -61,13 +62,12 @@
 		</div>
 	</div>
 	<div class="col-md-3">
+		{% block config_sidebar_top %}{% endblock %}
 		<div class="box box-info">
 			<div class="box-header">
 				<h3 class="box-title">Site Status</h3>
 			</div>
-			<div id="status_body" class="box-body text-center">
-
-			</div>
+			<div id="status_body" class="box-body text-center"></div>
 			<div id="status_overlay" class="overlay">
 				<i class="fa fa-refresh fa-spin"></i>
 			</div>
@@ -105,6 +105,7 @@
 				});
 			</script>
 		</div>
+		{% block config_sidebar %}{% endblock %}
 	</div>
 </div>
 {% endblock %}

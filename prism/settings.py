@@ -78,8 +78,6 @@ def init(pid):
 	prism.output('')
 
 	PRISM_VERSIONING = JSONConfig(path=os.path.join(TMP_PATH, 'VERSIONING-INFO'))
-	ping_version(True)
-	prism.output('')
 
 	# Load Prism's config
 	CONFIG_FOLDER = os.path.join(PRISM_PATH, 'config')

@@ -11,7 +11,7 @@
           <div class="box-body">
             <div class="row">
               <div class="col-md-3">
-                <center><img class="img-responsive" src="/static/plugin/jack/{{ config.type_id }}.png" /></center>
+                <center><img class="img-responsive" src="/static/plugin/{{ config._plugin.plugin_id }}/{{ config.type_id }}.png" /></center>
               </div>
               <div class="col-md-9">
                 <h2>{{ config.title }}</h2>
@@ -23,11 +23,19 @@
                   <div class="form-group">
                     <label class="col-sm-3" for="{{ option[0] }}">{{ option[1] }}</label>
                     <div class="col-sm-9">
-                      <input type="text" id="{{ option[0] }}" class="form-control" name="{{ option[0] }}" placeholder="{{ option[2] }}" />
+                      {% if is_list(option[2]) %}
+                        <select id="{{ option[0] }}" class="form-control" name="{{ option[0] }}">
+                          {% for option in option[2] %}
+                            <option value="{{ option[0] }}">{{ option[1] }}</option>
+                          {% endfor %}
+                        </select>
+                      {% else %}
+                        <input type="text" id="{{ option[0] }}" class="form-control" name="{{ option[0] }}" placeholder="{{ option[2] }}" />
+                      {% endif %}
                     </div>
                   </div>
                 {% endfor %}
-                <button class="btn btn-primary btn-block"{% if config.disabled %} disabled{% endif %}>Create</button>
+                <button type="submit" class="btn btn-primary btn-block"{% if config.disabled %} disabled{% endif %}>Create</button>
               </div>
             </div>
           </div>
@@ -36,4 +44,25 @@
     </div>
   </div>
 {% endfor %}
+<script type="text/javascript">
+  $(function() {
+    allow_submit = false;
+
+    $('button[type="submit"]').click(function(e) {
+      if(allow_submit) {
+        return;
+      }
+
+      button = $(this);
+      e.preventDefault();
+
+      $('body').append('<div class="loading">Loading...</div>');
+
+      setTimeout(function() {
+        allow_submit = true;
+        button.trigger('click');
+      }, 500);
+    });
+  });
+</script>
 {% endblock %}

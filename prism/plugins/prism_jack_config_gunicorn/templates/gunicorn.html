@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title_right %}<small>GUnicorn</small>{% endblock %}
+{% block config_content %}
+<div class="form-group">
+  <label for="hostname">Hostname</label>
+  <input type="text" id="hostname" class="form-control" name="hostname" placeholder="example.com" value="{{ config.hostname | hide_none }}" />
+</div>
+{% endblock %}
+{% block config_sidebar_top %}
+<div class="box box-{% if type.status == 'online' %}success{% else %}danger{% endif %}">
+  <div class="box-header">
+    <div class="box-body text-center">
+      <h3 style="margin:0">GUnicorn is {{ type.status }}</h3>
+      <hr />
+      <form method="post">
+        {% if type.status == 'online' %}
+          <button type="submit" class="btn btn-danger" name="gunicorn_restart">Restart</button>
+        {% else %}
+          <button type="submit" class="btn btn-danger" name="gunicorn_start">Attempt Start</button>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

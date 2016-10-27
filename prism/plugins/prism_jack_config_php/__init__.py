@@ -15,6 +15,7 @@ class PHPConfig(SiteTypeConfig):
         if not request.form['hostname']:
             return 'Must specify a hostname.'
         site_config['hostname'] = request.form['hostname']
+        site_config['root'] = 'public_html'
 
     def delete(self, site_config):
         pass
