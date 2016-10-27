@@ -81,8 +81,8 @@ if ! $(pip3 &> /dev/null); then
 fi
 
 poof 'Verifying dependencies'
-  if ! $(wget --version &> /dev/null); then
-    die 'Wget is not installed'
+  if ! $(curl --version &> /dev/null); then
+    die 'Curl is not installed'
   fi
 
   if ! $(tar --version &> /dev/null); then
@@ -119,8 +119,12 @@ poof 'Downloading Prism'
       ;;
     esac
 
-  wait 'Fetching' "wget ${RELEASE_LINK}"
+  wait 'Fetching' "curl -O ${RELEASE_LINK}"
   RELEASE_TAG=$(ls)
+
+  if ! [[ -z $RELEASE_TAG ]]; then
+    die 'Release fetching failed.'
+  fi
 
   wait "Extracting release: ${RELEASE_TAG}" "tar -zxf ${RELEASE_TAG}"
 
@@ -138,6 +142,7 @@ poof 'Actually installing, now'
   mv -f prism-panel.service /lib/systemd/system/ &> /dev/null
   mv -f LICENSE /opt/prism-panel/ &> /dev/null
   mv -f requirements.txt /opt/prism-panel/ &> /dev/null
+  mv -f scripts/uninstall.sh /opt/prism-panel/uninstall.sh &> /dev/null
 
   cd /opt/
   poof 'Setting up virtual environment'
@@ -177,8 +182,9 @@ output
 
 prompt 'You'\''re good to go! Starting Prism, now!'
 
-source bin/activate
-  python3 bin/prism-panel -n
+cd /opt/prism-panel/bin/
+source activate
+  python3 prism-panel -n
 deactivate
 
 { systemctl start prism-panel & } &> /dev/null
