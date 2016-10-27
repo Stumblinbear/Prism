@@ -1,0 +1,13 @@
+[Unit]
+Description=PrismCP Service
+After=network.target
+
+[Service]
+User=root
+Group=root
+WorkingDirectory=/opt/prism-panel
+Environment="PATH=/opt/prism-panel/bin"
+ExecStart=/opt/prism-panel/bin/python /opt/prism-panel/bin/prism-panel
+
+[Install]
+WantedBy=multi-user.target

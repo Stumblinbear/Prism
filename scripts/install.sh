@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# TODO: build-base libffi-dev python3-dev
+
 # Pretty functions. Because I can.
 poofs=0
 function poof { output ">${1}"; poofs=$((poofs+1)); }
@@ -85,11 +87,11 @@ paaf
 poof 'Actually installing, now'
   output 'Moving files'
   mkdir /opt/prism-panel &> /dev/null
-  mv bin /opt/prism-panel/ &> /dev/null
-  mv prism /opt/prism-panel/ &> /dev/null
-  mv etc/init.d/prism-panel /etc/init.d/
-  mv LICENSE /opt/prism-panel/ &> /dev/null
-  mv requirements.txt /opt/prism-panel/ &> /dev/null
+  mv -f bin /opt/prism-panel/ &> /dev/null
+  mv -f prism /opt/prism-panel/ &> /dev/null
+  mv -f prism-panel.service /lib/systemd/system/ &> /dev/null
+  mv -f LICENSE /opt/prism-panel/ &> /dev/null
+  mv -f requirements.txt /opt/prism-panel/ &> /dev/null
 
   cd /opt/
   poof 'Setting up virtual environment'
