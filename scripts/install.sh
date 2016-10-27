@@ -119,17 +119,11 @@ poof 'Downloading Prism'
       ;;
     esac
 
-  wait 'Fetching' "curl -O ${RELEASE_LINK}"
-  RELEASE_TAG=$(ls)
-
-  if ! [[ -z $RELEASE_TAG ]]; then
-    die 'Release fetching failed.'
-  fi
-
-  wait "Extracting release: ${RELEASE_TAG}" "tar -zxf ${RELEASE_TAG}"
+  wait 'Fetching' "curl -o prism.tar.gz ${RELEASE_LINK}"
+  wait "Extracting release: $(basename $RELEASE_LINK)" 'tar -zxf prism.tar.gz'
 
   output 'Removing tar file'
-  rm $RELEASE_TAG
+  rm -f prism.tar.gz
 
   cd $(ls)
 paaf
