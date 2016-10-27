@@ -192,7 +192,6 @@ def post_init():
 def generate_certificate():
 	import subprocess
 
-	prism.output('')
 	script = """
 		cd {0}/tmp;
 		openssl genrsa -des3 -out prism.key -passout pass:1234 2048 &> /dev/null;
@@ -205,7 +204,6 @@ def generate_certificate():
 		rm prism.*;
 	""".format(PRISM_PATH, PRISM_CONFIG['host'], CONFIG_FOLDER)
 	subprocess.call(script, shell=True)
-	prism.output('')
 
 def ping_version(output=False):
 	global PRISM_VERSIONING
