@@ -301,6 +301,8 @@ class PluginManager:
 			plugin._endpoint = plugin.plugin_id
 
 			self.plugins[plugin.plugin_id] = plugin
+			# Break. Just in case they imported another plugin's base class
+			break
 
 		for name, obj in self.get_classes(module, api.view.BaseView):
 			module_views.append(obj)
@@ -330,15 +332,14 @@ class PluginManager:
 		plugin.init(PRISM_STATE)
 		plugin.config.save()
 
+		blueprint_name = plugin._endpoint
+		# Create the plugin blueprint in flask
+		plugin._blueprint = Blueprint(blueprint_name,
+										plugin._info['_id'],
+										template_folder='templates')
+
 		if len(plugin._module_views) > 0:
 			self.possible_permissions[plugin.plugin_id] = {}
-
-			blueprint_name = plugin._endpoint
-
-			# Create the plugin blueprint in flask
-			plugin._blueprint = Blueprint(blueprint_name,
-											plugin._info['_id'],
-											template_folder='templates')
 
 			# Go through each of the module's views and add them to flask
 			for view_class in plugin._module_views:
@@ -472,8 +473,8 @@ class PluginManager:
 														view_func=view_func_wrapper,
 														defaults=route['defaults'])
 
-			flask_app().register_blueprint(plugin._blueprint, url_prefix='/' +
-																blueprint_name.replace('.', '/'))
+		flask_app().register_blueprint(plugin._blueprint, url_prefix='/' +
+															blueprint_name.replace('.', '/'))
 
 		plugin.post_init(PRISM_STATE)
 
@@ -616,10 +617,10 @@ def generate_random_string(length):
 def is_package_installed(pkg):
 	""" Returns true of the linux system has a
 	binary installed under the name "pkg" """
-	output = os_command('rpm -qa | grep %s' % pkg,
+	out, err = os_command('rpm -qa | grep %s' % pkg,
 						'dpkg -l | grep %s' % pkg,
 						'pkg_info | grep %s' % pkg)
-	return (len(output) > 0)
+	return (len(out) > 0)
 
 def get_os_command(redhat, debian=None, ubuntu=None):
 	if debian is None and ubuntu is None:
@@ -635,9 +636,34 @@ def get_os_command(redhat, debian=None, ubuntu=None):
 
 def os_command(redhat, debian=None, ubuntu=None):
 	""" Runs a command based on the OS currently in use """
-	return subprocess.Popen(get_os_command(redhat, debian, ubuntu), shell=True, stdout=PIPE).stdout.read()
+	process = subprocess.Popen(get_os_command(redhat, debian, ubuntu), shell=True, stdout=PIPE, stderr=PIPE)
+	return process.communicate()
 
-# Returns if the OS is a Debian, Red Hat, or BSD derivative
+def os_commands(redhat, debian=None, ubuntu=None, scl=None, user=None):
+	""" Runs a list of commands in a shell based on the OS currently in use """
+	commands = get_os_command(redhat, debian, ubuntu)
+
+	cmd_str = ''
+
+	if user is not None:
+		cmd_str += 'sudo su %s -c \'' % user
+
+	if scl is not None and scl:
+		cmd_str += 'scl enable %s "' % scl
+
+	for cmd in commands:
+		cmd_str += '%s;' % cmd
+
+	if scl is not None and scl:
+		cmd_str += '"'
+
+	if user is not None:
+		cmd_str += '\''
+
+	process = subprocess.Popen(cmd_str, shell=True, stdout=PIPE, stderr=PIPE)
+	return process.communicate()
+
+# Returns if the OS is a Debian, Red Hat, or Ubuntu
 def get_general_os():
 	""" Gets a simple name of the current linux operating system """
 	if any(word in platform.platform() for word in ("redhat", "centos", "fedora")):
