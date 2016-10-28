@@ -21,6 +21,7 @@ from prism.config import JSONConfig
 import prism.settings
 import prism.api.plugin
 import prism.api.view
+import prism.logging as logging
 
 
 from prism.version import get_version
@@ -87,16 +88,16 @@ class PluginManager:
 		self.possible_permissions = {}
 
 	def init(self):
-		poof('Searching')
+		logging.up('Searching')
 		self._search_plugins(settings.CORE_PLUGINS_PATH, True)
 		self._search_plugins(settings.PLUGINS_PATH, False)
-		paaf()
+		logging.down()
 
 		self._verify_dependencies()
 
-		poof('Loading plugins')
+		logging.up('Loading plugins')
 		self._load_plugins()
-		paaf()
+		logging.down()
 
 	def get_sorted_plugins(self):
 		sorted_keys = sorted(self.plugins, key=lambda x: x)
@@ -148,9 +149,9 @@ class PluginManager:
 	def _search_plugins(self, path, is_core):
 		""" Searches for plugins in a specified folder """
 		if is_core:
-			info('Finding core plugins')
+			logging.info('Finding core plugins')
 		else:
-			info('Finding additional plugins')
+			logging.info('Finding additional plugins')
 
 		sys.path.append(path)
 
@@ -161,7 +162,7 @@ class PluginManager:
 			base_folder = os.path.join(path, plugin_id)
 			if not os.path.isfile(base_folder):
 				if not os.path.exists(os.path.join(base_folder, 'plugin.json')):
-					error('Plugin does not have a plugin.json file. Offender: %s' % plugin_id)
+					logging.error('Plugin does not have a plugin.json file. Offender: %s' % plugin_id)
 					continue
 
 				plugin_info = JSONConfig(base_folder, 'plugin.json', auto_save=False)
@@ -190,7 +191,7 @@ class PluginManager:
 
 	def _verify_dependencies(self):
 		# These will always be initialized.
-		poof('Verifying dependencies')
+		logging.up('Verifying dependencies')
 		installed_packages_list = sorted([i.key for i in pip.get_installed_distributions()])
 		for plugin_id, plugin_info in self.available_plugins.items():
 			if not plugin_info['_is_core']:
@@ -221,8 +222,8 @@ class PluginManager:
 				if not plugin_info['_is_satisfied']:
 					# Create a dummy plugin container
 					self._insert_dummy_plugin(plugin_info)
-					error('Dependency unsatisfied. Offender: %s' % plugin_id)
-		paaf()
+					logging.error('Dependency unsatisfied. Offender: %s' % plugin_id)
+		logging.down()
 
 	def _load_plugins(self):
 		""" Attempts to load every enabled plugin """
@@ -238,19 +239,19 @@ class PluginManager:
 				plugins_additional.append(plugin_info)
 
 		# These will always be initialized.
-		info('Loading %s core plugin(s)' % len(core_plugins))
+		logging.info('Loading %s core plugin(s)' % len(core_plugins))
 		for plugin_info in core_plugins:
 			plugin = self._import_plugin(plugin_info)
 			if not plugin:
-				error('Error: Failed to load core plugin. Offender: %s' % plugin_info['id'])
+				logging.error('Error: Failed to load core plugin. Offender: %s' % plugin_info['id'])
 				continue
 			else:
-				good('Loaded %s' % plugin_info['id'])
+				logging.good('Loaded %s' % plugin_info['id'])
 
 			plugins_loaded.append(plugin)
-		paaf()
+		logging.down()
 
-		info('Sorting dependencies')
+		logging.info('Sorting dependencies')
 		sorted_plugins = []
 		while plugins_additional:
 			added_any = False
@@ -273,7 +274,7 @@ class PluginManager:
 				break
 		plugins_additional = sorted_plugins
 
-		poof('Loading %s additional plugin(s)' % len(plugins_additional))
+		logging.up('Loading %s additional plugin(s)' % len(plugins_additional))
 		# Start plugins if they're set to be enabled.
 		for plugin_info in plugins_additional:
 			if not self.is_enabled(plugin_info['id']):
@@ -282,19 +283,19 @@ class PluginManager:
 
 			plugin = self._import_plugin(plugin_info)
 			if not plugin:
-				error('Error: Failed to load additional plugin. Offender: %s' % plugin_id)
+				logging.error('Error: Failed to load additional plugin. Offender: %s' % plugin_id)
 				continue
 			else:
-				good('Loaded %s' % plugin_info['id'])
+				logging.good('Loaded %s' % plugin_info['id'])
 
 			plugins_loaded.append(plugin)
-		paaf()
+		logging.down()
 
-		poof('Initializing %s plugin(s)' % len(plugins_loaded))
+		logging.up('Initializing %s plugin(s)' % len(plugins_loaded))
 		for plugin in plugins_loaded:
 			plugin._info['_is_enabled'] = True
 			self._init_plugin(plugin)
-		paaf()
+		logging.down()
 
 	def _import_plugin(self, plugin_info):
 		module = __import__(plugin_info['_id'], globals(), locals())
@@ -316,7 +317,7 @@ class PluginManager:
 			module_views.append(obj)
 
 		if plugin is None:
-			error('Error: Invalid plugin in plugins folder. Offender: %s' % plugin_id)
+			logging.error('Error: Invalid plugin in plugins folder. Offender: %s' % plugin_id)
 			return False
 
 		plugin._module_views = module_views
@@ -329,7 +330,7 @@ class PluginManager:
 			2. Saves the config
 			3. Loads the plugin's endpoints into flask
 		"""
-		poof('Starting %s v%s' % (plugin.name, plugin.version))
+		logging.up('Starting %s v%s' % (plugin.name, plugin.version))
 
 		def get_wrapper(plugin):
 			def func():
@@ -382,7 +383,7 @@ class PluginManager:
 										view.menu['order'],
 										icon=view.menu['icon'])
 						if prism.settings.is_dev():
-							info('Registered menu item for /%s: %s' % (blueprint_name + view.endpoint, view.menu['id']))
+							logging.info('Registered menu item for /%s: %s' % (blueprint_name + view.endpoint, view.menu['id']))
 					else:
 						# Generate a hidden menu item so titles show correctly
 						item = current_menu.submenu(generate_random_string(12))
@@ -473,7 +474,7 @@ class PluginManager:
 									pass
 
 						if prism.settings.is_dev():
-							info('Registered page /%s: %s %s' % (blueprint_name + view.endpoint + route['endpoint'], blueprint_name + '.' + endpoint_id, route['http_methods']))
+							logging.info('Registered page /%s: %s %s' % (blueprint_name + view.endpoint + route['endpoint'], blueprint_name + '.' + endpoint_id, route['http_methods']))
 
 						plugin._blueprint.add_url_rule(view.endpoint + route['endpoint'],
 														endpoint=endpoint_id,
@@ -486,7 +487,7 @@ class PluginManager:
 
 		plugin.post_init(PRISM_STATE)
 
-		paaf()
+		logging.down()
 
 	def func_wrapper(self, plugin_id, func):
 		""" Wraps the route return function. This allows us
@@ -557,29 +558,6 @@ def command(cmd):
 	""" Runs a shell command and returns the output """
 	return subprocess.call(cmd, shell=True)
 
-poofs = 0
-def poof(string=None):
-	if string is not None:
-		output('>%s' % string, string_color='\033[93m')
-	global poofs
-	poofs += 1
-def paaf():
-	global poofs
-	poofs -= 1
-
-def output(string='', prefix_color='\033[90m', prefix_char=':', extend_char='|', string_color=''):
-	prefix = prefix_char + prefix_char + '> \033[1m'
-	for i in range(0, poofs):
-		prefix = prefix + extend_char
-	print('\033[1m' + prefix_color + prefix + '\033[0m' + string_color + str(string) + '\033[0m')
-def info(string):
-	output(string, '\033[34m', 'i', '|', '\033[94m')
-def good(string):
-	output(string, '\033[32m', 'o', '|', '\033[92m')
-def error(string):
-	output(string, '\033[31m', ':', '!', '\033[91m')
-
-
 def get_input(string, default=None, allow_empty=True):
 	""" Gets input from the user in the shell """
 	if default:
@@ -627,30 +605,24 @@ def is_package_installed(pkg):
 	""" Returns true of the linux system has a
 	binary installed under the name "pkg" """
 	out, err = os_command('rpm -qa | grep %s' % pkg,
-						'dpkg -l | grep %s' % pkg,
-						'pkg_info | grep %s' % pkg)
+						'dpkg -l | grep %s' % pkg)
 	return (len(out) > 0)
 
-def get_os_command(redhat, debian=None, ubuntu=None):
-	if debian is None and ubuntu is None:
-		return redhat
-
+def get_os_command(redhat, debian=None):
 	os = get_general_os()
-	if os == 'redhat':
+	if os == 'redhat' or debian is None:
 		return redhat
 	elif os == 'debian':
 		return debian
-	else:
-		return ubuntu
 
-def os_command(redhat, debian=None, ubuntu=None):
+def os_command(redhat, debian=None):
 	""" Runs a command based on the OS currently in use """
-	process = subprocess.Popen(get_os_command(redhat, debian, ubuntu), shell=True, stdout=PIPE, stderr=PIPE)
+	process = subprocess.Popen(get_os_command(redhat, debian), shell=True, stdout=PIPE, stderr=PIPE)
 	return process.communicate()
 
-def os_commands(redhat, debian=None, ubuntu=None, scl=None, user=None):
+def os_commands(redhat, debian=None, scl=None, user=None):
 	""" Runs a list of commands in a shell based on the OS currently in use """
-	commands = get_os_command(redhat, debian, ubuntu)
+	commands = get_os_command(redhat, debian)
 
 	cmd_str = ''
 
@@ -677,7 +649,5 @@ def get_general_os():
 	""" Gets a simple name of the current linux operating system """
 	if any(word in platform.platform() for word in ("redhat", "centos", "fedora")):
 		return 'redhat'
-	elif any(word in platform.platform() for word in ("ubuntu")):
-		return 'ubuntu'
 	else:
 		return 'debian'

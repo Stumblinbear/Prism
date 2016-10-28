@@ -12,19 +12,20 @@ import jinja2
 
 import prism
 import prism.settings
+import prism.logging as logging
 
 from prism.pyversions import PythonVersions
 
 
 # Initialize the class so it doesn't hang later
-prism.poof('Detecting python versions')
+logging.up('Detecting python versions')
 pyversions = PythonVersions.get()
 
-prism.poof('Found %d version%s' % (len(pyversions.versions), 's' if len(pyversions.versions) != 1 else ''))
+logging.up('Found %d version%s' % (len(pyversions.versions), 's' if len(pyversions.versions) != 1 else ''))
 for version in pyversions.versions:
-	prism.info(version)
-prism.paaf()
-prism.paaf()
+	logging.info(version)
+logging.down()
+logging.down()
 
 
 flask_app = prism.flask_app()
@@ -98,7 +99,7 @@ def locale_(plugin_id, s):
 		plugin = prism.get_plugin(plugin_id)
 
 		if plugin is None:
-			prism.output('Unknown plugin ID. Offender: %s' % plugin_id)
+			logging.output('Unknown plugin ID. Offender: %s' % plugin_id)
 			return s
 
 		ns = plugin.locale[s]
@@ -174,7 +175,7 @@ def timesince(dt, past_="ago", future_="from now", default="just now"):
 
 def repeat(start_time, repeat_time):
 	if repeat_time < 1:
-		prism.error('Repeating function must have a repeat time greater than 1 second')
+		logging.error('Repeating function must have a repeat time greater than 1 second')
 
 		def repeat_inner(func):
 			return func

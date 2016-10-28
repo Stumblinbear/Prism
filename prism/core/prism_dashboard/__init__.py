@@ -2,6 +2,7 @@ import flask
 import jinja2
 
 import prism
+import prism.logging as logging
 from prism.api.plugin import BasePlugin
 
 from .views import *
@@ -22,7 +23,7 @@ class DashboardPlugin(BasePlugin):
 			if widget.widget_id not in self._widgets:
 				self._widgets[widget.widget_id] = {'shown': True, 'order': len(self._available_widgets)}
 
-		prism.output('Registered %s widgets' % len(self._available_widgets))
+		logging.output('Registered %s widgets' % len(self._available_widgets))
 		prism.flask_app().jinja_env.globals["render_widget"] = self.render_widget
 
 	def get_widget(self, widget_id):

@@ -8,6 +8,7 @@ import flask_menu
 
 import prism
 import prism.settings
+import prism.logging as logging
 
 
 class ModifiedLoader(DispatchingJinjaLoader):
@@ -26,10 +27,10 @@ class Daemon:
 		self.should_bind = should_bind
 
 	def start(self, opts):
-		prism.output('----------=Prism=----------')
+		logging.output('----------=\e[1mPrism\e[0m=----------')
 		prism.settings.init(os.getpid())
 
-		prism.poof('Starting Prism')
+		logging.up('Starting Prism')
 
 		self.init_flask()
 		self.jinja_options()
@@ -43,7 +44,7 @@ class Daemon:
 		return 0
 
 	def init_flask(self):
-		prism.output('Initializing Flask')
+		logging.output('Initializing Flask')
 		self.flask_app = Flask(__name__, template_folder='templates')
 		self.flask_app.secret_key = prism.settings.PRISM_CONFIG['secret_key']
 
@@ -67,12 +68,12 @@ class Daemon:
 		prism.init(self.flask_app, prism.settings.PRISM_CONFIG)
 
 		# Load in prism's plugins
-		prism.poof('Starting plugin manager')
+		logging.up('Starting plugin manager')
 		prism.plugin_manager()
-		prism.paaf()
+		logging.down()
 
 	def start_http(self):
-		prism.output('Verifying SSL')
+		logging.output('Verifying SSL')
 		has_ssl = False
 
 		try:
@@ -91,13 +92,13 @@ class Daemon:
 
 			# Generate certificate
 			if not ssl_files_exist:
-				prism.poof()
+				logging.up()
 
-				prism.poof('Generating SSL certificate')
+				logging.up('Generating SSL certificate')
 				prism.settings.generate_certificate()
-				prism.paaf()
+				logging.down()
 
-				prism.paaf()
+				logging.down()
 
 			if self.should_bind:
 				# Finally, start Prism under a self-signed SSL connection
@@ -105,5 +106,5 @@ class Daemon:
 								ssl_context=(ssl_crt, ssl_key))
 		else:
 			if self.should_bind:
-				prism.error('Warning: Prism is starting under an insecure connection!')
+				logging.error('Warning: Prism is starting under an insecure connection!')
 				self.flask_app.run(host='::', port=9000, threaded=True, debug=prism.settings.is_dev())

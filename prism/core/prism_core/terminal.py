@@ -5,6 +5,7 @@ import select
 import subprocess
 
 import prism
+import prism.logging as logging
 
 class Terminal:
     def __init__(self, command=None, return_url=None, restart=False):
@@ -14,7 +15,7 @@ class Terminal:
         self.restart = restart
         self.process = TerminalProcess(*pty.openpty())
 
-        prism.info('Terminal Opened: %s' % self.terminal_id)
+        logging.info('Terminal Opened: %s' % self.terminal_id)
 
     def write(self, data):
         self.process.write(data + '\n')

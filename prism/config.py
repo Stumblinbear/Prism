@@ -2,6 +2,7 @@ import json
 import os
 
 import prism
+import prism.logging as logging
 from prism.api.plugin import BasePlugin
 
 class JSONConfig(object):
@@ -18,7 +19,7 @@ class JSONConfig(object):
         elif path is not None:
             self.path = path
         else:
-            prism.output('Error: Attmpted to create a config file with no path.')
+            logging.output('Error: Attmpted to create a config file with no path.')
 
         self.auto_save = auto_save
 
@@ -100,10 +101,10 @@ class LocaleConfig(object):
             else:
                 self.path = os.path.join(obj, 'locale', 'en_US')
 
-            prism.output('Locale Warning: No locale for %s. Offender: %s falling back to en_US.' % (locale, self.plugin_id))
+            logging.output('Locale Warning: No locale for %s. Offender: %s falling back to en_US.' % (locale, self.plugin_id))
 
         if not os.path.exists(self.path):
-            prism.output('Locale Error: Failed to load locale. %s does not exist in %s. Offender: %s' % (locale, self.path, self.plugin_id))
+            logging.output('Locale Error: Failed to load locale. %s does not exist in %s. Offender: %s' % (locale, self.path, self.plugin_id))
             return
 
         with open(self.path) as f:

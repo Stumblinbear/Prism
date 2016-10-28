@@ -10,8 +10,6 @@ import prism.login
 import prism.settings
 import prism.helpers
 
-prism.paaf()
-
 flask_app = prism.flask_app()
 
 @prism.helpers.repeat(0, 60 * 60)
