@@ -6,7 +6,7 @@ After=network.target
 User=root
 Group=root
 WorkingDirectory=/opt/prism-panel
-Environment="PATH=/opt/prism-panel/bin"
+Environment="PATH=/opt/prism-panel/bin:$PATH"
 ExecStart=/opt/prism-panel/bin/python /opt/prism-panel/bin/prism-panel
 
 [Install]
