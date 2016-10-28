@@ -1,15 +1,17 @@
 {% extends 'panel.html' %}
+{% block title %}{% endblock %}
 {% block content %}
 <style>
+  .content-wrapper {
+    color: #FFF;
+    background: #000;
+  }
+
   #shell {
     display: block;
     width: 100%;
     height: 100%;
-    min-height: 400px;
     padding: 1em;
-
-    color: #FFF;
-    background: #000;
 
     font-family: Courier;
 
@@ -45,41 +47,54 @@
       .done(function(response) {
         if(response.type == "dead") {
           {% if terminal.restart %}
-            shell_display("<br />Completed.");
             {% if terminal.return_url != None %}
               swal({
                 title: "Restart Pending",
                 text: "This command requires prism to restart.",
-                type: "warning"
-              }, function() {
+                type: "warning",
+                allowOutsideClick: false
+              }).then(function(result) {
                 window.location = "{{ url_for('core.RestartView', return_url=terminal.return_url) }}";
               });
             {% else %}
               swal({
                 title: "Restart Pending",
                 text: "This command requires prism to restart.",
-                type: "warning"
-              }, function() {
+                type: "warning",
+                allowOutsideClick: false
+              }).then(function(result) {
                 window.location = "{{ url_for('core.RestartView') }}";
               });
             {% endif %}
           {% elif terminal.return_url != None %}
-            shell_display("<br />Completed. <a href='{{ url_for(terminal.return_url) }}'>Return.</a>");
-          {% else %}
-            shell_display("<br />Completed.");
+            shell_display("<br /><br /><a href='{{ url_for(terminal.return_url) }}'>Return.</a>");
           {% endif %}
 
           $("#shell-input").hide();
           return;
+        }else if(response.type == "error") {
+          swal({
+            title: "Fatal Error",
+            text: response.data,
+            type: "error"
+          });
+          $("#shell-input").hide();
+          return;
         }
 
-        shell_display(response.data);
+        for(var i in response.data)
+          $("#shell-display").append(response.data[i].replace('\n', '<br />'));
 
         setTimeout(function() {
           receive_output();
         }, 250);
       }).fail(function(xhr, status, err) {
-        shell_display("Fail: " + (err == "" ? "CONNECTION FAILED" : err));
+        swal({
+          title: "Fatal Error",
+          text: (err == "" ? "CONNECTION FAILED" : err),
+          type: "error"
+        });
+        $("#shell-input").hide();
       });
     };
 
@@ -90,49 +105,45 @@
 
   	$("#input").on("keyup", function(e) {
   		if(e.which == 13) {
-        shell_display(" > " + querystring + "<br />");
-    		$.post("/core/terminal/stream/{{ terminal.terminal_id }}", [{"in": querystring}]);
-    		$("#input").val("");
+    		$.post("/core/terminal/stream/{{ terminal.terminal_id }}", [{"in": $(this).val()}]);
+    		$(this).val("");
       }
   	});
 
   	$("#input").focus();
 
-    swal({
-      title: "",
-      text: "Are you sure you wish to run the command: <code>{{ terminal.command }}</code>?",
-      type: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      confirmButtonText: "Yes",
-      cancelButtonText: "No",
-      showLoaderOnConfirm: true,
-      preConfirm: function() {
-        return new Promise(function(resolve, reject) {
-          $.post("/core/terminal/stream/{{ terminal.terminal_id }}", {"in": 1})
-          .done(function() {
-            resolve();
+    {% if terminal.command != None %}
+      swal({
+        title: "",
+        text: "Are you sure you wish to run the command: <code>{{ terminal.command }}</code>?",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes",
+        cancelButtonText: "No",
+        showLoaderOnConfirm: true,
+        allowOutsideClick: false,
+        preConfirm: function() {
+          return new Promise(function(resolve, reject) {
+            $.post("/core/terminal/stream/{{ terminal.terminal_id }}", {"in": 1})
+            .done(function() {
+              resolve();
+            });
           });
-        });
-      }
-    }).then(function(result) {
-        $.post("/core/terminal/stream/{{ terminal.terminal_id }}", {"in": 1})
+        }
+      }).then(function(result) {
+        receive_output();
+      }, function(dismiss) {
+        $.post("/core/terminal/stream/{{ terminal.terminal_id }}", {"in": 0})
         .done(function() {
-          setTimeout(function() {
-            receive_output();
-            $("#shell-input").show();
-          }, 1000);
+          {% if terminal.return_url != None %}
+            window.location = "{{ url_for(terminal.return_url) }}"
+          {% else %}
+            window.location = "{{ url_for('dashboard.DashboardView') }}"
+          {% endif %}
         });
-    }, function(dismiss) {
-      $.post("/core/terminal/stream/{{ terminal.terminal_id }}", {"in": 0})
-      .done(function() {
-        {% if terminal.return_url != None %}
-          window.location = "{{ url_for(terminal.return_url) }}"
-        {% else %}
-          window.location = "{{ url_for('dashboard.DashboardView') }}"
-        {% endif %}
       });
-    });
+    {% endif %}
   });
 </script>
 {% endblock %}

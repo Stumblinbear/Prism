@@ -11,7 +11,7 @@ import prism.settings
 
 from prism.api.view import BaseView, subroute
 
-from prism_core.terminal import TerminalCommand
+from prism_core.terminal import Terminal
 
 class ErrorView(BaseView):
     def __init__(self):
@@ -49,7 +49,7 @@ class RestartView(BaseView):
 
         try:
             p = psutil.Process(os.getpid())
-            for handler in p.get_open_files() + p.connections():
+            for handler in p.open_files() + p.connections():
                 os.close(handler.fd)
         except Exception as e:
             logging.error(e)
@@ -104,7 +104,7 @@ class TerminalView(BaseView):
                                 'error': 'No command specified.'
                             }
                     )
-        terminal = TerminalCommand(command, return_url=return_url, restart=bool(restart))
+        terminal = Terminal(command, return_url=return_url, restart=bool(restart))
         self.terminals[terminal.terminal_id] = terminal
         return ('core.TerminalView', {'terminal_id': terminal.terminal_id})
 
@@ -113,10 +113,10 @@ class TerminalView(BaseView):
     def stream_get(self, request, terminal_id=None):
         terminal = self.get_terminal(terminal_id)
         if isinstance(terminal, tuple):
-            return terminal
+            return {'type': 'error', 'data': terminal[1]['error']}
 
-        resp = terminal.output()
-        if resp == -1:
+        resp = terminal.read()
+        if not resp and not terminal.alive:
             del self.terminals[terminal.terminal_id]
             return {'type': 'dead'}
 
@@ -127,19 +127,18 @@ class TerminalView(BaseView):
     def stream_post(self, request, terminal_id):
         terminal = self.get_terminal(terminal_id)
         if isinstance(terminal, tuple):
-            return terminal
+            return terminal[1]['error']
 
         user_input = request.form['in']
-
-        if not terminal.running:
+        if terminal.command is not None:
             if user_input == '1':
-                terminal.init()
-            else:
+                terminal.write(terminal.command)
+                terminal.command = None
+            elif user_input == '0':
                 del self.terminals[terminal.terminal_id]
-            return '0'
+        elif user_input != '':
+            terminal.write(user_input)
 
-        if user_input != '':
-            terminal.input(user_input)
         return '0'
 
     def get_terminal(self, terminal_id):
@@ -153,13 +152,4 @@ class TerminalView(BaseView):
                             }
                     )
 
-        terminal = self.terminals[terminal_id]
-        if terminal.running and terminal.process is None:
-            del self.terminals[terminal.terminal_id]
-            return ('error', {
-                                'title': 'Terminal',
-                                'error': 'Terminal process dead.'
-                            }
-                    )
-
-        return terminal
+        return self.terminals[terminal_id]
