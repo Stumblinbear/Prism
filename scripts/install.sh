@@ -9,13 +9,13 @@ fi
 
 # Pretty functions. Because I can.
 poofs=0
-function poof { output ">${1}"; poofs=$((poofs+1)); }
+function poof { output "\e[33m>${1}"; poofs=$((poofs+1)); }
 function paaf { poofs=$((poofs-1)); }
 function appt { echo -e -n '\e[2m'; if [[ $poofs -gt 0 ]]; then for z in $(seq 1 $poofs); do echo -n $1; done; fi; }
 function output { echo -e -n '\e[1m\e[90m::> '; appt '|'; echo -e "\e[0m${1}"; }
-function info { echo -e -n '\e[1m\e[34mii> '; appt '|'; echo -e "\e[0m${1}"; }
-function good { echo -e -n '\e[1m\e[32moo> '; appt '|'; echo -e "\e[0m${1}"; }
-function error { echo -e -n '\e[1m\e[31m::> '; appt '!'; echo -e "\e[0m${1}" 1>&2; }
+function info { echo -e -n '\e[1m\e[34mii> '; appt '|'; echo -e "\e[0m\e[94m${1}"; }
+function good { echo -e -n '\e[1m\e[32moo> '; appt '|'; echo -e "\e[0m\e[92m${1}"; }
+function error { echo -e -n '\e[1m\e[31m::> '; appt '!'; echo -e "\e[0m\e[91m${1}" 1>&2; }
 function die { echo -e -n '\e[1m\e[31mXT> '; appt '!'; echo -e "\e[0m\e[1m\e[97m\e[41m${1}\e[0m" 1>&2; exit 1; }
 function prompt { echo -e -n '\e[1m\e[33m??> '; echo -e -n "\e[0m${1} "; }
 function wait {

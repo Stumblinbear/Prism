@@ -105,5 +105,5 @@ class Daemon:
 								ssl_context=(ssl_crt, ssl_key))
 		else:
 			if self.should_bind:
-				prism.output('Warning: Prism is starting under an insecure connection!')
+				prism.error('Warning: Prism is starting under an insecure connection!')
 				self.flask_app.run(host='::', port=9000, threaded=True, debug=prism.settings.is_dev())

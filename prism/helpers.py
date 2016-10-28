@@ -22,7 +22,7 @@ pyversions = PythonVersions.get()
 
 prism.poof('Found %d version%s' % (len(pyversions.versions), 's' if len(pyversions.versions) != 1 else ''))
 for version in pyversions.versions:
-	prism.output(version)
+	prism.info(version)
 prism.paaf()
 prism.paaf()
 

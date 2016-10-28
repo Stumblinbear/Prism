@@ -14,7 +14,8 @@ class PythonVersions:
 
         for path in results:
             if path[:4] == '/usr' or path[:4] == '/opt':
-                self.versions.append(PythonVersion(path))
+                if not os.path.islink(path):
+                    self.versions.append(PythonVersion(path))
 
     def get():
         if PythonVersions.instance is None:
@@ -28,7 +29,7 @@ class PythonVersion:
         path_arr = path.split('/')[1:]
         self.cmd = path_arr[len(path_arr) - 1]
 
-        if path_arr[0] == 'opt':
+        if path_arr[0] == 'opt' and path_arr[1] != 'prism-panel':
             self.scl = path_arr[2]
 
             # If it's an scl, attach it and grab the version
@@ -40,7 +41,9 @@ class PythonVersion:
             self.scl = False
 
             # If it's just a version, it's pretty simple to grab the version
-            out, result = prism.os_command('%s -V' % path)
+            py3, result = prism.os_command('%s -V' % path)
+            if py3:
+                result = py3
 
         self.version = result.decode().split('\n')[0]
 
@@ -51,4 +54,4 @@ class PythonVersion:
             return ''
 
     def __str__(self):
-        return ('' if not self.scl else '[SCL] ') + self.version + ': ' + self.cmd
+        return ('' if not self.scl else '[SCL] ') + self.version + ': ' + self.cmd + ' (' + self.path + ')'

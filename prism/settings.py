@@ -74,8 +74,8 @@ def init(pid):
 	if not os.path.exists(TMP_PATH):
 		os.makedirs(TMP_PATH)
 
-	prism.output('Currently running in %s' % PRISM_PATH)
-	prism.output('')
+	prism.info('Currently running in %s' % PRISM_PATH)
+	prism.output()
 
 	PRISM_VERSIONING = JSONConfig(path=os.path.join(TMP_PATH, 'VERSIONING-INFO'))
 
@@ -108,15 +108,15 @@ def init(pid):
 		PRISM_CONFIG['host'], used_default = prism.get_input(PRISM_LOCALE['start.host.prompt'], default=subst['host'])
 
 		if used_default:
-			prism.output('')
+			prism.output()
 			prism.output(PRISM_LOCALE['start.host.correct'])
 
 		# Secret generation
-		prism.output('')
+		prism.output()
 		prism.output(PRISM_LOCALE['start.secret'])
 		subst['secret_key'], used_default = prism.get_input(PRISM_LOCALE['start.secret.prompt'])
 
-		prism.output('')
+		prism.output()
 		if used_default:
 			secret_key = prism.generate_random_string(32)
 			prism.output(PRISM_LOCALE['start.secret.generate'].format(**subst))
@@ -126,13 +126,13 @@ def init(pid):
 		PRISM_CONFIG['secret_key'] = secret_key
 
 		# Dev check
-		prism.output('')
+		prism.output()
 		prism.output(PRISM_LOCALE['start.dev_mode'])
 		PRISM_CONFIG['dev_mode'] = prism.get_yesno(PRISM_LOCALE['start.dev_mode.prompt'])
 
-		prism.output('')
+		prism.output()
 		prism.output(PRISM_LOCALE['start.done'])
-		prism.output('')
+		prism.output()
 
 		conf = JSONConfig(path=config_file)
 		for key, value in PRISM_CONFIG.items():
@@ -152,13 +152,13 @@ def init(pid):
 		if 'secret_key' not in PRISM_CONFIG:
 			prism.output(PRISM_LOCALE['start.missing.secret'])
 			PRISM_CONFIG['secret_key'] = prism.generate_random_string(32)
-			prism.output('')
+			prism.output()
 
 		if 'host' not in PRISM_CONFIG:
 			host = socket.gethostbyname(socket.gethostname())
 			prism.output(PRISM_LOCALE['start.missing.host'])
 			PRISM_CONFIG['host'], used_default = prism.get_input(PRISM_LOCALE['start.host.prompt'], default=host)
-			prism.output('')
+			prism.output()
 
 def post_init():
 	try:
@@ -170,7 +170,7 @@ def post_init():
 
 	import prism.login as prism_login
 	if prism_login.User.query.count() == 0:
-		prism.output('')
+		prism.output()
 
 		# Username and Password prompt
 		prism.output(PRISM_LOCALE['start.login.username'])
@@ -178,7 +178,7 @@ def post_init():
 		password, used_default = prism.get_password(PRISM_LOCALE['start.login.password.prompt'], default='password')
 
 		if used_default:
-			prism.output('')
+			prism.output()
 
 			prism.output(PRISM_LOCALE['start.login.password.default.1'])
 			time.sleep(2)
@@ -186,7 +186,7 @@ def post_init():
 			time.sleep(5)
 			prism.output(PRISM_LOCALE['start.login.password.default.3'])
 
-		prism.output('')
+		prism.output()
 		prism_login.create_user(username, password, username.capitalize(), 'Main Administrator', ['*'])
 
 def generate_certificate():
@@ -219,7 +219,7 @@ def ping_version(output=False):
 		rate_limited, dev_changes, recent_releases, num_releases = get_new_versions(prism.__version__)
 
 		if rate_limited:
-			prism.output('Rate limited. Version info not checked.')
+			prism.error('Rate limited. Version info not checked.')
 
 			# If no values made yet, apply some defaults
 			if 'dev_changes' not in PRISM_VERSIONING:
@@ -246,14 +246,14 @@ def ping_version(output=False):
 
 	if output or should_check:
 		if PRISM_VERSIONING['dev_changes'] is None:
-			prism.output('Failed to check development version.')
+			prism.error('Failed to check development version.')
 		elif len(PRISM_VERSIONING['dev_changes']) > 0:
-			prism.output('%s development commit(s) since the latest version.' % len(PRISM_VERSIONING['dev_changes']))
+			prism.info('%s development commit(s) since the latest version.' % len(PRISM_VERSIONING['dev_changes']))
 		if PRISM_VERSIONING['recent_releases'] is None:
-			prism.output('Failed to check for latest version.')
+			prism.error('Failed to check for latest version.')
 		elif len(PRISM_VERSIONING['recent_releases']) != 0:
-			prism.poof('Current version: %s' % prism.__version__)
+			prism.info('Current version: %s' % prism.__version__)
 			if prism.__version__ != PRISM_VERSIONING['recent_releases'][0]['name']:
-				prism.output('Your version is out of date. Latest version is %s' % PRISM_VERSIONING['recent_releases'][0]['name'])
+				prism.error('Your version is out of date. Latest version is %s' % PRISM_VERSIONING['recent_releases'][0]['name'])
 			prism.paaf()
 		prism.paaf()

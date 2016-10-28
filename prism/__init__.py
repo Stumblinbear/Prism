@@ -94,7 +94,7 @@ class PluginManager:
 
 		self._verify_dependencies()
 
-		poof('Loading')
+		poof('Loading plugins')
 		self._load_plugins()
 		paaf()
 
@@ -148,9 +148,9 @@ class PluginManager:
 	def _search_plugins(self, path, is_core):
 		""" Searches for plugins in a specified folder """
 		if is_core:
-			output('Finding core plugins')
+			info('Finding core plugins')
 		else:
-			output('Finding additional plugins')
+			info('Finding additional plugins')
 
 		sys.path.append(path)
 
@@ -161,7 +161,7 @@ class PluginManager:
 			base_folder = os.path.join(path, plugin_id)
 			if not os.path.isfile(base_folder):
 				if not os.path.exists(os.path.join(base_folder, 'plugin.json')):
-					output('Plugin does not have a plugin.json file. Offender: %s' % plugin_id)
+					error('Plugin does not have a plugin.json file. Offender: %s' % plugin_id)
 					continue
 
 				plugin_info = JSONConfig(base_folder, 'plugin.json', auto_save=False)
@@ -221,7 +221,7 @@ class PluginManager:
 				if not plugin_info['_is_satisfied']:
 					# Create a dummy plugin container
 					self._insert_dummy_plugin(plugin_info)
-					output('Dependency unsatisfied. Offender: %s' % plugin_id)
+					error('Dependency unsatisfied. Offender: %s' % plugin_id)
 		paaf()
 
 	def _load_plugins(self):
@@ -238,17 +238,19 @@ class PluginManager:
 				plugins_additional.append(plugin_info)
 
 		# These will always be initialized.
-		output('Loading %s core plugin(s)' % len(core_plugins))
+		info('Loading %s core plugin(s)' % len(core_plugins))
 		for plugin_info in core_plugins:
 			plugin = self._import_plugin(plugin_info)
 			if not plugin:
-				output('Error: Failed to load core plugin. Offender: %s' % plugin_id)
+				error('Error: Failed to load core plugin. Offender: %s' % plugin_info['id'])
 				continue
+			else:
+				good('Loaded %s' % plugin_info['id'])
 
 			plugins_loaded.append(plugin)
 		paaf()
 
-		output('Sorting dependencies')
+		info('Sorting dependencies')
 		sorted_plugins = []
 		while plugins_additional:
 			added_any = False
@@ -280,8 +282,10 @@ class PluginManager:
 
 			plugin = self._import_plugin(plugin_info)
 			if not plugin:
-				output('Error: Failed to load additional plugin. Offender: %s' % plugin_id)
+				error('Error: Failed to load additional plugin. Offender: %s' % plugin_id)
 				continue
+			else:
+				good('Loaded %s' % plugin_info['id'])
 
 			plugins_loaded.append(plugin)
 		paaf()
@@ -312,7 +316,7 @@ class PluginManager:
 			module_views.append(obj)
 
 		if plugin is None:
-			output('Error: Invalid plugin in plugins folder. Offender: %s' % plugin_id)
+			error('Error: Invalid plugin in plugins folder. Offender: %s' % plugin_id)
 			return False
 
 		plugin._module_views = module_views
@@ -378,7 +382,7 @@ class PluginManager:
 										view.menu['order'],
 										icon=view.menu['icon'])
 						if prism.settings.is_dev():
-							prism.output('Registered menu item for /%s: %s' % (blueprint_name + view.endpoint, view.menu['id']))
+							info('Registered menu item for /%s: %s' % (blueprint_name + view.endpoint, view.menu['id']))
 					else:
 						# Generate a hidden menu item so titles show correctly
 						item = current_menu.submenu(generate_random_string(12))
@@ -469,7 +473,7 @@ class PluginManager:
 									pass
 
 						if prism.settings.is_dev():
-							prism.output('Registered page /%s: %s %s' % (blueprint_name + view.endpoint + route['endpoint'], blueprint_name + '.' + endpoint_id, route['http_methods']))
+							info('Registered page /%s: %s %s' % (blueprint_name + view.endpoint + route['endpoint'], blueprint_name + '.' + endpoint_id, route['http_methods']))
 
 						plugin._blueprint.add_url_rule(view.endpoint + route['endpoint'],
 														endpoint=endpoint_id,
@@ -554,26 +558,27 @@ def command(cmd):
 	return subprocess.call(cmd, shell=True)
 
 poofs = 0
-def poof(str=None):
-	if str is not None:
-		output('>%s' % str)
+def poof(string=None):
+	if string is not None:
+		output('>%s' % string, string_color='\033[93m')
 	global poofs
 	poofs += 1
 def paaf():
 	global poofs
 	poofs -= 1
 
-def output(string):
-	prefix = '::> '
+def output(string='', prefix_color='\033[90m', prefix_char=':', extend_char='|', string_color=''):
+	prefix = prefix_char + prefix_char + '> \033[1m'
 	for i in range(0, poofs):
-		prefix = prefix + '|'
-	print('%s%s' % (prefix, string))
-
+		prefix = prefix + extend_char
+	print('\033[1m' + prefix_color + prefix + '\033[0m' + string_color + str(string) + '\033[0m')
+def info(string):
+	output(string, '\033[34m', 'i', '|', '\033[94m')
+def good(string):
+	output(string, '\033[32m', 'o', '|', '\033[92m')
 def error(string):
-	prefix = '!!> '
-	for i in range(0, poofs):
-		prefix = prefix + '|'
-	print('%s%s' % (prefix, string))
+	output(string, '\033[31m', ':', '!', '\033[91m')
+
 
 def get_input(string, default=None, allow_empty=True):
 	""" Gets input from the user in the shell """
@@ -581,7 +586,7 @@ def get_input(string, default=None, allow_empty=True):
 		string = string + '[' + default + ']'
 
 	while True:
-		user_input = input('::| %s: ' % string)
+		user_input = input('\033[1m\033[33m??> %s: \033[0m' % string)
 		if user_input or allow_empty:
 			break
 	if not user_input:
@@ -595,7 +600,7 @@ def get_password(string, default=None, allow_empty=True):
 		string = string + '[' + default + ']'
 
 	while True:
-		user_input = getpass.getpass('::| %s: ' % string)
+		user_input = getpass.getpass('\033[1m\033[33m**> %s: \033[0m' % string)
 		if user_input or allow_empty:
 			break
 	if not user_input:
