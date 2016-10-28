@@ -14,8 +14,9 @@ prism.paaf()
 
 flask_app = prism.flask_app()
 
-@prism.helpers.repeat(60, 60 * 60)
+@prism.helpers.repeat(0, 60 * 60)
 def version_check():
+	""" Checks for Prism version updates every hour """
 	prism.settings.ping_version()
 
 @flask_app.context_processor
