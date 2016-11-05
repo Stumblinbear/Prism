@@ -69,7 +69,10 @@ class JackSiteOverviewView(BaseView):
 
         # If a tab was submitted, handle it
         if 'tab' in request.form:
-            pass
+            if request.form['tab'] not in JackPlugin.get().site_tabs:
+                flask.flash('Unknown tab ID. Please try again.', 'error')
+            else:
+                JackPlugin.get().site_tabs[request.form['tab']].post(request)
         # If the site was set to be deleted
         elif 'delete' in request.form:
             # Delete it. Duh.
@@ -92,15 +95,22 @@ class JackSiteOverviewView(BaseView):
                 config_type.save(site_config)
                 site_config.save()
                 JackPlugin.get().nginx.rebuild_sites()
-        elif 'fix_permissions' in request.form:
-            site_folder = os.path.join(JackPlugin.get().site_files_location, site_uuid)
-            if not os.path.exists(site_folder):
-                flask.flash('Site folder doesn\t exist.', 'error')
-            else:
-                # Make sure nginx and groups can access the site folder
-                prism.os_command('chown -R nginx:nginx %s' % site_folder)
-                prism.os_command('chmod -R 0775 %s' % site_folder)
-                flask.flash('Site folder permissions fixed.', 'info')
+        elif 'site_action' in request.form:
+            action = request.form['site_action']
+
+            if action == 'fix_permissions':
+                site_folder = os.path.join(JackPlugin.get().site_files_location, site_uuid)
+                if not os.path.exists(site_folder):
+                    flask.flash('Site folder doesn\t exist.', 'error')
+                else:
+                    # Make sure nginx and groups can access the site folder
+                    prism.os_command('chown -R nginx:nginx %s' % site_folder)
+                    prism.os_command('chmod -R 0775 %s' % site_folder)
+                    flask.flash('Site folder permissions fixed.', 'info')
+            elif action == 'maintenance_mode_enter':
+                flask.flash('Not yet working.', 'error')
+            elif action == 'maintenance_mode_exit':
+                flask.flash('Not yet working.', 'error')
         else:
             site_config = JackPlugin.get().nginx.configs[site_uuid]
             config_type = JackPlugin.get().get_default_config(site_config['type'])

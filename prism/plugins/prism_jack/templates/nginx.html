@@ -2,7 +2,9 @@
 {% block title_right %}<small>Nginx</small>{% endblock %}
 {% block config_content %}
 <div class="form-group">
-  <label for="hostname">Hostname</label>
-  <input type="text" id="hostname" class="form-control" name="hostname" placeholder="example.com" value="{{ config.hostname | hide_none }}" />
+  <label for="hostname" class="col-sm-2">Hostname</label>
+  <div class="col-sm-10">
+    <input type="text" id="hostname" class="form-control" name="hostname" placeholder="example.com" value="{{ config.hostname | hide_none }}" />
+  </div>
 </div>
 {% endblock %}

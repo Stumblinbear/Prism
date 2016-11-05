@@ -2,6 +2,7 @@ import json
 import os
 import shutil
 import nginx
+import jinja2
 from flask import request
 from flask_menu import current_menu
 
@@ -27,7 +28,7 @@ class JackPlugin(BasePlugin):
         # Search the plugins for SiteTab classes
         for plugin_id, plugin, name, obj in prism_state.plugin_manager.find_classes(SiteTab):
             tab = obj()
-            tab._plugin = plugin
+            tab.plugin_id = plugin.plugin_id
             self.site_tabs.append(tab)
 
         self.nginx = NginxManager(prism_state, self)
@@ -267,6 +268,9 @@ class SiteTab:
     def __init__(self, title):
         self.uuid = prism.generate_random_string(8)
         self.title = title
+
+    def do_render(self):
+        return jinja2.Markup(prism.handle_render(self.plugin_id, self.render))
 
     def render(self):
         """ Render the tab in the site's page """

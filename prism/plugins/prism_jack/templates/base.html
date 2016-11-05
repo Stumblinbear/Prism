@@ -2,7 +2,7 @@
 {% block title %}Site: {{ config.id }}{% endblock %}
 {% block content %}
 <div class="row">
-	<div class="col-md-7 col-md-offset-1">
+	<div class="col-md-6 col-md-offset-1">
 		<div class="nav-tabs-custom">
 			<ul class="nav nav-tabs">
 				<li class="active"><a href="#general" data-toggle="tab">General</a></li>
@@ -10,20 +10,37 @@
 				{% for tab in tabs %}
 					<li><a href="#{{ tab.uuid }}" data-toggle="tab">{{ tab.title }}</a></li>
 				{% endfor %}
-				<li class="pull-right"><form method="POST"><button type="submit" name="fix_permissions" class="btn btn-xs btn-warning">Fix Permissions</button></form></li>
+				<li class="pull-right dropdown">
+					<form id="actionForm" method="POST"><input type="hidden" id="site_action" name="site_action" value="" /></form>
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+		        <span class="fa fa-gear"></span>
+		      </a>
+		      <ul class="dropdown-menu">
+		        <li onclick="$('#site_action').val('maintenance_mode_enter'); $('#actionForm').submit()">
+							<a href="#">Enter Maintenance Mode</a>
+						</li>
+		        <li onclick="$('#site_action').val('fix_permissions'); $('#actionForm').submit()">
+							<a href="#">Fix Permissions</a>
+						</li>
+		      </ul>
+				</li>
 			</ul>
 			<div class="tab-content">
 				<div class="tab-pane active" id="general">
-					<form id="baseform" method="POST">
+					<form id="baseform" class="form-horizontal" method="POST">
 						<div class="form-group">
-							<label for="site_id">Site ID</label>
-							<input type="text" id="site_id" class="form-control" name="site_id" value="{{ config.id }}" disabled/>
+							<label for="site_id" class="col-sm-2">Site ID</label>
+							<div class="col-sm-10">
+								<input type="text" id="site_id" class="form-control" name="site_id" value="{{ config.id }}" disabled/>
+							</div>
 						</div>
 						{% block config_content %}{% endblock %}
 						<hr />
 						<div class="form-group">
-							<button type="submit" name="update" class="btn btn-primary pull-right">Submit</button>
-							<button type="submit" id="delete" name="delete" class="btn btn-danger">Delete</button>
+							<div class="col-sm-10 col-sm-offset-1">
+								<button type="submit" name="update" class="btn btn-primary pull-right">Submit</button>
+								<button type="submit" id="delete" name="delete" class="btn btn-danger">Delete</button>
+							</div>
 						</div>
 						<script type="text/javascript">
 							$(function() {
@@ -55,13 +72,14 @@
 					<div class="tab-pane" id="{{ tab.uuid }}">
 						<form method="POST">
 							<input type="hidden" name="tab" value="{{ tab.uuid }}" />
+							{{ tab.do_render() }}
 						</form>
 					</div>
 				{% endfor %}
 			</div>
 		</div>
 	</div>
-	<div class="col-md-3">
+	<div class="col-md-4">
 		{% block config_sidebar_top %}{% endblock %}
 		<div class="box box-info">
 			<div class="box-header">

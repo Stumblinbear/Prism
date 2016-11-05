@@ -11,7 +11,7 @@ class FTPTab(SiteTab):
         SiteTab.__init__(self, 'FTP')
 
     def render(self):
-        pass
+        return ('ff')
 
-    def post(self):
+    def post(self, request):
         pass
