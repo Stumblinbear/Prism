@@ -8,7 +8,7 @@ class ReverseProxyConfig(SiteTypeConfig):
     def __init__(self):
         SiteTypeConfig.__init__(self, 'reverseproxy', 'Reverse Proxy', 'Set up a website as a reverse proxy.', [('hostname', 'Hostname', 'example.com'), ('proxy_to', 'Proxy To', 'http://example.com/')])
 
-    def generate(self, site_config, site_id, hostname, proxy_to):
+    def create(self, site_config, site_id, hostname, proxy_to):
         site_config['hostname'] = hostname
         site_config['locations']['/'] = {
                             'proxy_pass': proxy_to,
@@ -47,7 +47,7 @@ class AdvancedConfig(SiteTypeConfig):
     def __init__(self):
         SiteTypeConfig.__init__(self, 'nginx', 'Advanced', 'Gives complete access to all configuration items.', [('hostname', 'Hostname', 'example.com')])
 
-    def generate(self, site_config, site_id, hostname):
+    def create(self, site_config, site_id, hostname):
         site_config['hostname'] = hostname
         site_config['index'] = 'index.html'
 

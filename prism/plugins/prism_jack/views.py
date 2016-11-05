@@ -77,16 +77,20 @@ class JackSiteOverviewView(BaseView):
             return ('jack.JackCreateSiteView')
         # If the first tab was submitted
         elif 'update' in request.form:
+            site_config = JackPlugin.get().nginx.configs[site_uuid]
+            config_type = JackPlugin.get().get_default_config(site_config['type'])
+
             if not request.form['hostname']:
                 error = 'Must specify a hostname.'
             else:
                 # Call the post method in the site's default config
-                site_config = JackPlugin.get().nginx.configs[site_uuid]
-                error = JackPlugin.get().get_default_config(site_config['type']).update(request, site_config)
+                error = config_type.update(request, site_config)
             if error:
                 flask.flash(error, 'error')
             else:
                 # If all was sucessful, rebuild nginx's sites and reload
+                config_type.save(site_config)
+                site_config.save()
                 JackPlugin.get().nginx.rebuild_sites()
         elif 'fix_permissions' in request.form:
             site_folder = os.path.join(JackPlugin.get().site_files_location, site_uuid)
@@ -99,7 +103,10 @@ class JackSiteOverviewView(BaseView):
                 flask.flash('Site folder permissions fixed.', 'info')
         else:
             site_config = JackPlugin.get().nginx.configs[site_uuid]
-            error = JackPlugin.get().get_default_config(site_config['type']).post(request, site_config)
+            config_type = JackPlugin.get().get_default_config(site_config['type'])
+            error = config_type.post(request, site_config)
             if error:
                 flask.flash(error, 'error')
+            config_type.save(site_config)
+            JackPlugin.get().nginx.rebuild_sites()
         return ('jack.JackSiteOverviewView', {'site_uuid': site_uuid})

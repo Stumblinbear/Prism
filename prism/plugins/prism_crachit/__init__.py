@@ -26,11 +26,26 @@ class Service:
         if self.options is not None:
             if not os.path.exists(self.service_file):
                 self.save()
+        elif os.path.exists(self.service_file):
+            self.options = {}
+            with open(self.service_file, 'r') as lines:
+                group = None
+                for line in lines:
+                    line = line.rstrip('\n')
+                    if len(line) == 0:
+                        continue
+                    if line[0] == '[':
+                        group = line[1:-1]
+                    else:
+                        key, value = line.split('=', 1)
+                        self.options[key] = value
 
     def register_monitor(self, monitor):
         CrachitPlugin.service_manager.register_monitor(self.service_name, monitor)
 
     def save(self):
+        existed = os.path.exists(self.service_file)
+
         file = open(self.service_file, 'w')
         for category, options in self.options.items():
             file.write('[%s]\n' % category)
@@ -39,12 +54,18 @@ class Service:
             file.write('\n')
         file.close()
 
+        # If the service already existed, make systemctl update
+        prism.os_command('systemctl daemon-reload')
+
     def delete(self):
         if os.path.exists(self.service_file):
             os.remove(self.service_file)
 
     def enable(self):
         return prism.os_command('systemctl enable %s' % self.service_name)
+
+    def disable(self):
+        return prism.os_command('systemctl disable %s' % self.service_name)
 
     def start(self):
         return prism.os_command('systemctl start %s' % self.service_name)
@@ -61,9 +82,14 @@ class Service:
             return 'online'
         return 'offline'
 
+    @property
+    def enabled(self):
+        return self.service_name in CrachitPlugin.service_manager.enabled
+
 class ServiceManager:
     def __init__(self):
         self.processes = None
+        self.enabled = None
         self.monitors = {}
 
         self.ping_processes()
@@ -74,6 +100,12 @@ class ServiceManager:
         self.monitors[service_name].append(monitor)
 
     def ping_processes(self):
+        enabled_processes = []
+        result, err = prism.os_command('systemctl list-unit-files --type=service | grep enabled')
+        for proc in result.decode().split('\n')[:-1]:
+            enabled_processes.append('.'.join(proc.split()[0].split('.')[:-1]))
+        self.enabled = enabled_processes
+
         pinged_processes = []
 
         result, err = prism.os_command('systemctl | grep .service | grep running')

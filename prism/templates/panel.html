@@ -85,7 +85,7 @@
 					$(function() {
 						toastr.options = { "positionClass": "toast-bottom-right" };
 						{% for category, message in messages %}
-							{% if category == 'error' %}
+							{% if category == 'error' or category == 'danger' %}
 								toastr.error("{{ message }}");
 							{% elif category == 'warning' %}
 								toastr.warning("{{ message }}");

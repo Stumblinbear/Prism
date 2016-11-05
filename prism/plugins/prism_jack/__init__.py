@@ -111,11 +111,12 @@ class NginxManager:
         site_config['locations'] = {}
 
         # Let the default nginx configuration input their values
-        error = default_config.generate(site_config, *options)
+        error = default_config.create(site_config, *options)
         if error:
             shutil.rmtree(site_folder)
             return (None, error)
         site_config.save()
+        default_config.save(site_config)
 
         # ... Just in case the default config added something...
         prism.os_command('chown -R nginx:nginx %s' % site_folder)
@@ -236,10 +237,15 @@ class SiteTypeConfig:
         # This defines the fields required when the user is creating the site
         self.options = [('site_id', 'Site ID', 'Example Site')] + options
 
-    def generate(self, site_config, site_id):
+    def create(self, site_config, site_id):
         """ This is run when the user creates a site with this type;
         The fields are site_config followed by all field id's
         defined in self.options """
+        pass
+
+    def save(self, site_config):
+        """ Called when the user creates or edits a site with this type;
+        generate/update files here """
         pass
 
     def delete(self, site_config):

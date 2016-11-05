@@ -5,19 +5,35 @@
   <label for="hostname">Hostname</label>
   <input type="text" id="hostname" class="form-control" name="hostname" placeholder="example.com" value="{{ config.hostname | hide_none }}" />
 </div>
+<div class="form-group">
+  <label for="workers">Workers</label>
+  <input type="number" id="workers" class="form-control" name="workers" placeholder="3" value="{{ config.gunicorn.workers }}" />
+</div>
 {% endblock %}
 {% block config_sidebar_top %}
 <div class="box box-{% if type.status == 'online' %}success{% else %}danger{% endif %}">
   <div class="box-header">
     <div class="box-body text-center">
       <h3 style="margin:0">GUnicorn is {{ type.status }}</h3>
+      {% if type.enabled %}
+        <p class="lead">Enabled at startup.</p>
+      {% else %}
+        <p class="lead">Disabled at startup.</p>
+      {% endif %}
       <hr />
       <form method="post">
-        {% if type.status == 'online' %}
-          <button type="submit" class="btn btn-danger" name="gunicorn_restart">Restart</button>
-        {% else %}
-          <button type="submit" class="btn btn-danger" name="gunicorn_start">Attempt Start</button>
-        {% endif %}
+        <div class="btn-group">
+          {% if type.enabled %}
+            <button type="submit" class="btn btn-danger" name="gunicorn_disable">Disable</button>
+          {% else %}
+            <button type="submit" class="btn btn-warning" name="gunicorn_enable">Enable</button>
+          {% endif %}
+          {% if type.status == 'online' %}
+            <button type="submit" class="btn btn-danger" name="gunicorn_restart">Restart</button>
+          {% else %}
+            <button type="submit" class="btn btn-warning" name="gunicorn_start">Attempt Start</button>
+          {% endif %}
+        </div>
       </form>
     </div>
   </div>

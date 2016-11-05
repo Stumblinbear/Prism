@@ -15,7 +15,7 @@ class GUnicornConfig(SiteTypeConfig):
     def __init__(self):
         SiteTypeConfig.__init__(self, 'gunicorn', 'GUnicorn', 'Use this option if you wish to set up a website created using Python scripts.', [('hostname', 'Hostname', 'example.com'), ('python', 'Python', [(str(key), str(key)) for i, key in enumerate(PythonVersions.get().versions)]), ('library', 'Library', [('flask', 'Flask'), ('django', 'Django')])])
 
-    def generate(self, site_config, site_id, hostname, python, library):
+    def create(self, site_config, site_id, hostname, python, library):
         if not hostname:
             return 'Must specify a hostname.'
         site_config['hostname'] = hostname
@@ -54,20 +54,32 @@ class GUnicornConfig(SiteTypeConfig):
                     'pip install gunicorn %s' % library,
                     'deactivate'
                 ], scl=python_version.scl, user='prism')
-
         if err:
             prism.error(err)
             return 'Problem creating virtual environment.'
 
-        exec_start = '%s/%s_env/bin/gunicorn --workers 3 --bind unix:../%s.sock -m 007 wsgi' % (site_loc, site_config['uuid'], site_config['uuid'])
-        if python_version.scl:
-            exec_start = '/usr/bin/scl enable %s "%s"' % (python_version.scl, exec_start)
+        # GUnicorn options
+        site_config['gunicorn'] = {
+                        'workers': 3,
+                        'python': {
+                            'path': python_version.path,
+                            'scl': python_version.scl
+                        }
+                    }
+
+    def save(self, site_config):
+        site_loc = os.path.join(JackPlugin.get().site_files_location, site_config['uuid'])
+        script_loc = os.path.join(site_loc, 'script')
+
+        exec_start = '%s/%s_env/bin/gunicorn --workers %i --bind unix:../%s.sock -m 007 wsgi' % (site_loc, site_config['uuid'], site_config['gunicorn']['workers'], site_config['uuid'])
+        if site_config['gunicorn']['python']['scl']:
+            exec_start = '/usr/bin/scl enable %s "%s"' % (site_config['gunicorn']['python']['scl'], exec_start)
 
         # Create the service
         service = Service('gunicorn-%s' % site_config['uuid'],
                     {
                         'Unit': {
-                            'Description': 'GUnicorn instance to serve %s (%s)' % (site_id, site_config['uuid']),
+                            'Description': 'GUnicorn instance to serve %s (%s)' % (site_config['id'], site_config['uuid']),
                             'After': 'network.target'
                         },
                         'Service': {
@@ -82,7 +94,7 @@ class GUnicornConfig(SiteTypeConfig):
                         }
                     }
                 )
-
+        service.save()
         # Start the service
         service.start()
 
@@ -93,17 +105,23 @@ class GUnicornConfig(SiteTypeConfig):
         Service('gunicorn-%s' % site_config['uuid']).delete()
 
     def update(self, request, site_config):
-        pass
+        site_config['gunicorn']['workers'] = int(request.form['workers'])
 
     def post(self, request, site_config):
         if 'gunicorn_restart' in request.form:
             Service('gunicorn-%s' % site_config['uuid']).restart()
-            flask.flash('GUnicorn is restarting...', 'warning')
+            flask.flash('GUnicorn is restarting...', 'danger')
         elif 'gunicorn_start' in request.form:
             print(Service('gunicorn-%s' % site_config['uuid']).start())
             flask.flash('Attempting to start GUnicorn...', 'warning')
+        elif 'gunicorn_enable' in request.form:
+            print(Service('gunicorn-%s' % site_config['uuid']).enable())
+            flask.flash('Setting GUncorn to start on boot...', 'success')
+        elif 'gunicorn_disable' in request.form:
+            print(Service('gunicorn-%s' % site_config['uuid']).disable())
+            flask.flash('GUnicorn will no longer start on boot...', 'danger')
         pass
 
     def get(self, site_config):
         service = Service('gunicorn-%s' % site_config['uuid'])
-        return {'status': service.status}
+        return {'status': service.status, 'enabled': service.enabled}
