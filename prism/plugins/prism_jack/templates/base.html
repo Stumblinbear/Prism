@@ -113,13 +113,13 @@
 							},
 							statusCode: {
 								404: function() {
-									$('#status_body').html('<i class="fa fa-5x fa-exclamation-triangle text-warning"></i><hr /><h3>Received a 404 error!</h3>');
+									$('#status_body').html('<i class="fa fa-5x fa-exclamation-triangle text-yellow"></i><hr /><h3>Received a 404 error!</h3>');
 								},
 								0: function() {
 									$('#status_body').html('<i class="fa fa-5x fa-thumbs-down text-danger"></i><hr /><h3>Your site is not online!</h3>');
 								},
 								500: function() {
-									$('#status_body').html('<i class="fa fa-5x fa-exclamation-triangle text-warning"></i><hr /><h3>Received an Internal Server Error!</h3>');
+									$('#status_body').html('<i class="fa fa-5x fa-exclamation-triangle text-yellow"></i><hr /><h3>Received an Internal Server Error!</h3>');
 								},
 								200: function() {
 									$('#status_body').html('<i class="fa fa-5x fa-thumbs-up text-success"></i><hr /><h3>Your site is online!</h3>');
