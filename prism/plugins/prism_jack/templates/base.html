@@ -16,8 +16,8 @@
 		        <span class="fa fa-gear"></span>
 		      </a>
 		      <ul class="dropdown-menu">
-		        <li onclick="$('#site_action').val('maintenance_mode_enter'); $('#actionForm').submit()">
-							<a href="#">Enter Maintenance Mode</a>
+		        <li onclick="$('#site_action').val('maintenance_mode'); $('#actionForm').submit()">
+							<a href="#">{% if 'maintenance' in config and config.maintenance %}Exit{% else %}Enter{% endif %} Maintenance Mode</a>
 						</li>
 		        <li onclick="$('#site_action').val('fix_permissions'); $('#actionForm').submit()">
 							<a href="#">Fix Permissions</a>
@@ -85,43 +85,50 @@
 			<div class="box-header">
 				<h3 class="box-title">Site Status</h3>
 			</div>
-			<div id="status_body" class="box-body text-center"></div>
-			<div id="status_overlay" class="overlay">
-				<i class="fa fa-refresh fa-spin"></i>
+			<div id="status_body" class="box-body text-center">
+				{% if 'maintenance' in config and config.maintenance %}
+					<i class="fa fa-5x fa-exclamation-circle text-info"></i>
+					<hr />
+					<h3>Maintenance Mode</h3>
+				{% endif %}
 			</div>
-			<script type="text/javascript">
-				$(function() {
-					$.ajax({
-						timeout: 5000,
-						type: 'GET',
-						dataType: 'jsonp',
-						url: 'http://{{ config.hostname }}',
-						cache: false,
-						error: function(XMLHttpRequest, textStatus, errorThrown) {
-							if(errorThrown == "timeout")
-								$('#status_body').html('<i class="fa fa-4 fa-times"></i>');
-						},
-						complete: function(data) {
-							$('#status_overlay').remove();
-							console.log(data);
-						},
-						statusCode: {
-							404: function() {
-								$('#status_body').html('<i class="fa fa-5x fa-exclamation-triangle text-warning"></i><hr /><h3>Received a 404 error!</h3>');
+			{% if not 'maintenance' in config and not config.maintenance %}
+				<div id="status_overlay" class="overlay">
+					<i class="fa fa-refresh fa-spin"></i>
+				</div>
+				<script type="text/javascript">
+					$(function() {
+						$.ajax({
+							timeout: 5000,
+							type: 'GET',
+							dataType: 'jsonp',
+							url: 'http://{{ config.hostname }}',
+							cache: false,
+							error: function(XMLHttpRequest, textStatus, errorThrown) {
+								if(errorThrown == "timeout")
+									$('#status_body').html('<i class="fa fa-4 fa-times"></i>');
 							},
-							0: function() {
-								$('#status_body').html('<i class="fa fa-5x fa-thumbs-down text-danger"></i><hr /><h3>Your site is not online!</h3>');
+							complete: function(data) {
+								$('#status_overlay').remove();
 							},
-							500: function() {
-								$('#status_body').html('<i class="fa fa-5x fa-exclamation-triangle text-warning"></i><hr /><h3>Received an Internal Server Error!</h3>');
-							},
-							200: function() {
-								$('#status_body').html('<i class="fa fa-5x fa-thumbs-up text-success"></i><hr /><h3>Your site is online!</h3>');
+							statusCode: {
+								404: function() {
+									$('#status_body').html('<i class="fa fa-5x fa-exclamation-triangle text-warning"></i><hr /><h3>Received a 404 error!</h3>');
+								},
+								0: function() {
+									$('#status_body').html('<i class="fa fa-5x fa-thumbs-down text-danger"></i><hr /><h3>Your site is not online!</h3>');
+								},
+								500: function() {
+									$('#status_body').html('<i class="fa fa-5x fa-exclamation-triangle text-warning"></i><hr /><h3>Received an Internal Server Error!</h3>');
+								},
+								200: function() {
+									$('#status_body').html('<i class="fa fa-5x fa-thumbs-up text-success"></i><hr /><h3>Your site is online!</h3>');
+								}
 							}
-						}
+						});
 					});
-				});
-			</script>
+				</script>
+			{% endif %}
 		</div>
 		{% block config_sidebar %}{% endblock %}
 	</div>
