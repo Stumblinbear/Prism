@@ -85,7 +85,7 @@ class TerminalView(BaseView):
     @subroute('/install/<install_type>/<install_name>/<restart>/<return_url>')
     def install_get(self, request, install_type, install_name, restart=False, return_url=None):
         if install_type == 'binary':
-            cmd = prism.get_os_command('yum install %s', 'apt-get install %s', 'pkg_add -v %s')
+            cmd = prism.get_os_command('yum -y install %s', 'apt-get -y install %s')
         elif install_type == 'module':
             cmd = 'pip install %s'
         else:

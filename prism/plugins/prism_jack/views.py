@@ -74,9 +74,9 @@ class JackSiteOverviewView(BaseView):
         # If a tab was submitted, handle it
         if 'tab' in request.form:
             if request.form['tab'] not in JackPlugin.get().site_tabs:
-                flask.flash('Unknown tab ID. Please try again.', 'error')
+                error = 'Unknown tab ID. Please try again.'
             else:
-                JackPlugin.get().site_tabs[request.form['tab']].post(request, site_config)
+                error = JackPlugin.get().site_tabs[request.form['tab']].post(request, site_config)
         # If the general tab was submitted
         elif 'update' in request.form:
             if not request.form['hostname']:

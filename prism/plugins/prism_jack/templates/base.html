@@ -7,8 +7,8 @@
 			<ul class="nav nav-tabs">
 				<li class="active"><a href="#general" data-toggle="tab">General</a></li>
 				{% block config_tab_list %}{% endblock %}
-				{% for tab in tabs %}
-					<li><a href="#{{ tab.uuid }}" data-toggle="tab">{{ tab.title }}</a></li>
+				{% for uuid, tab in tabs.items() %}
+					<li><a href="#{{ uuid }}" data-toggle="tab">{{ tab.title }}</a></li>
 				{% endfor %}
 				<li class="pull-right dropdown">
 					<form id="actionForm" method="POST"><input type="hidden" id="site_action" name="site_action" value="" /></form>
@@ -68,11 +68,11 @@
 					</form>
 				</div>
 				{% block config_tab_panes %}{% endblock %}
-				{% for tab in tabs %}
-					<div class="tab-pane" id="{{ tab.uuid }}">
-						<form method="POST">
-							<input type="hidden" name="tab" value="{{ tab.uuid }}" />
-							{{ tab.do_render() }}
+				{% for uuid, tab in tabs.items() %}
+					<div class="tab-pane" id="{{ uuid }}">
+						<form class="form-horizontal" method="POST">
+							<input type="hidden" name="tab" value="{{ uuid }}" />
+								{{ tab.do_render(config) }}
 						</form>
 					</div>
 				{% endfor %}

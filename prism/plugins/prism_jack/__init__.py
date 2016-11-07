@@ -17,7 +17,7 @@ class JackPlugin(BasePlugin):
         self.site_files_location = self.config('site-files-loc', '/var/www/')
 
         self.default_configs = []
-        self.site_tabs = []
+        self.site_tabs = {}
 
         # Search the plugins for DefaultConfig classes
         for plugin_id, plugin, name, obj in prism_state.plugin_manager.find_classes(SiteTypeConfig):
@@ -29,7 +29,7 @@ class JackPlugin(BasePlugin):
         for plugin_id, plugin, name, obj in prism_state.plugin_manager.find_classes(SiteTab):
             tab = obj()
             tab.plugin_id = plugin.plugin_id
-            self.site_tabs.append(tab)
+            self.site_tabs[tab.uuid] = tab
 
         self.nginx = NginxManager(prism_state, self)
 
@@ -269,14 +269,14 @@ class SiteTab:
         self.uuid = prism.generate_random_string(8)
         self.title = title
 
-    def do_render(self):
-        return jinja2.Markup(prism.handle_render(self.plugin_id, self.render))
+    def do_render(self, site_config):
+        return jinja2.Markup(prism.handle_render(self.plugin_id, self.render, site_config))
 
-    def render(self):
+    def render(self, site_config):
         """ Render the tab in the site's page """
         pass
 
-    def post(self, request):
+    def post(self, request, site_config):
         """ Called when the user submits the form on the tab's page """
         pass
 
