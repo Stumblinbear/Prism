@@ -60,6 +60,7 @@ class GUnicornConfig(SiteTypeConfig):
 
         # GUnicorn options
         site_config['gunicorn'] = {
+                        'app_location': 'wsgi:application',
                         'workers': 3,
                         'python': {
                             'path': python_version.path,
@@ -71,11 +72,11 @@ class GUnicornConfig(SiteTypeConfig):
         site_loc = os.path.join(JackPlugin.get().site_files_location, site_config['uuid'])
         script_loc = os.path.join(site_loc, 'script')
 
-        exec_start = '%s/%s_env/bin/gunicorn --workers %i --bind unix:../%s.sock -m 007 wsgi' % (site_loc, site_config['uuid'], site_config['gunicorn']['workers'], site_config['uuid'])
+        exec_start = '%s/%s_env/bin/gunicorn --workers %i --bind unix:../%s.sock -m 007 %s' % (site_loc, site_config['uuid'], site_config['gunicorn']['workers'], site_config['uuid'], site_config['gunicorn']['app_location'])
         if site_config['gunicorn']['python']['scl']:
             exec_start = '/usr/bin/scl enable %s "%s"' % (site_config['gunicorn']['python']['scl'], exec_start)
 
-        # Create the service
+        # Create/update the service
         service = Service('gunicorn-%s' % site_config['uuid'],
                     {
                         'Unit': {
@@ -94,8 +95,8 @@ class GUnicornConfig(SiteTypeConfig):
                         }
                     }
                 )
-        service.save()
         # Start the service
+        service.save()
         service.start()
 
     def delete(self, site_config):
@@ -105,6 +106,7 @@ class GUnicornConfig(SiteTypeConfig):
         Service('gunicorn-%s' % site_config['uuid']).delete()
 
     def update(self, request, site_config):
+        site_config['gunicorn']['app_location'] = request.form['app_location']
         site_config['gunicorn']['workers'] = int(request.form['workers'])
 
     def post(self, request, site_config):

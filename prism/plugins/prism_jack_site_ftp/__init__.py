@@ -25,12 +25,12 @@ class JackFTPPlugin(BasePlugin):
 
             prism.os_command('systemctl restart vsftpd')
 
-    def user_add(self, site_uuid, username, password, comment):
-        prism.os_command('useradd -s /sbin/nologin -d /var/www/%s -G nginx -c "Jack(%s) %s" %s' % (site_uuid, site_uuid, comment if comment is not None else '', username))
+    def user_add(self, site_uuid, username, password, comment, use_sftp):
+        prism.os_command('useradd %s -d /var/www/%s -G nginx -c "Jack(%s) %s" %s' % ('' if use_sftp else '-s /sbin/nologin', site_uuid, site_uuid, comment if comment is not None else '', username))
         prism.os_command('echo %s | passwd %s --stdin' % (password, username))
         if site_uuid not in self.users:
             self.users[site_uuid] = {}
-        self.users[site_uuid][username] = {'password': password, 'comment': comment}
+        self.users[site_uuid][username] = {'sftp': use_sftp, 'password': password, 'comment': comment}
         self.config['users'] = self.users
 
     def user_del(self, site_uuid, username):
@@ -58,7 +58,8 @@ class FTPTab(SiteTab):
                 return 'Password not specified.'
             if site_config['uuid'] in JackFTPPlugin.get().users and request.form['user_username'] in JackFTPPlugin.get().users[site_config['uuid']]:
                 return 'User already exists.'
-            JackFTPPlugin.get().user_add(site_config['uuid'], request.form['user_username'], request.form['user_password'], request.form['user_comment'] if 'user_comment' in request.form else None)
+            user_sftp = request.form['user_sftp'] == 'on' if 'user_sftp' in request.form else False
+            JackFTPPlugin.get().user_add(site_config['uuid'], request.form['user_username'], request.form['user_password'], request.form['user_comment'] if 'user_comment' in request.form else None, user_sftp)
             flask.flash('New user created: %s' % request.form['user_username'])
         elif 'user_del' in request.form:
             JackFTPPlugin.get().user_del(site_config['uuid'], request.form['user_del'])
