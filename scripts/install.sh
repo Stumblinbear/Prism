@@ -33,6 +33,25 @@ function wait {
   trap - EXIT
 }
 
+function verify_install {
+  if $(pip3 list --format=columns | grep $2 &> /dev/null); then
+    info "$1 is installed"
+    if $3 ; then
+      poof 'Upgrade check requested'
+        if $(pip3 list -o --format=columns | grep $2); then
+          wait "Upgrading $1" "pip3 install $2 --upgrade"
+        fi
+      paaf
+    fi
+  else
+    wait "Installing $1" "pip3 install $2"
+    if ! $(pip3 freeze | grep $2 &> /dev/null); then
+      die "$1 install failed"
+    fi
+    good "$1 installed successfully"
+  fi
+}
+
 if [ "$(id -u)" != "0" ]; then
  error 'This script must be run as root'
  exit 1
@@ -80,6 +99,14 @@ if ! $(pip3 &> /dev/null); then
   exit 1
 fi
 
+if $(apt-get --version &> /dev/null); then
+  wait 'Installing compile tools' 'apt-get install build-essential'
+elif $(yum --version &> /dev/null); then
+  wait 'Installing compile tools' 'yum groupinstall "Development Tools"'
+else
+  die 'Unsupported package manager.'
+fi
+
 poof 'Verifying dependencies'
   if ! $(curl --version &> /dev/null); then
     die 'Curl is not installed'
@@ -89,15 +116,10 @@ poof 'Verifying dependencies'
     die 'Tar is not installed'
   fi
 
-  if $(pip3 freeze | grep virtualenv &> /dev/null); then
-    info 'Virtualenv is installed'
-  else
-    wait 'Installing virtualenv' 'pip3 install virtualenv'
-    if ! $(pip3 freeze | grep virtualenv &> /dev/null); then
-      die 'Virtualenv install failed'
-    fi
-    good 'Virtualenv installed successfully'
-  fi
+  wait 'Upgrading pip' 'pip3 install pip --upgrade'
+
+  verify_install 'Setup Tools' 'setuptools' true
+  verify_install 'Virtualenv' 'virtualenv'
 paaf
 
 TMP_DIR=$(mktemp -d)
