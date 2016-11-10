@@ -1,0 +1,14 @@
+{
+    "version": [ 1, 0, 0, "indev" ],
+    "api-version": 1,
+
+    "icon": "database",
+    "name": "MariaDB",
+    "description": "Manage your MariaDB server.",
+
+    "dependencies": {
+        "binary": [
+            "mariadb-server"
+        ]
+    }
+}

@@ -1,5 +1,6 @@
 {
     "version": [ 1, 0, 0, "indev" ],
+    "api-version": 1,
 
     "icon": "archive",
     "name": "Crachit",

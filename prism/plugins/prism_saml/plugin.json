@@ -1,0 +1,31 @@
+{
+    "version": [ 1, 0, 0, "indev" ],
+    "api-version": 1,
+
+    "icon": "bullhorn",
+    "name": "SAML",
+    "description": "Manages a python based SAML server.",
+
+    "dependencies": {
+        "os": {
+          "debian": {
+            "binary": [
+              "libxml2-dev",
+              "libxmlsec1-dev"
+            ]
+          },
+          "redhat": {
+            "binary": [
+              "libxml2-devel",
+              "xmlsec1-devel",
+              "xmlsec1-openssl-devel",
+              "libtool-ltdl-devel"
+            ]
+          }
+        },
+        "module": [
+            "lxml",
+            "python3-saml"
+        ]
+    }
+}
