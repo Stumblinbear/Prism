@@ -32,7 +32,7 @@ class ReverseProxyConfig(SiteTypeConfig):
                             'proxy_temp_file_write_size': '64k'
                         }
 
-    def post(self, request, site_config):
+    def update(self, request, site_config):
         if not request.form['hostname']:
             return 'Must specify a hostname.'
         if not request.form['proxy_to']:
@@ -51,7 +51,7 @@ class AdvancedConfig(SiteTypeConfig):
         site_config['hostname'] = hostname
         site_config['index'] = 'index.html'
 
-    def post(self, request, site_config):
+    def update(self, request, site_config):
         site_config['hostname'] = request.form['hostname']
         site_config['hostname'] = hostname
 
@@ -63,7 +63,7 @@ class DirectConfig(SiteTypeConfig):
         SiteTypeConfig.__init__(self, 'direct', 'Direct Configuration', 'No hand-holding. Gives direct access to configuration files.')
         self.disabled = True
 
-    def post(self, request, site_config):
+    def update(self, request, site_config):
         pass
 
     def delete(self, site_config):
