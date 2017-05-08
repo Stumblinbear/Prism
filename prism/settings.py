@@ -119,12 +119,12 @@ def init(pid):
 
 		logging.output()
 		if used_default:
-			secret_key = prism.generate_random_string(32)
+			subst['secret_key'] = prism.generate_random_string(32)
 			logging.output(PRISM_LOCALE['start.secret.generate'].format(**subst))
 		else:
 			logging.output(PRISM_LOCALE['start.secret.done'].format(**subst))
 
-		PRISM_CONFIG['secret_key'] = secret_key
+		PRISM_CONFIG['secret_key'] = subst['secret_key']
 
 		# Dev check
 		logging.output()
