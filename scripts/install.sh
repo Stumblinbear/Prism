@@ -104,7 +104,7 @@ if $(apt-get --version &> /dev/null); then
 elif $(yum --version &> /dev/null); then
   wait 'Installing compile tools' 'yum groupinstall "Development Tools"'
   wait 'Installing gcc' 'yum install gcc'
-  wait 'Installing OpenSSL Devel' 'yum install openssl-devel'
+  wait 'Installing OpenSSL and Devel' 'yum install openssl openssl-devel'
 else
   die 'Unsupported package manager.'
 fi
