@@ -103,6 +103,8 @@ if $(apt-get --version &> /dev/null); then
   wait 'Installing compile tools' 'apt-get install build-essential'
 elif $(yum --version &> /dev/null); then
   wait 'Installing compile tools' 'yum groupinstall "Development Tools"'
+  wait 'Installing gcc' 'yum install gcc'
+  wait 'Installing OpenSSL Devel' 'yum install openssl-devel'
 else
   die 'Unsupported package manager.'
 fi
@@ -113,7 +115,10 @@ poof 'Verifying dependencies'
   fi
 
   if ! $(tar --version &> /dev/null); then
-    die 'Tar is not installed'
+    wait 'Installing tar' 'yum install tar'
+    if ! $(tar --version &> /dev/null); then
+      die 'Tar install failed'
+    fi
   fi
 
   wait 'Upgrading pip' 'pip3 install pip --upgrade'
